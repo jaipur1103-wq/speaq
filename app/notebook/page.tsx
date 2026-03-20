@@ -1,0 +1,464 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { getSavedExpressions, toggleLearned, deleteExpression } from "@/lib/storage";
+import type { SavedExpression } from "@/types";
+
+type Filter = "all" | "tolearn" | "learned" | "quiz";
+
+export default function NotebookPage() {
+  const router = useRouter();
+  const [expressions, setExpressions] = useState<SavedExpression[]>([]);
+  const [filter, setFilter] = useState<Filter>("all");
+  const [dark, setDark] = useState(false);
+
+  // Quiz state
+  const [quizQueue, setQuizQueue] = useState<SavedExpression[]>([]);
+  const [quizIndex, setQuizIndex] = useState(0);
+  const [quizRevealed, setQuizRevealed] = useState(false);
+  const [quizCorrect, setQuizCorrect] = useState(0);
+  const [quizDone, setQuizDone] = useState(false);
+
+  useEffect(() => {
+    setExpressions(getSavedExpressions());
+    setDark(document.documentElement.classList.contains("dark"));
+  }, []);
+
+  const handleToggle = (id: string) => {
+    toggleLearned(id);
+    setExpressions(getSavedExpressions());
+  };
+
+  const handleDelete = (id: string) => {
+    deleteExpression(id);
+    setExpressions(getSavedExpressions());
+  };
+
+  const startQuiz = () => {
+    const toLearn = expressions.filter((e) => !e.learned);
+    if (toLearn.length === 0) return;
+    const shuffled = [...toLearn].sort(() => Math.random() - 0.5);
+    setQuizQueue(shuffled);
+    setQuizIndex(0);
+    setQuizRevealed(false);
+    setQuizCorrect(0);
+    setQuizDone(false);
+    setFilter("quiz");
+  };
+
+  const handleQuizGotIt = () => {
+    const next = quizIndex + 1;
+    setQuizCorrect((c) => c + 1);
+    if (next >= quizQueue.length) {
+      setQuizDone(true);
+    } else {
+      setQuizIndex(next);
+      setQuizRevealed(false);
+    }
+  };
+
+  const handleQuizNotYet = () => {
+    const next = quizIndex + 1;
+    if (next >= quizQueue.length) {
+      setQuizDone(true);
+    } else {
+      setQuizIndex(next);
+      setQuizRevealed(false);
+    }
+  };
+
+  const filtered = expressions.filter((e) => {
+    if (filter === "tolearn") return !e.learned;
+    if (filter === "learned") return e.learned;
+    return true;
+  });
+
+  const toLearnCount = expressions.filter((e) => !e.learned).length;
+  const learnedCount = expressions.filter((e) => e.learned).length;
+
+  return (
+    <main style={{ maxWidth: 640, margin: "0 auto", padding: "40px 16px 100px", minHeight: "100vh" }}>
+      {/* Header */}
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 28 }}>
+        <div>
+          <h1 style={{ fontSize: 28, fontWeight: 700, color: "var(--text)", margin: 0, letterSpacing: "-0.025em", lineHeight: 1.1 }}>
+            Speaq
+          </h1>
+          <p style={{ fontSize: 13, color: "var(--text-muted)", margin: "4px 0 0" }}>
+            Business English Practice
+          </p>
+        </div>
+        <button
+          onClick={() => { setDark(!dark); document.documentElement.classList.toggle("dark"); }}
+          style={{
+            width: 36, height: 36, borderRadius: "50%",
+            background: "var(--surface)", border: "none",
+            cursor: "pointer", fontSize: 16,
+            display: "flex", alignItems: "center", justifyContent: "center",
+            boxShadow: "var(--shadow-sm)",
+          }}
+        >
+          {dark ? "☀️" : "🌙"}
+        </button>
+      </div>
+
+      {/* Nav tabs */}
+      <div style={{ display: "flex", gap: 4, marginBottom: 24, background: "var(--surface2)", borderRadius: 12, padding: 4 }}>
+        <NavTab onClick={() => router.push("/")}>🎙 Practice</NavTab>
+        <NavTab active>📒 Notebook</NavTab>
+      </div>
+
+      {/* Stats */}
+      <div style={{ display: "flex", gap: 10, marginBottom: 24 }}>
+        <StatCard label="Saved" value={expressions.length} />
+        <StatCard label="To Learn" value={toLearnCount} color="var(--orange)" />
+        <StatCard label="Learned" value={learnedCount} color="var(--green)" />
+      </div>
+
+      {/* Filter + Quiz tabs */}
+      <div style={{ display: "flex", gap: 6, marginBottom: 18, alignItems: "center" }}>
+        {(["all", "tolearn", "learned"] as Filter[]).map((f) => (
+          <button
+            key={f}
+            onClick={() => setFilter(f)}
+            style={{
+              padding: "6px 14px", borderRadius: 20,
+              border: filter === f ? "1.5px solid var(--accent)" : "1px solid var(--border)",
+              background: filter === f ? "var(--accent-bg)" : "transparent",
+              color: filter === f ? "var(--accent)" : "var(--text-secondary)",
+              fontWeight: filter === f ? 700 : 400,
+              fontSize: 13, cursor: "pointer",
+              transition: "all 0.15s",
+            }}
+          >
+            {f === "all" ? "All" : f === "tolearn" ? "To Learn" : "Learned"}
+          </button>
+        ))}
+        <button
+          onClick={toLearnCount > 0 ? startQuiz : undefined}
+          style={{
+            padding: "6px 14px", borderRadius: 20,
+            border: filter === "quiz" ? "1.5px solid var(--accent)" : "1px solid var(--border)",
+            background: filter === "quiz" ? "var(--accent-bg)" : toLearnCount > 0 ? "var(--accent)" : "var(--surface2)",
+            color: filter === "quiz" ? "var(--accent)" : toLearnCount > 0 ? "#FFFFFF" : "var(--text-muted)",
+            fontWeight: 700,
+            fontSize: 13, cursor: toLearnCount > 0 ? "pointer" : "not-allowed",
+            transition: "all 0.15s",
+            marginLeft: "auto",
+          }}
+        >
+          🧠 Quiz {toLearnCount > 0 ? `(${toLearnCount})` : ""}
+        </button>
+      </div>
+
+      {/* Quiz mode */}
+      {filter === "quiz" && (
+        <QuizPanel
+          queue={quizQueue}
+          index={quizIndex}
+          revealed={quizRevealed}
+          done={quizDone}
+          correct={quizCorrect}
+          onReveal={() => setQuizRevealed(true)}
+          onGotIt={handleQuizGotIt}
+          onNotYet={handleQuizNotYet}
+          onDone={() => setFilter("all")}
+          onAgain={startQuiz}
+        />
+      )}
+
+      {/* Expression list */}
+      {filter !== "quiz" && (
+        filtered.length === 0 ? (
+          <div style={{
+            textAlign: "center", padding: "56px 24px",
+            color: "var(--text-muted)", background: "var(--surface)",
+            borderRadius: 18, boxShadow: "var(--shadow-sm)",
+          }}>
+            <div style={{ fontSize: 36, marginBottom: 14 }}>📒</div>
+            <p style={{ fontWeight: 700, color: "var(--text-secondary)", marginBottom: 6, fontSize: 15 }}>
+              {filter === "all" ? "No expressions saved yet" : filter === "tolearn" ? "Nothing to learn!" : "No learned expressions yet"}
+            </p>
+            {filter === "all" && (
+              <p style={{ fontSize: 13, lineHeight: 1.6 }}>
+                Practice a scenario and save expressions from feedback.
+              </p>
+            )}
+          </div>
+        ) : (
+          <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+            {filtered.map((expr) => (
+              <ExpressionCard
+                key={expr.id}
+                expr={expr}
+                onToggle={handleToggle}
+                onDelete={handleDelete}
+              />
+            ))}
+          </div>
+        )
+      )}
+    </main>
+  );
+}
+
+function QuizPanel({
+  queue, index, revealed, done, correct,
+  onReveal, onGotIt, onNotYet, onDone, onAgain,
+}: {
+  queue: SavedExpression[];
+  index: number;
+  revealed: boolean;
+  done: boolean;
+  correct: number;
+  onReveal: () => void;
+  onGotIt: () => void;
+  onNotYet: () => void;
+  onDone: () => void;
+  onAgain: () => void;
+}) {
+  if (done) {
+    const pct = queue.length > 0 ? Math.round((correct / queue.length) * 100) : 0;
+    return (
+      <div style={{
+        background: "var(--surface)", borderRadius: 20, padding: "36px 24px",
+        textAlign: "center", boxShadow: "var(--shadow-md)",
+      }}>
+        <div style={{ fontSize: 40, marginBottom: 16 }}>🎉</div>
+        <div style={{ fontSize: 22, fontWeight: 700, color: "var(--text)", marginBottom: 8, letterSpacing: "-0.02em" }}>
+          Quiz Complete!
+        </div>
+        <div style={{ fontSize: 32, fontWeight: 700, color: pct >= 70 ? "var(--green)" : "var(--orange)", marginBottom: 6 }}>
+          {correct} / {queue.length}
+        </div>
+        <div style={{ fontSize: 13, color: "var(--text-secondary)", marginBottom: 8 }}>
+          {pct}% — {pct >= 80 ? "Excellent!" : pct >= 60 ? "Good work!" : "Keep practicing!"}
+        </div>
+        <div style={{ fontSize: 12, color: "var(--text-muted)", marginBottom: 28 }}>
+          表現は削除するまで残ります。何度でも練習できます。
+        </div>
+        <div style={{ display: "flex", gap: 10 }}>
+          <button
+            onClick={onAgain}
+            style={{
+              flex: 1, padding: "13px", borderRadius: 12,
+              background: "var(--accent)", color: "#FFFFFF",
+              border: "none", fontWeight: 700, fontSize: 15,
+              cursor: "pointer", boxShadow: "0 4px 14px rgba(0,102,204,0.3)",
+            }}
+          >
+            🔄 Quiz Again
+          </button>
+          <button
+            onClick={onDone}
+            style={{
+              flex: 1, padding: "13px", borderRadius: 12,
+              background: "var(--surface2)", color: "var(--text)",
+              border: "1px solid var(--border)", fontWeight: 600, fontSize: 14,
+              cursor: "pointer",
+            }}
+          >
+            Back to Notebook
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (queue.length === 0) return null;
+  const card = queue[index];
+  const remaining = queue.length - index;
+
+  return (
+    <div className="animate-fade-slide-up" style={{
+      background: "var(--surface)", borderRadius: 20, padding: "28px 24px",
+      boxShadow: "var(--shadow-md)",
+    }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
+        <span style={{ fontSize: 12, fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.06em" }}>
+          Quiz
+        </span>
+        <span style={{ fontSize: 13, color: "var(--text-secondary)", fontWeight: 600 }}>
+          {remaining} remaining
+        </span>
+      </div>
+
+      {/* Progress bar */}
+      <div style={{ height: 3, background: "var(--surface2)", borderRadius: 2, marginBottom: 24 }}>
+        <div style={{
+          width: `${((index) / queue.length) * 100}%`,
+          height: "100%", background: "var(--accent)", borderRadius: 2, transition: "width 0.3s ease",
+        }} />
+      </div>
+
+      {/* Card front */}
+      <div style={{
+        background: "var(--surface2)", borderRadius: 14, padding: "24px",
+        textAlign: "center", marginBottom: 20,
+      }}>
+        <div style={{ fontSize: 11, color: "var(--text-muted)", marginBottom: 10, textTransform: "uppercase", letterSpacing: "0.06em", fontWeight: 700 }}>
+          {card.scenarioTitle}
+        </div>
+        <div style={{ fontSize: 18, color: "var(--text)", fontWeight: 600, lineHeight: 1.5, marginBottom: revealed ? 20 : 0 }}>
+          &ldquo;{card.original}&rdquo;
+        </div>
+
+        {revealed && (
+          <div className="animate-fade-slide-up" style={{ borderTop: "1px solid var(--border)", paddingTop: 20 }}>
+            <div style={{ fontSize: 11, color: "var(--accent)", fontWeight: 700, letterSpacing: "0.05em", marginBottom: 8, textTransform: "uppercase" }}>
+              More natural
+            </div>
+            <div style={{ fontSize: 17, fontWeight: 700, color: "var(--text)", marginBottom: 10 }}>
+              → {card.natural}
+            </div>
+            <div style={{ fontSize: 13, color: "var(--text-secondary)", lineHeight: 1.6 }}>
+              {card.explanation}
+            </div>
+          </div>
+        )}
+      </div>
+
+      {!revealed ? (
+        <button
+          onClick={onReveal}
+          style={{
+            width: "100%", padding: "13px",
+            background: "var(--accent)", color: "#FFFFFF",
+            border: "none", borderRadius: 12,
+            fontWeight: 700, fontSize: 15, cursor: "pointer",
+            boxShadow: "0 4px 14px rgba(0,102,204,0.3)",
+          }}
+        >
+          Reveal Answer
+        </button>
+      ) : (
+        <div style={{ display: "flex", gap: 10 }}>
+          <button
+            onClick={onNotYet}
+            style={{
+              flex: 1, padding: "13px",
+              background: "var(--surface2)", color: "var(--text-secondary)",
+              border: "1px solid var(--border)", borderRadius: 12,
+              fontWeight: 600, fontSize: 14, cursor: "pointer",
+            }}
+          >
+            Not yet
+          </button>
+          <button
+            onClick={onGotIt}
+            style={{
+              flex: 1, padding: "13px",
+              background: "var(--green)", color: "#FFFFFF",
+              border: "none", borderRadius: 12,
+              fontWeight: 700, fontSize: 14, cursor: "pointer",
+              boxShadow: "0 4px 12px rgba(52,199,89,0.3)",
+            }}
+          >
+            Got it ✓
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function ExpressionCard({
+  expr, onToggle, onDelete,
+}: {
+  expr: SavedExpression;
+  onToggle: (id: string) => void;
+  onDelete: (id: string) => void;
+}) {
+  const date = new Date(expr.savedAt).toLocaleDateString("ja-JP", { month: "short", day: "numeric" });
+
+  return (
+    <div style={{
+      background: "var(--surface)",
+      border: `1.5px solid ${expr.learned ? "rgba(52,199,89,0.3)" : "transparent"}`,
+      borderRadius: 18,
+      padding: "16px 18px",
+      boxShadow: "var(--shadow-sm)",
+      opacity: expr.learned ? 0.75 : 1,
+      transition: "opacity 0.2s",
+    }}>
+      <div style={{ fontSize: 12, color: "var(--text-muted)", marginBottom: 10, display: "flex", justifyContent: "space-between" }}>
+        <span>{expr.scenarioTitle}</span>
+        <span>{date}</span>
+      </div>
+
+      <div style={{ fontSize: 12, color: "var(--text-muted)", marginBottom: 4, textDecoration: "line-through" }}>
+        {expr.original}
+      </div>
+      <div style={{ fontSize: 15, fontWeight: 700, color: "var(--text)", marginBottom: 6, letterSpacing: "-0.01em" }}>
+        → {expr.natural}
+      </div>
+      <div style={{ fontSize: 13, color: "var(--text-secondary)", lineHeight: 1.6, marginBottom: 14 }}>
+        {expr.explanation}
+      </div>
+
+      <div style={{ display: "flex", gap: 8 }}>
+        <button
+          onClick={() => onToggle(expr.id)}
+          style={{
+            padding: "6px 14px", borderRadius: 20,
+            border: expr.learned ? "1.5px solid var(--green)" : "1px solid var(--border)",
+            background: expr.learned ? "rgba(52,199,89,0.12)" : "transparent",
+            color: expr.learned ? "var(--green)" : "var(--text-secondary)",
+            fontSize: 12, fontWeight: 700, cursor: "pointer",
+            transition: "all 0.15s",
+          }}
+        >
+          {expr.learned ? "✓ Learned" : "Mark as learned"}
+        </button>
+        <button
+          onClick={() => onDelete(expr.id)}
+          style={{
+            padding: "6px 12px", borderRadius: 20,
+            border: "1px solid var(--border)",
+            background: "transparent", color: "var(--text-muted)",
+            fontSize: 12, cursor: "pointer",
+          }}
+        >
+          Delete
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function NavTab({ children, active, onClick }: { children: React.ReactNode; active?: boolean; onClick?: () => void }) {
+  return (
+    <button
+      onClick={onClick}
+      style={{
+        flex: 1, padding: "8px 0", borderRadius: 9, border: "none",
+        background: active ? "var(--surface)" : "transparent",
+        color: active ? "var(--text)" : "var(--text-muted)",
+        fontWeight: active ? 700 : 400,
+        fontSize: 13, cursor: "pointer",
+        boxShadow: active ? "var(--shadow-sm)" : "none",
+        transition: "all 0.15s",
+      }}
+    >
+      {children}
+    </button>
+  );
+}
+
+function StatCard({ label, value, color }: { label: string; value: number; color?: string }) {
+  return (
+    <div style={{
+      flex: 1, background: "var(--surface)",
+      borderRadius: 14, padding: "14px 16px", textAlign: "center",
+      boxShadow: "var(--shadow-sm)",
+    }}>
+      <div style={{ fontSize: 24, fontWeight: 700, color: color ?? "var(--text)", lineHeight: 1 }}>
+        {value}
+      </div>
+      <div style={{ fontSize: 11, color: "var(--text-muted)", marginTop: 4, textTransform: "uppercase", letterSpacing: "0.06em", fontWeight: 600 }}>
+        {label}
+      </div>
+    </div>
+  );
+}
