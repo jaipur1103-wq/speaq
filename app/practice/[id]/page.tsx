@@ -46,6 +46,7 @@ export default function PracticePage() {
   const [savedIds, setSavedIds] = useState<Set<string>>(new Set());
   const [showSummary, setShowSummary] = useState(false);
   const [scoreSaved, setScoreSaved] = useState(false);
+  const [feedbackError, setFeedbackError] = useState(false);
   const [tr, setTr] = useState<Tr>(i18n.en);
   const [lang, setLang] = useState<"en" | "ja">("en");
 
@@ -151,15 +152,22 @@ export default function PracticePage() {
   const callFeedbackApi = async (turns: PendingTurn[]) => {
     if (!scenario) return;
     setLoadingFinalFeedback(true);
+    setFeedbackError(false);
     try {
       const res = await fetch("/api/feedback", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ scenario, turns, language: lang }),
       });
-      const fb: Feedback = await res.json();
-      setFinalFeedback(fb);
-    } catch { /* silent */ } finally {
+      const fb = await res.json();
+      if (fb.scores) {
+        setFinalFeedback(fb as Feedback);
+      } else {
+        setFeedbackError(true);
+      }
+    } catch {
+      setFeedbackError(true);
+    } finally {
       setLoadingFinalFeedback(false);
     }
   };
@@ -225,6 +233,7 @@ export default function PracticePage() {
     setSavedIds(new Set());
     setScoreSaved(false);
     setShowSummary(false);
+    setFeedbackError(false);
     setInputText("");
     setInterimText("");
     setRecordingSeconds(0);
@@ -300,6 +309,19 @@ export default function PracticePage() {
         {loadingFinalFeedback && (
           <div style={{ fontSize: 13, color: "var(--text-muted)", textAlign: "center", padding: "20px 0", fontWeight: 500 }}>
             {tr.analyzingSession}
+          </div>
+        )}
+        {feedbackError && (
+          <div style={{ background: "var(--surface)", borderRadius: 18, padding: "20px 18px", textAlign: "center", boxShadow: "var(--shadow-md)" }}>
+            <div style={{ fontSize: 13, color: "var(--text-secondary)", marginBottom: 12 }}>
+              {lang === "ja" ? "評価の取得に失敗しました。もう一度お試しください。" : "Failed to load feedback. Please try again."}
+            </div>
+            <button
+              onClick={() => callFeedbackApi(pendingTurns)}
+              style={{ fontSize: 13, padding: "8px 20px", borderRadius: 20, background: "var(--accent)", color: "#fff", border: "none", cursor: "pointer", fontWeight: 700 }}
+            >
+              {lang === "ja" ? "再試行" : "Retry"}
+            </button>
           </div>
         )}
         {finalFeedback && (
