@@ -1,36 +1,89 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Speaq — AI English Speaking Practice App
 
-## Getting Started
+**「会話するたびに、使える表現が増える。」**
 
-First, run the development server:
+AIと英会話シナリオを通じて実践練習し、知らなかった表現を記録・定着させる英語スピーキング学習アプリ。
+
+---
+
+## 技術スタック
+
+- **フレームワーク**: Next.js 16.2.0 (App Router, TypeScript)
+- **ホスティング**: Vercel
+- **AI (スピーキング評価・生成・会話)**: Groq API — `llama-3.3-70b-versatile`
+- **AI (翻訳のみ)**: Gemini API — `gemini-2.0-flash`
+- **音声認識**: Web Speech API (ブラウザ標準, Chrome推奨)
+- **スタイリング**: インラインスタイル (CSS変数でテーマ管理)
+- **状態管理**: React useState / localStorage
+
+---
+
+## 主要機能
+
+### コアループ
+1. **AIシナリオ生成** — トピック・難易度・業種・相手スタイルを設定してAIがシナリオを自動生成
+2. **スピーキング練習** — マイクで音声入力 → AIが相手役として返答（複数ターン）
+3. **セッション評価** — N ターン終了後にセッション全体をまとめて評価（4軸スコア + フィードバック）
+4. **表現保存** → **Quiz** — フィードバックからキーパターンをノートに保存 → 音声Quizで定着
+5. **履歴管理** — セッションスコアを記録・閲覧
+
+### ページ構成
+
+| ページ | パス | 説明 |
+|---|---|---|
+| ホーム | `/` | 設定・シナリオ一覧・生成ボタン |
+| 練習 | `/practice/[id]` | スピーキングセッション本体 |
+| ノート | `/notebook` | 保存した表現・Quiz |
+| 履歴 | `/history` | スコア履歴 |
+| ガイド | `/guide` | 使い方説明 |
+| 作成 | `/create` | カスタムシナリオ作成（説明文→AI生成） |
+
+### API エンドポイント
+
+| エンドポイント | 用途 | AIモデル |
+|---|---|---|
+| `POST /api/generate-scenario` | 設定からシナリオ自動生成 | Groq |
+| `POST /api/create-from-description` | 説明文からシナリオ生成 | Groq |
+| `POST /api/counterpart-reply` | 相手役AIの返答生成 | Groq |
+| `POST /api/feedback` | セッション全体の評価・フィードバック | Groq |
+| `POST /api/translate` | テキスト翻訳（日本語化） | Gemini |
+
+---
+
+## 設定項目
+
+| 項目 | 選択肢 | デフォルト |
+|---|---|---|
+| トピック | Business / Travel / Daily / Social / Study | Business |
+| 難易度 | Beginner / Intermediate / Advanced | Intermediate |
+| 業種 (Business時) | General / Tech / Finance / Consulting / Healthcare / Retail / Manufacturing | General |
+| 相手スタイル | Friendly / Neutral / Tough | Neutral |
+| セッション長 | 3 / 5 / 10 ターン | 5 |
+| 言語 | EN / JA | EN |
+
+---
+
+## ローカル開発
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+`.env.local` に以下を設定：
+```
+GROQ_API_KEY=...
+GEMINI_API_KEY=...
+```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+---
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## デプロイ
 
-## Learn More
+```bash
+vercel --prod
+git push origin master
+```
 
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+GitHub: https://github.com/jaipur1103-wq/speaq
+本番URL: https://english-practice-blue.vercel.app
