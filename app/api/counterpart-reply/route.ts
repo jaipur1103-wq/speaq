@@ -6,10 +6,8 @@ const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
 const PERSONAS: Record<PersonaStyle, string> = {
   friendly: "warm and collaborative — respond positively but keep the conversation moving",
-  skeptical: "doubtful — question their points, ask for more evidence or clarity",
   tough: "demanding — push back, challenge assumptions, maintain pressure",
   neutral: "professional — acknowledge their point and move the conversation forward",
-  enthusiastic: "energetic — respond with interest and build on what they said",
 };
 
 const DIFFICULTIES: Record<Difficulty, string> = {

@@ -1,19 +1,15 @@
 export type Difficulty = "beginner" | "intermediate" | "advanced";
+export type Topic = "business" | "travel" | "daily" | "social" | "study";
 export type Industry =
+  | "general"
   | "technology"
   | "finance"
   | "consulting"
   | "healthcare"
   | "retail"
-  | "manufacturing"
-  | "general";
+  | "manufacturing";
 
-export type PersonaStyle =
-  | "friendly"
-  | "skeptical"
-  | "tough"
-  | "neutral"
-  | "enthusiastic";
+export type PersonaStyle = "friendly" | "neutral" | "tough";
 
 export interface Scenario {
   id: string;
@@ -75,7 +71,17 @@ export interface TurnScore {
   scores: ScoreBreakdown;
 }
 
+export interface ScoreRecord {
+  id: string;
+  date: string;
+  scenarioTitle: string;
+  overall: number;
+  scores: ScoreBreakdown;
+  turnCount: number;
+}
+
 export interface AppSettings {
+  topic: Topic;
   difficulty: Difficulty;
   industry: Industry;
   personaStyle: PersonaStyle;

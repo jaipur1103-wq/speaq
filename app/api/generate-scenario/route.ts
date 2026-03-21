@@ -1,6 +1,6 @@
 import Groq from "groq-sdk";
 import { NextRequest, NextResponse } from "next/server";
-import type { Difficulty, Industry, PersonaStyle } from "@/types";
+import type { Difficulty, Industry, PersonaStyle, Topic } from "@/types";
 
 const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
@@ -14,19 +14,34 @@ const INDUSTRIES: Record<Industry, string> = {
   general: "general business",
 };
 
+const TOPICS: Partial<Record<Topic, string>> = {
+  travel: "travel/airport/hotel/tourism — non-business, everyday travel situations",
+  daily: "daily life/shopping/restaurant/neighborhood — non-business, everyday errands and activities",
+  social: "social situations/parties/casual networking/making friends — non-business, informal",
+  study: "study/university/online courses/language exchange — academic or self-improvement, non-business",
+};
+
 const PERSONAS: Record<PersonaStyle, string> = {
   friendly: "warm and collaborative, easy to talk to",
-  skeptical: "doubtful and questioning, needs convincing with data",
   tough: "demanding and assertive, pushes back hard",
   neutral: "professional and balanced, straightforward",
-  enthusiastic: "energetic and positive, looking for opportunities",
 };
 
 const DIFFICULTIES: Record<Difficulty, string> = {
   beginner:
-    "CEFR A2-B1 only. Extremely easy, low-stakes situation. No business jargon whatsoever. " +
-    "Friendly small-talk level. Counterpart is very patient and encouraging. " +
-    "Short simple sentences only. Example: asking for a meeting time, introducing yourself, saying thank you.",
+    "CEFR A2-B1 only. Extremely easy, low-stakes situation. No jargon whatsoever. " +
+    "Friendly, patient counterpart. Short simple sentences only. " +
+    "IMPORTANT: Generate a VARIED scenario. Do NOT repeat meeting scheduling or new-team introductions. " +
+    "Pick randomly from a wide range of everyday situations such as: " +
+    "recommending a restaurant to a coworker, chatting about weekend plans, asking for directions at an airport, " +
+    "ordering coffee or lunch, checking into a hotel, complaining politely about a wrong order, " +
+    "asking a neighbor to turn down music, shopping for a gift, returning a purchase, " +
+    "asking a classmate about homework, joining a study group, chatting at a social event, " +
+    "asking about local attractions as a tourist, talking with a hotel receptionist about facilities, " +
+    "making small talk about the weather or hobbies, asking for help at a library, " +
+    "talking to a gym staff member, arranging to meet a friend, discussing a movie or show, " +
+    "asking a pharmacist for advice on medicine, talking to a doctor about mild symptoms. " +
+    "Keep the situation specific and concrete — avoid generic openers.",
   intermediate:
     "CEFR B1-B2. Conversational business English. Accessible vocabulary. " +
     "Counterpart is professional but approachable. Mild challenges only. Real but manageable situations.",
@@ -37,42 +52,47 @@ const DIFFICULTIES: Record<Difficulty, string> = {
 
 export async function POST(req: NextRequest) {
   try {
-    const { difficulty, industry, personaStyle } = await req.json() as {
+    const { topic, difficulty, industry, personaStyle } = await req.json() as {
+      topic: Topic;
       difficulty: Difficulty;
       industry: Industry;
       personaStyle: PersonaStyle;
     };
+
+    const themeContext = topic === "business"
+      ? `Industry: ${INDUSTRIES[industry] ?? "general business"}`
+      : `Theme: ${TOPICS[topic] ?? "everyday situations"}`;
 
     const completion = await groq.chat.completions.create({
       model: "llama-3.3-70b-versatile",
       messages: [
         {
           role: "system",
-          content: "You are a business English scenario generator. Always return valid JSON only, no markdown, no backticks.",
+          content: "You are an English speaking scenario generator. Always return valid JSON only, no markdown, no backticks.",
         },
         {
           role: "user",
-          content: `Generate a realistic business English speaking scenario for practice.
+          content: `Generate a realistic English speaking scenario for practice.
 
-Industry: ${INDUSTRIES[industry]}
+${themeContext}
 Difficulty: ${difficulty} — ${DIFFICULTIES[difficulty]}
 Counterpart persona: ${PERSONAS[personaStyle]}
 
 Return ONLY valid JSON with this exact structure:
 {
-  "category": "<one of: Negotiation, Sales, 1-on-1, Cross-team, Presentation, Client Meeting, Performance Review, Crisis Management, Partnership, Hiring>",
+  "category": "<choose best fit: for business: Negotiation/Sales/1-on-1/Cross-team/Presentation/Client Meeting/Performance Review/Crisis Management/Partnership/Hiring; for non-business: Travel/Restaurant/Shopping/Hotel/Social/Study/Daily Life>",
   "title": "<concise action-oriented title, max 8 words>",
   "brief": "<2 sentences: situation context + what the user needs to achieve>",
   "opener": "<what the counterpart says first, 1-2 sentences, natural spoken English>",
   "keyPhrases": ["<phrase1>", "<phrase2>", "<phrase3>", "<phrase4>", "<phrase5>"],
   "personaName": "<realistic first name>",
-  "personaRole": "<job title, e.g. CFO, Product Manager, Client Director>"
+  "personaRole": "<job title or role, e.g. CFO, Hotel Receptionist, Classmate>"
 }
 
 Requirements:
 - Make it a specific, realistic scenario (include numbers, context, stakes)
 - Opener should feel natural, not scripted
-- Key phrases should be business vocabulary relevant to the scenario
+- Key phrases should be vocabulary relevant to the scenario
 - Vary the scenario type`,
         },
       ],

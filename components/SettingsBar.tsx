@@ -1,6 +1,6 @@
 "use client";
 
-import { type AppSettings, type Difficulty, type Industry, type PersonaStyle } from "@/types";
+import { type AppSettings, type Difficulty, type Industry, type PersonaStyle, type Topic } from "@/types";
 
 interface Props {
   settings: AppSettings;
@@ -13,6 +13,14 @@ const difficulties: { value: Difficulty; label: string }[] = [
   { value: "advanced", label: "Advanced" },
 ];
 
+const topics: { value: Topic; label: string }[] = [
+  { value: "business", label: "Business" },
+  { value: "travel", label: "Travel" },
+  { value: "daily", label: "Daily Life" },
+  { value: "social", label: "Social" },
+  { value: "study", label: "Study" },
+];
+
 const industries: { value: Industry; label: string }[] = [
   { value: "general", label: "General" },
   { value: "technology", label: "Tech" },
@@ -23,12 +31,10 @@ const industries: { value: Industry; label: string }[] = [
   { value: "manufacturing", label: "Manufacturing" },
 ];
 
-const personas: { value: PersonaStyle; label: string; emoji: string }[] = [
-  { value: "friendly", label: "Friendly", emoji: "😊" },
-  { value: "neutral", label: "Neutral", emoji: "😐" },
-  { value: "skeptical", label: "Skeptical", emoji: "🤨" },
-  { value: "tough", label: "Tough", emoji: "😤" },
-  { value: "enthusiastic", label: "Enthusiastic", emoji: "🚀" },
+const personas: { value: PersonaStyle; label: string }[] = [
+  { value: "friendly", label: "Friendly" },
+  { value: "neutral", label: "Neutral" },
+  { value: "tough", label: "Tough" },
 ];
 
 export default function SettingsBar({ settings, onChange }: Props) {
@@ -43,7 +49,7 @@ export default function SettingsBar({ settings, onChange }: Props) {
         padding: "14px 16px",
         display: "flex",
         flexWrap: "wrap",
-        gap: 14,
+        gap: 10,
         alignItems: "center",
         boxShadow: "var(--shadow-sm)",
       }}
@@ -62,28 +68,45 @@ export default function SettingsBar({ settings, onChange }: Props) {
 
       <Divider />
 
-      <Group label="Industry">
-        <select
-          value={settings.industry}
-          onChange={(e) => set("industry", e.target.value as Industry)}
-          style={{
-            background: "var(--surface2)",
-            color: "var(--text)",
-            border: "1px solid var(--border)",
-            borderRadius: 10,
-            padding: "4px 10px",
-            fontSize: 13,
-            cursor: "pointer",
-            outline: "none",
-          }}
-        >
-          {industries.map((i) => (
-            <option key={i.value} value={i.value}>
-              {i.label}
-            </option>
-          ))}
-        </select>
+      <Group label="Topic">
+        {topics.map((t) => (
+          <Chip
+            key={t.value}
+            active={settings.topic === t.value}
+            onClick={() => set("topic", t.value)}
+          >
+            {t.label}
+          </Chip>
+        ))}
       </Group>
+
+      {settings.topic === "business" && (
+        <>
+          <Divider />
+          <Group label="Industry">
+            <select
+              value={settings.industry}
+              onChange={(e) => set("industry", e.target.value as Industry)}
+              style={{
+                background: "var(--surface2)",
+                color: "var(--text)",
+                border: "1px solid var(--border)",
+                borderRadius: 10,
+                padding: "4px 10px",
+                fontSize: 13,
+                cursor: "pointer",
+                outline: "none",
+              }}
+            >
+              {industries.map((i) => (
+                <option key={i.value} value={i.value}>
+                  {i.label}
+                </option>
+              ))}
+            </select>
+          </Group>
+        </>
+      )}
 
       <Divider />
 
@@ -93,9 +116,8 @@ export default function SettingsBar({ settings, onChange }: Props) {
             key={p.value}
             active={settings.personaStyle === p.value}
             onClick={() => set("personaStyle", p.value)}
-            title={p.label}
           >
-            {p.emoji}
+            {p.label}
           </Chip>
         ))}
       </Group>
@@ -140,7 +162,7 @@ function Group({ label, children }: { label: string; children: React.ReactNode }
       >
         {label}
       </span>
-      <div style={{ display: "flex", gap: 4 }}>{children}</div>
+      <div style={{ display: "flex", gap: 4, flexWrap: "wrap" }}>{children}</div>
     </div>
   );
 }

@@ -30,7 +30,7 @@ ${scenario.difficulty === "beginner"
   : ""}
 
 Score on 4 axes (0-100):
-- clarity: clear, appropriate length (15-150 words), well-structured
+- clarity: clear, appropriate length (15-150 words), well-structured. IMPORTANT: This is spoken English from voice input — ignore all punctuation (commas, periods, etc.) entirely. Do NOT penalize for missing or incorrect punctuation.
 - persuasion: uses data/proposals/questions, references key phrases
 - professionalism: polite, diplomatic, uses softeners
 - strategy: awareness of goals, asks questions, builds dialogue
@@ -52,7 +52,7 @@ Return ONLY valid JSON:
   ]
 }
 
-For naturalExpressions: pick 1-3 specific phrases from the user's response that could be improved. If the response is already very natural, return an empty array.`,
+For naturalExpressions: pick 1-3 specific phrases from the user's response that could be improved. If the response is already very natural, return an empty array. Never suggest adding punctuation — this is spoken English.`,
         },
       ],
       temperature: 0.3,

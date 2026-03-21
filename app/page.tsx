@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import ScenarioCard from "@/components/ScenarioCard";
 import SettingsBar from "@/components/SettingsBar";
+import SpeaqLogo from "@/components/SpeaqLogo";
 import {
   getSettings,
   saveSettings,
@@ -12,6 +13,7 @@ import {
   deleteSavedScenario,
   getCustomScenarios,
   deleteCustomScenario,
+  getFavoriteIds,
 } from "@/lib/storage";
 import type { AppSettings, Scenario } from "@/types";
 
@@ -20,13 +22,19 @@ export default function Home() {
   const [settings, setSettings] = useState<AppSettings>(getSettings());
   const [savedScenarios, setSavedScenarios] = useState<Scenario[]>([]);
   const [customScenarios, setCustomScenarios] = useState<Scenario[]>([]);
+  const [favoriteIds, setFavoriteIds] = useState<string[]>([]);
   const [generating, setGenerating] = useState(false);
   const [error, setError] = useState("");
   const [dark, setDark] = useState(false);
 
-  useEffect(() => {
+  const reload = () => {
     setSavedScenarios(getSavedScenarios());
     setCustomScenarios(getCustomScenarios());
+    setFavoriteIds(getFavoriteIds());
+  };
+
+  useEffect(() => {
+    reload();
     const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
     setDark(prefersDark);
   }, []);
@@ -48,6 +56,7 @@ export default function Home() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          topic: settings.topic,
           difficulty: settings.difficulty,
           industry: settings.industry,
           personaStyle: settings.personaStyle,
@@ -69,7 +78,7 @@ export default function Home() {
         personaRole: data.personaRole,
       };
       saveGeneratedScenario(scenario);
-      setSavedScenarios(getSavedScenarios());
+      reload();
     } catch {
       setError("Failed to generate scenario. Please try again.");
     } finally {
@@ -79,45 +88,38 @@ export default function Home() {
 
   const handleDeleteSaved = (id: string) => {
     deleteSavedScenario(id);
-    setSavedScenarios(getSavedScenarios());
+    reload();
   };
 
   const handleDeleteCustom = (id: string) => {
     deleteCustomScenario(id);
-    setCustomScenarios(getCustomScenarios());
+    reload();
   };
 
   const allScenarios = [...customScenarios, ...savedScenarios];
+  const favoriteScenarios = allScenarios.filter((s) => favoriteIds.includes(s.id));
+  const nonFavoriteScenarios = allScenarios.filter((s) => !favoriteIds.includes(s.id));
 
   return (
     <main
       style={{
         maxWidth: 640,
         margin: "0 auto",
-        padding: "40px 16px 100px",
+        padding: "24px 16px 80px",
         minHeight: "100vh",
       }}
     >
       {/* Header */}
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 28 }}>
-        <div>
-          <h1 style={{ fontSize: 28, fontWeight: 700, color: "var(--text)", margin: 0, letterSpacing: "-0.025em", lineHeight: 1.1 }}>
-            Speaq
-          </h1>
-          <p style={{ fontSize: 13, color: "var(--text-muted)", margin: "4px 0 0", fontWeight: 400 }}>
-            Business English Practice
-          </p>
-        </div>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
+        <SpeaqLogo />
         <button
           onClick={() => setDark(!dark)}
           style={{
             width: 36, height: 36, borderRadius: "50%",
-            background: "var(--surface)",
-            border: "none",
+            background: "var(--surface)", border: "none",
             cursor: "pointer", fontSize: 16,
             display: "flex", alignItems: "center", justifyContent: "center",
             boxShadow: "var(--shadow-sm)",
-            transition: "box-shadow 0.15s",
           }}
           aria-label="Toggle dark mode"
         >
@@ -132,44 +134,65 @@ export default function Home() {
       }}>
         <NavTab active>🎙 Practice</NavTab>
         <NavTab onClick={() => router.push("/notebook")}>📒 Notebook</NavTab>
+        <NavTab onClick={() => router.push("/history")}>📊 History</NavTab>
       </div>
 
       <div style={{ marginBottom: 20 }}>
         <SettingsBar settings={settings} onChange={handleSettingsChange} />
       </div>
 
-      <button
-        onClick={generateScenario}
-        disabled={generating}
-        style={{
-          width: "100%",
-          padding: "15px",
-          borderRadius: 14,
-          background: generating ? "var(--surface2)" : "var(--accent)",
-          color: generating ? "var(--text-muted)" : "#FFFFFF",
-          border: "none",
-          fontWeight: 700,
-          fontSize: 15,
-          cursor: generating ? "not-allowed" : "pointer",
-          marginBottom: 10,
-          transition: "all 0.15s",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          gap: 8,
-          boxShadow: generating ? "none" : "0 4px 14px rgba(0, 102, 204, 0.3)",
-          letterSpacing: "-0.01em",
-        }}
-      >
-        {generating ? (
-          <>
-            <SpinnerIcon />
-            Generating scenario...
-          </>
-        ) : (
-          <>✨ Generate New Scenario</>
-        )}
-      </button>
+      {/* Generate + Create buttons */}
+      <div style={{ display: "flex", gap: 8, marginBottom: 10 }}>
+        <button
+          onClick={generateScenario}
+          disabled={generating}
+          style={{
+            flex: 1,
+            padding: "15px",
+            borderRadius: 14,
+            background: generating ? "var(--surface2)" : "var(--accent)",
+            color: generating ? "var(--text-muted)" : "#FFFFFF",
+            border: "none",
+            fontWeight: 700,
+            fontSize: 15,
+            cursor: generating ? "not-allowed" : "pointer",
+            transition: "all 0.15s",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: 8,
+            boxShadow: generating ? "none" : "0 4px 14px rgba(0, 102, 204, 0.3)",
+            letterSpacing: "-0.01em",
+          }}
+        >
+          {generating ? (
+            <>
+              <SpinnerIcon />
+              Generating...
+            </>
+          ) : (
+            <>✨ Generate Scenario</>
+          )}
+        </button>
+        <button
+          onClick={() => router.push("/create")}
+          style={{
+            padding: "15px 18px",
+            borderRadius: 14,
+            background: "var(--surface)",
+            color: "var(--text)",
+            border: "1px solid var(--border)",
+            fontWeight: 700,
+            fontSize: 15,
+            cursor: "pointer",
+            transition: "all 0.15s",
+            boxShadow: "var(--shadow-sm)",
+            whiteSpace: "nowrap",
+          }}
+        >
+          ＋ Create
+        </button>
+      </div>
 
       {error && (
         <p style={{ color: "var(--red)", fontSize: 13, marginBottom: 12 }}>{error}</p>
@@ -192,18 +215,52 @@ export default function Home() {
             No scenarios yet
           </p>
           <p style={{ fontSize: 13, lineHeight: 1.6 }}>
-            Hit &ldquo;Generate New Scenario&rdquo; to create your first practice session.
+            Generate a scenario or create your own.
           </p>
         </div>
       ) : (
-        <div style={{ display: "flex", flexDirection: "column", gap: 10, marginTop: 20 }}>
-          {allScenarios.map((s) => (
-            <ScenarioCard
-              key={s.id}
-              scenario={s}
-              onDelete={s.id.startsWith("c_") ? handleDeleteCustom : handleDeleteSaved}
-            />
-          ))}
+        <div style={{ marginTop: 20 }}>
+          {/* Favorites section */}
+          {favoriteScenarios.length > 0 && (
+            <div style={{ marginBottom: 20 }}>
+              <div style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.07em", color: "var(--text-muted)", marginBottom: 10 }}>
+                ⭐ Favorites
+              </div>
+              <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                {favoriteScenarios.map((s) => (
+                  <ScenarioCard
+                    key={s.id}
+                    scenario={s}
+                    isFavorite={true}
+                    onFavoriteChange={reload}
+                    onDelete={s.id.startsWith("c_") ? handleDeleteCustom : handleDeleteSaved}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* All scenarios */}
+          {nonFavoriteScenarios.length > 0 && (
+            <div>
+              {favoriteScenarios.length > 0 && (
+                <div style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.07em", color: "var(--text-muted)", marginBottom: 10 }}>
+                  All Scenarios
+                </div>
+              )}
+              <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                {nonFavoriteScenarios.map((s) => (
+                  <ScenarioCard
+                    key={s.id}
+                    scenario={s}
+                    isFavorite={false}
+                    onFavoriteChange={reload}
+                    onDelete={s.id.startsWith("c_") ? handleDeleteCustom : handleDeleteSaved}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       )}
     </main>
@@ -231,15 +288,8 @@ function NavTab({ children, active, onClick }: { children: React.ReactNode; acti
 
 function SpinnerIcon() {
   return (
-    <svg
-      width="16"
-      height="16"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2.5"
-      style={{ animation: "spin 0.8s linear infinite" }}
-    >
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"
+      style={{ animation: "spin 0.8s linear infinite" }}>
       <style>{`@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }`}</style>
       <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" />
     </svg>

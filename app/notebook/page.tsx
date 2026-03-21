@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { getSavedExpressions, toggleLearned, deleteExpression } from "@/lib/storage";
 import type { SavedExpression } from "@/types";
+import SpeaqLogo from "@/components/SpeaqLogo";
 
 type Filter = "all" | "tolearn" | "learned" | "quiz";
 
@@ -78,17 +79,10 @@ export default function NotebookPage() {
   const learnedCount = expressions.filter((e) => e.learned).length;
 
   return (
-    <main style={{ maxWidth: 640, margin: "0 auto", padding: "40px 16px 100px", minHeight: "100vh" }}>
+    <main style={{ maxWidth: 640, margin: "0 auto", padding: "24px 16px 80px", minHeight: "100vh" }}>
       {/* Header */}
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 28 }}>
-        <div>
-          <h1 style={{ fontSize: 28, fontWeight: 700, color: "var(--text)", margin: 0, letterSpacing: "-0.025em", lineHeight: 1.1 }}>
-            Speaq
-          </h1>
-          <p style={{ fontSize: 13, color: "var(--text-muted)", margin: "4px 0 0" }}>
-            Business English Practice
-          </p>
-        </div>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
+        <SpeaqLogo />
         <button
           onClick={() => { setDark(!dark); document.documentElement.classList.toggle("dark"); }}
           style={{
@@ -107,6 +101,7 @@ export default function NotebookPage() {
       <div style={{ display: "flex", gap: 4, marginBottom: 24, background: "var(--surface2)", borderRadius: 12, padding: 4 }}>
         <NavTab onClick={() => router.push("/")}>🎙 Practice</NavTab>
         <NavTab active>📒 Notebook</NavTab>
+        <NavTab onClick={() => router.push("/history")}>📊 History</NavTab>
       </div>
 
       {/* Stats */}
@@ -117,38 +112,44 @@ export default function NotebookPage() {
       </div>
 
       {/* Filter + Quiz tabs */}
-      <div style={{ display: "flex", gap: 6, marginBottom: 18, alignItems: "center" }}>
-        {(["all", "tolearn", "learned"] as Filter[]).map((f) => (
-          <button
-            key={f}
-            onClick={() => setFilter(f)}
-            style={{
-              padding: "6px 14px", borderRadius: 20,
-              border: filter === f ? "1.5px solid var(--accent)" : "1px solid var(--border)",
-              background: filter === f ? "var(--accent-bg)" : "transparent",
-              color: filter === f ? "var(--accent)" : "var(--text-secondary)",
-              fontWeight: filter === f ? 700 : 400,
-              fontSize: 13, cursor: "pointer",
-              transition: "all 0.15s",
-            }}
-          >
-            {f === "all" ? "All" : f === "tolearn" ? "To Learn" : "Learned"}
-          </button>
-        ))}
+      <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 18 }}>
+        {/* Row 1: All / To Learn / Learned */}
+        <div style={{ display: "flex", gap: 6 }}>
+          {(["all", "tolearn", "learned"] as Filter[]).map((f) => (
+            <button
+              key={f}
+              onClick={() => setFilter(f)}
+              style={{
+                flex: 1, padding: "8px 4px", borderRadius: 20,
+                border: filter === f ? "1.5px solid var(--accent)" : "1px solid var(--border)",
+                background: filter === f ? "var(--accent-bg)" : "transparent",
+                color: filter === f ? "var(--accent)" : "var(--text-secondary)",
+                fontWeight: filter === f ? 700 : 400,
+                fontSize: 13, cursor: "pointer",
+                transition: "all 0.15s",
+                textAlign: "center",
+              }}
+            >
+              {f === "all" ? "All" : f === "tolearn" ? "To Learn" : "Learned"}
+            </button>
+          ))}
+        </div>
+        {/* Row 2: Quiz button */}
         <button
           onClick={toLearnCount > 0 ? startQuiz : undefined}
           style={{
-            padding: "6px 14px", borderRadius: 20,
-            border: filter === "quiz" ? "1.5px solid var(--accent)" : "1px solid var(--border)",
+            width: "100%", padding: "10px",
+            borderRadius: 12,
+            border: filter === "quiz" ? "1.5px solid var(--accent)" : "none",
             background: filter === "quiz" ? "var(--accent-bg)" : toLearnCount > 0 ? "var(--accent)" : "var(--surface2)",
             color: filter === "quiz" ? "var(--accent)" : toLearnCount > 0 ? "#FFFFFF" : "var(--text-muted)",
             fontWeight: 700,
-            fontSize: 13, cursor: toLearnCount > 0 ? "pointer" : "not-allowed",
+            fontSize: 14, cursor: toLearnCount > 0 ? "pointer" : "not-allowed",
             transition: "all 0.15s",
-            marginLeft: "auto",
+            boxShadow: toLearnCount > 0 && filter !== "quiz" ? "0 4px 14px rgba(0,102,204,0.25)" : "none",
           }}
         >
-          🧠 Quiz {toLearnCount > 0 ? `(${toLearnCount})` : ""}
+          🧠 Quiz {toLearnCount > 0 ? `— ${toLearnCount} cards` : "(no cards to learn)"}
         </button>
       </div>
 

@@ -1,10 +1,14 @@
-import type { AppSettings, SavedExpression, Scenario } from "@/types";
+import type { AppSettings, SavedExpression, Scenario, ScoreRecord } from "@/types";
 
 const SETTINGS_KEY = "bep_settings";
 const CUSTOM_SCENARIOS_KEY = "bep_custom_scenarios";
 const SAVED_SCENARIOS_KEY = "bep_saved_scenarios";
+const EXPRESSIONS_KEY = "bep_expressions";
+const SCORE_HISTORY_KEY = "bep_score_history";
+const FAVORITES_KEY = "bep_favorites";
 
 export const DEFAULT_SETTINGS: AppSettings = {
+  topic: "business",
   difficulty: "intermediate",
   industry: "general",
   personaStyle: "neutral",
@@ -68,8 +72,6 @@ export function deleteSavedScenario(id: string): void {
   localStorage.setItem(SAVED_SCENARIOS_KEY, JSON.stringify(existing.filter((s) => s.id !== id)));
 }
 
-const EXPRESSIONS_KEY = "bep_expressions";
-
 export function getSavedExpressions(): SavedExpression[] {
   if (typeof window === "undefined") return [];
   try {
@@ -101,4 +103,44 @@ export function toggleLearned(id: string): void {
 export function deleteExpression(id: string): void {
   const existing = getSavedExpressions();
   localStorage.setItem(EXPRESSIONS_KEY, JSON.stringify(existing.filter((e) => e.id !== id)));
+}
+
+// Score history
+export function getScoreHistory(): ScoreRecord[] {
+  if (typeof window === "undefined") return [];
+  try {
+    const raw = localStorage.getItem(SCORE_HISTORY_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch {
+    return [];
+  }
+}
+
+export function saveScoreRecord(record: Omit<ScoreRecord, "id">): void {
+  const existing = getScoreHistory();
+  const newRecord: ScoreRecord = {
+    ...record,
+    id: "score_" + Date.now(),
+  };
+  const updated = [newRecord, ...existing].slice(0, 100);
+  localStorage.setItem(SCORE_HISTORY_KEY, JSON.stringify(updated));
+}
+
+// Favorites
+export function getFavoriteIds(): string[] {
+  if (typeof window === "undefined") return [];
+  try {
+    const raw = localStorage.getItem(FAVORITES_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch {
+    return [];
+  }
+}
+
+export function toggleFavorite(id: string): void {
+  const existing = getFavoriteIds();
+  const updated = existing.includes(id)
+    ? existing.filter((f) => f !== id)
+    : [id, ...existing];
+  localStorage.setItem(FAVORITES_KEY, JSON.stringify(updated));
 }

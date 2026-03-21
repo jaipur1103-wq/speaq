@@ -2,10 +2,13 @@
 
 import { useRouter } from "next/navigation";
 import type { Scenario } from "@/types";
+import { toggleFavorite } from "@/lib/storage";
 
 interface Props {
   scenario: Scenario;
   onDelete?: (id: string) => void;
+  isFavorite?: boolean;
+  onFavoriteChange?: () => void;
 }
 
 const difficultyColor: Record<string, string> = {
@@ -14,12 +17,18 @@ const difficultyColor: Record<string, string> = {
   advanced: "#FF3B30",
 };
 
-export default function ScenarioCard({ scenario, onDelete }: Props) {
+export default function ScenarioCard({ scenario, onDelete, isFavorite, onFavoriteChange }: Props) {
   const router = useRouter();
 
   const handleStart = () => {
     sessionStorage.setItem("current_scenario", JSON.stringify(scenario));
     router.push(`/practice/${scenario.id}`);
+  };
+
+  const handleFavorite = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    toggleFavorite(scenario.id);
+    onFavoriteChange?.();
   };
 
   return (
@@ -34,6 +43,7 @@ export default function ScenarioCard({ scenario, onDelete }: Props) {
         cursor: "pointer",
         boxShadow: "var(--shadow-md)",
         transition: "transform 0.15s, box-shadow 0.15s",
+        border: isFavorite ? "1.5px solid rgba(255,149,0,0.4)" : "none",
       }}
       onClick={handleStart}
       onMouseEnter={(e) => {
@@ -100,7 +110,23 @@ export default function ScenarioCard({ scenario, onDelete }: Props) {
         </div>
       </div>
 
-      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+        <button
+          onClick={handleFavorite}
+          style={{
+            background: "transparent",
+            border: "none",
+            cursor: "pointer",
+            fontSize: 18,
+            lineHeight: 1,
+            padding: "4px",
+            opacity: isFavorite ? 1 : 0.3,
+            transition: "opacity 0.15s",
+          }}
+          aria-label={isFavorite ? "Remove from favorites" : "Add to favorites"}
+        >
+          ⭐
+        </button>
         {onDelete && (
           <button
             onClick={(e) => {
@@ -112,11 +138,10 @@ export default function ScenarioCard({ scenario, onDelete }: Props) {
               border: "none",
               cursor: "pointer",
               color: "var(--text-muted)",
-              padding: "6px",
+              padding: "4px",
               borderRadius: 8,
               fontSize: 16,
               lineHeight: 1,
-              transition: "opacity 0.15s",
             }}
             aria-label="Delete scenario"
           >

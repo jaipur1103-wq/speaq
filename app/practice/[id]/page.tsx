@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import type { Feedback, Message, NaturalExpression, Scenario, TurnScore } from "@/types";
-import { saveExpression, getSettings } from "@/lib/storage";
+import { saveExpression, getSettings, saveScoreRecord } from "@/lib/storage";
 
 type ChatItem =
   | { kind: "message"; data: Message }
@@ -36,6 +36,7 @@ export default function PracticePage() {
   const [turn, setTurn] = useState(1);
   const [savedIds, setSavedIds] = useState<Set<string>>(new Set());
   const [showSummary, setShowSummary] = useState(false);
+  const [scoreSaved, setScoreSaved] = useState(false);
 
   // Timer
   const [timerEnabled, setTimerEnabled] = useState(false);
@@ -141,7 +142,6 @@ export default function PracticePage() {
 
     const lastCounterpart = [...allMessages].reverse().find((m) => m.role === "counterpart");
 
-    // Feedback
     setLoadingFeedback(true);
     try {
       const res = await fetch("/api/feedback", {
@@ -167,7 +167,6 @@ export default function PracticePage() {
       setLoadingFeedback(false);
     }
 
-    // Counterpart reply
     setLoadingReply(true);
     try {
       const res = await fetch("/api/counterpart-reply", {
@@ -203,8 +202,28 @@ export default function PracticePage() {
     setSavedIds((prev) => new Set(prev).add(exprKey));
   };
 
+  const doSaveScore = (scores: TurnScore[], title: string) => {
+    if (scores.length === 0 || scoreSaved) return;
+    const overall = Math.round(scores.reduce((a, b) => a + b.overall, 0) / scores.length);
+    const avgScores = {
+      clarity: Math.round(scores.reduce((a, b) => a + b.scores.clarity, 0) / scores.length),
+      persuasion: Math.round(scores.reduce((a, b) => a + b.scores.persuasion, 0) / scores.length),
+      professionalism: Math.round(scores.reduce((a, b) => a + b.scores.professionalism, 0) / scores.length),
+      strategy: Math.round(scores.reduce((a, b) => a + b.scores.strategy, 0) / scores.length),
+    };
+    saveScoreRecord({
+      date: new Date().toISOString().slice(0, 10),
+      scenarioTitle: title,
+      overall,
+      scores: avgScores,
+      turnCount: scores.length,
+    });
+    setScoreSaved(true);
+  };
+
   const handleBack = () => {
-    if (turnScores.length > 0) {
+    if (turnScores.length > 0 && scenario) {
+      doSaveScore(turnScores, scenario.title);
       setShowSummary(true);
     } else {
       router.push("/");
@@ -231,26 +250,18 @@ export default function PracticePage() {
       <div style={{
         padding: "12px 16px",
         borderBottom: "1px solid var(--border)",
-        background: "rgba(var(--surface-rgb, 255,255,255), 0.85)",
+        background: "var(--surface)",
         backdropFilter: "blur(20px) saturate(180%)",
         WebkitBackdropFilter: "blur(20px) saturate(180%)",
-        position: "sticky",
-        top: 0,
-        zIndex: 10,
+        position: "sticky", top: 0, zIndex: 10,
       }}>
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
           <button
             onClick={handleBack}
             style={{
-              background: "var(--surface2)",
-              border: "none",
-              borderRadius: 10,
-              padding: "6px 12px",
-              cursor: "pointer",
-              color: "var(--text-secondary)",
-              fontSize: 13,
-              fontWeight: 600,
-              display: "flex", alignItems: "center", gap: 4,
+              background: "var(--surface2)", border: "none", borderRadius: 10,
+              padding: "6px 12px", cursor: "pointer",
+              color: "var(--text-secondary)", fontSize: 13, fontWeight: 600,
             }}
           >
             ← Back
@@ -271,21 +282,13 @@ export default function PracticePage() {
       </div>
 
       {/* Briefing */}
-      <div style={{
-        padding: "12px 16px",
-        background: "var(--accent-bg)",
-        borderBottom: "1px solid var(--border)",
-      }}>
+      <div style={{ padding: "12px 16px", background: "var(--accent-bg)", borderBottom: "1px solid var(--border)" }}>
         <p style={{ color: "var(--accent)", fontSize: 13, margin: "0 0 8px", lineHeight: 1.6, fontWeight: 500 }}>
           {scenario.brief}
         </p>
         <div style={{ display: "flex", flexWrap: "wrap", gap: 5 }}>
           {scenario.keyPhrases.map((p) => (
-            <span key={p} style={{
-              fontSize: 11, padding: "3px 10px", borderRadius: 20,
-              background: "var(--accent)", color: "#FFFFFF",
-              fontWeight: 700, letterSpacing: "0.01em",
-            }}>
+            <span key={p} style={{ fontSize: 11, padding: "3px 10px", borderRadius: 20, background: "var(--accent)", color: "#FFFFFF", fontWeight: 700 }}>
               {p}
             </span>
           ))}
@@ -295,13 +298,8 @@ export default function PracticePage() {
       {/* Score trend */}
       {turnScores.length > 0 && (
         <div style={{
-          padding: "6px 16px",
-          background: "var(--surface2)",
-          borderBottom: "1px solid var(--border)",
-          display: "flex",
-          alignItems: "center",
-          gap: 8,
-          overflowX: "auto",
+          padding: "6px 16px", background: "var(--surface2)", borderBottom: "1px solid var(--border)",
+          display: "flex", alignItems: "center", gap: 8, overflowX: "auto",
         }}>
           <span style={{ fontSize: 10, color: "var(--text-muted)", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", whiteSpace: "nowrap" }}>
             Progress
@@ -339,12 +337,7 @@ export default function PracticePage() {
         {loadingReply && (
           <div style={{ display: "flex", gap: 10, alignItems: "flex-end" }}>
             <Avatar name={scenario.personaName} />
-            <div style={{
-              background: "var(--surface)",
-              borderRadius: "18px 18px 18px 4px", padding: "12px 16px",
-              fontSize: 13, color: "var(--text-muted)",
-              boxShadow: "var(--shadow-sm)",
-            }}>
+            <div style={{ background: "var(--surface)", borderRadius: "18px 18px 18px 4px", padding: "12px 16px", fontSize: 13, color: "var(--text-muted)", boxShadow: "var(--shadow-sm)" }}>
               <TypingDots />
             </div>
           </div>
@@ -353,12 +346,7 @@ export default function PracticePage() {
       </div>
 
       {/* Input area */}
-      <div style={{
-        padding: "12px 16px 24px",
-        borderTop: "1px solid var(--border)",
-        background: "var(--surface)",
-        boxShadow: "0 -4px 20px rgba(0,0,0,0.06)",
-      }}>
+      <div style={{ padding: "12px 16px 24px", borderTop: "1px solid var(--border)", background: "var(--surface)", boxShadow: "0 -4px 20px rgba(0,0,0,0.06)" }}>
         {/* Timer bar */}
         {timeLeft !== null && (
           <div style={{ marginBottom: 10 }}>
@@ -367,19 +355,11 @@ export default function PracticePage() {
                 ⏱ {timeLeft}s
               </span>
               {timeLeft === 0 && (
-                <span style={{ fontSize: 12, color: "var(--red)", fontWeight: 600 }}>
-                  Time&apos;s up! Send your response 🕐
-                </span>
+                <span style={{ fontSize: 12, color: "var(--red)", fontWeight: 600 }}>Time&apos;s up! Send your response 🕐</span>
               )}
             </div>
             <div style={{ height: 3, background: "var(--surface2)", borderRadius: 2 }}>
-              <div style={{
-                width: `${(timeLeft / 30) * 100}%`,
-                height: "100%",
-                background: timeLeft <= 5 ? "var(--red)" : "var(--accent)",
-                borderRadius: 2,
-                transition: "width 1s linear, background 0.3s",
-              }} />
+              <div style={{ width: `${(timeLeft / 30) * 100}%`, height: "100%", background: timeLeft <= 5 ? "var(--red)" : "var(--accent)", borderRadius: 2, transition: "width 1s linear, background 0.3s" }} />
             </div>
           </div>
         )}
@@ -390,7 +370,6 @@ export default function PracticePage() {
           </p>
         )}
         <div style={{ display: "flex", gap: 10, alignItems: "flex-end" }}>
-          {/* Mic button */}
           {speechSupported && (
             <button
               onClick={toggleRecording}
@@ -399,10 +378,8 @@ export default function PracticePage() {
                 width: 56, height: 56, borderRadius: "50%",
                 border: `2px solid ${isRecording ? "var(--red)" : "transparent"}`,
                 background: isRecording ? "rgba(255,59,48,0.1)" : "var(--accent)",
-                cursor: "pointer",
-                display: "flex", alignItems: "center", justifyContent: "center",
-                flexShrink: 0,
-                transition: "all 0.15s",
+                cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center",
+                flexShrink: 0, transition: "all 0.15s",
                 boxShadow: isRecording ? "0 0 0 4px rgba(255,59,48,0.15)" : "0 4px 14px rgba(0,102,204,0.35)",
               }}
               aria-label={isRecording ? "Stop recording" : "Start recording"}
@@ -410,18 +387,11 @@ export default function PracticePage() {
               <MicIcon recording={isRecording} />
             </button>
           )}
-
-          {/* Text input + send */}
           <div style={{
             flex: 1,
             border: `1.5px solid ${timeLeft === 0 ? "var(--red)" : isRecording ? "var(--red)" : "var(--border)"}`,
-            borderRadius: 16,
-            padding: "8px 10px",
-            background: "var(--surface2)",
-            transition: "border-color 0.15s",
-            display: "flex",
-            alignItems: "flex-end",
-            gap: 6,
+            borderRadius: 16, padding: "8px 10px", background: "var(--surface2)",
+            transition: "border-color 0.15s", display: "flex", alignItems: "flex-end", gap: 6,
           }}>
             <textarea
               value={inputText + (interimText ? " " + interimText : "")}
@@ -429,11 +399,7 @@ export default function PracticePage() {
               onKeyDown={handleKeyDown}
               placeholder={isRecording ? "Listening..." : "Tap mic and speak, or type here..."}
               rows={2}
-              style={{
-                flex: 1, background: "transparent", border: "none", outline: "none",
-                resize: "none", color: interimText ? "var(--text-muted)" : "var(--text)",
-                fontSize: 14, lineHeight: 1.5, fontFamily: "inherit",
-              }}
+              style={{ flex: 1, background: "transparent", border: "none", outline: "none", resize: "none", color: interimText ? "var(--text-muted)" : "var(--text)", fontSize: 14, lineHeight: 1.5, fontFamily: "inherit" }}
             />
             <button
               onClick={handleSend}
@@ -441,8 +407,7 @@ export default function PracticePage() {
               style={{
                 width: 36, height: 36, borderRadius: "50%", border: "none",
                 background: hasInput ? "var(--accent)" : "var(--surface)",
-                color: "#FFFFFF",
-                cursor: hasInput ? "pointer" : "not-allowed",
+                color: "#FFFFFF", cursor: hasInput ? "pointer" : "not-allowed",
                 display: "flex", alignItems: "center", justifyContent: "center",
                 flexShrink: 0, transition: "all 0.15s",
                 boxShadow: hasInput ? "0 2px 8px rgba(0,102,204,0.3)" : "none",
@@ -460,7 +425,7 @@ export default function PracticePage() {
       </div>
 
       {/* Session Summary Modal */}
-      {showSummary && (
+      {showSummary && scenario && (
         <SessionSummary
           turnScores={turnScores}
           savedCount={savedIds.size}
@@ -478,8 +443,7 @@ function Avatar({ name }: { name: string }) {
       width: 32, height: 32, borderRadius: "50%",
       background: getAvatarColor(name),
       display: "flex", alignItems: "center", justifyContent: "center",
-      flexShrink: 0,
-      color: "#FFFFFF", fontWeight: 700, fontSize: 13,
+      flexShrink: 0, color: "#FFFFFF", fontWeight: 700, fontSize: 13,
     }}>
       {name.charAt(0).toUpperCase()}
     </div>
@@ -488,6 +452,24 @@ function Avatar({ name }: { name: string }) {
 
 function ChatBubble({ msg, personaName }: { msg: Message; personaName: string }) {
   const isUser = msg.role === "user";
+  const [speaking, setSpeaking] = useState(false);
+
+  const handleSpeak = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (speaking) {
+      window.speechSynthesis.cancel();
+      setSpeaking(false);
+      return;
+    }
+    const utterance = new SpeechSynthesisUtterance(msg.text);
+    utterance.lang = "en-US";
+    utterance.rate = 0.9;
+    utterance.onend = () => setSpeaking(false);
+    utterance.onerror = () => setSpeaking(false);
+    setSpeaking(true);
+    window.speechSynthesis.speak(utterance);
+  };
+
   return (
     <div style={{ display: "flex", flexDirection: "column", alignItems: isUser ? "flex-end" : "flex-start" }}>
       {!isUser && (
@@ -496,17 +478,35 @@ function ChatBubble({ msg, personaName }: { msg: Message; personaName: string })
           <span style={{ fontSize: 12, color: "var(--text-muted)", fontWeight: 600 }}>{personaName}</span>
         </div>
       )}
-      <div style={{
-        maxWidth: "82%",
-        marginLeft: isUser ? 0 : 38,
-        padding: "12px 16px",
-        borderRadius: isUser ? "18px 18px 4px 18px" : "18px 18px 18px 4px",
-        background: isUser ? "var(--accent)" : "var(--surface)",
-        color: isUser ? "#FFFFFF" : "var(--text)",
-        fontSize: 14, lineHeight: 1.6,
-        boxShadow: "var(--shadow-sm)",
-      }}>
-        {msg.text}
+      <div style={{ display: "flex", alignItems: "flex-end", gap: 6, flexDirection: isUser ? "row-reverse" : "row" }}>
+        <div style={{
+          maxWidth: "82%",
+          marginLeft: isUser ? 0 : 38,
+          padding: "12px 16px",
+          borderRadius: isUser ? "18px 18px 4px 18px" : "18px 18px 18px 4px",
+          background: isUser ? "var(--accent)" : "var(--surface)",
+          color: isUser ? "#FFFFFF" : "var(--text)",
+          fontSize: 14, lineHeight: 1.6,
+          boxShadow: "var(--shadow-sm)",
+        }}>
+          {msg.text}
+        </div>
+        {!isUser && (
+          <button
+            onClick={handleSpeak}
+            style={{
+              width: 28, height: 28, borderRadius: "50%",
+              background: speaking ? "var(--accent-bg)" : "var(--surface2)",
+              border: "none", cursor: "pointer",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              fontSize: 13, flexShrink: 0, transition: "all 0.15s",
+              marginLeft: 38,
+            }}
+            title={speaking ? "Stop" : "Read aloud"}
+          >
+            {speaking ? "⏸" : "🔊"}
+          </button>
+        )}
       </div>
     </div>
   );
@@ -522,14 +522,18 @@ function FeedbackPanel({
   onSaveExpression: (expr: NaturalExpression, scenarioTitle: string, key: string) => void;
 }) {
   const [showSuggested, setShowSuggested] = useState(false);
+  const [showShadow, setShowShadow] = useState(false);
   const overall = feedback.overall;
   const scoreColor = overall >= 70 ? "var(--green)" : overall >= 40 ? "var(--orange)" : "var(--red)";
 
+  const handleShadow = () => {
+    setShowSuggested(true);
+    setShowShadow(true);
+  };
+
   return (
     <div className="animate-fade-slide-up" style={{
-      background: "var(--surface)",
-      borderRadius: 18,
-      padding: "16px 18px",
+      background: "var(--surface)", borderRadius: 18, padding: "16px 18px",
       boxShadow: "var(--shadow-md)",
     }}>
       {/* Header */}
@@ -581,12 +585,7 @@ function FeedbackPanel({
             const key = `${turn}-${i}`;
             const saved = savedIds.has(key);
             return (
-              <div key={i} style={{
-                background: "var(--surface2)",
-                borderRadius: 12,
-                padding: "12px 14px",
-                marginBottom: 8,
-              }}>
+              <div key={i} style={{ background: "var(--surface2)", borderRadius: 12, padding: "12px 14px", marginBottom: 8 }}>
                 <div style={{ fontSize: 12, color: "var(--text-muted)", marginBottom: 4, textDecoration: "line-through" }}>
                   {expr.original}
                 </div>
@@ -604,8 +603,7 @@ function FeedbackPanel({
                     border: `1.5px solid ${saved ? "var(--green)" : "var(--border)"}`,
                     background: saved ? "rgba(52,199,89,0.12)" : "transparent",
                     color: saved ? "var(--green)" : "var(--text-muted)",
-                    cursor: saved ? "default" : "pointer",
-                    fontWeight: 700,
+                    cursor: saved ? "default" : "pointer", fontWeight: 700,
                   }}
                 >
                   {saved ? "✓ Saved" : "+ Save to Notebook"}
@@ -627,28 +625,35 @@ function FeedbackPanel({
         </div>
       )}
 
-      {/* Suggested response + Shadowing */}
+      {/* Model response + Shadowing — always visible */}
       {feedback.suggestedResponse && (
         <div>
-          <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
+          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
             <button
               onClick={() => setShowSuggested(!showSuggested)}
               style={{ fontSize: 12, color: "var(--text-muted)", background: "transparent", border: "none", cursor: "pointer", padding: 0, textDecoration: "underline" }}
             >
               {showSuggested ? "Hide" : "Show"} model response
             </button>
+            <button
+              onClick={handleShadow}
+              style={{
+                fontSize: 12, padding: "3px 12px", borderRadius: 20,
+                border: "1px solid var(--border)",
+                background: showShadow ? "var(--accent-bg)" : "transparent",
+                color: showShadow ? "var(--accent)" : "var(--text-secondary)",
+                cursor: "pointer", fontWeight: 600,
+              }}
+            >
+              🎙 Shadow this
+            </button>
           </div>
           {showSuggested && (
-            <div style={{
-              marginTop: 10, padding: "12px 14px",
-              background: "var(--surface2)", borderRadius: 12,
-              fontSize: 13, color: "var(--text-secondary)",
-              fontStyle: "italic", lineHeight: 1.6,
-            }}>
+            <div style={{ marginTop: 10, padding: "12px 14px", background: "var(--surface2)", borderRadius: 12, fontSize: 13, color: "var(--text-secondary)", fontStyle: "italic", lineHeight: 1.6 }}>
               &ldquo;{feedback.suggestedResponse}&rdquo;
             </div>
           )}
-          {showSuggested && (
+          {showShadow && (
             <ShadowSection suggestedResponse={feedback.suggestedResponse} />
           )}
         </div>
@@ -677,10 +682,8 @@ function ShadowSection({ suggestedResponse }: { suggestedResponse: string }) {
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     rec.onresult = (e: any) => {
-      const text = Array.from(e.results)
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        .map((r: any) => r[0].transcript)
-        .join(" ");
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const text = Array.from(e.results).map((r: any) => r[0].transcript).join(" ");
       const normalize = (s: string) =>
         s.toLowerCase().replace(/[^a-z\s]/g, "").split(/\s+/).filter(Boolean);
       const modelWords = normalize(suggestedResponse);
@@ -696,51 +699,28 @@ function ShadowSection({ suggestedResponse }: { suggestedResponse: string }) {
     recRef.current = rec;
   }, [suggestedResponse]);
 
-  const startShadow = () => {
-    if (!recRef.current) return;
-    setScore(null);
-    setHighlights([]);
-    setMode("recording");
-    recRef.current.start();
-  };
-
-  const stopShadow = () => {
-    recRef.current?.stop();
-  };
-
-  if (!recRef.current && mode === "idle") return null;
-
   return (
     <div style={{ marginTop: 12 }}>
       {mode === "idle" && (
         <button
-          onClick={startShadow}
+          onClick={() => { if (!recRef.current) return; setScore(null); setHighlights([]); setMode("recording"); recRef.current.start(); }}
           style={{
-            fontSize: 12, padding: "6px 14px", borderRadius: 20,
-            border: "1px solid var(--border)",
-            background: "transparent", color: "var(--text-secondary)",
-            cursor: "pointer", fontWeight: 600,
-            display: "flex", alignItems: "center", gap: 5,
+            fontSize: 12, padding: "7px 16px", borderRadius: 20,
+            border: "1px solid var(--accent)",
+            background: "var(--accent-bg)", color: "var(--accent)",
+            cursor: "pointer", fontWeight: 700,
           }}
         >
-          🎙 Shadow this
+          🎙 Start Recording
         </button>
       )}
 
       {mode === "recording" && (
-        <div style={{
-          padding: "10px 14px", borderRadius: 12,
-          background: "rgba(255,59,48,0.08)", border: "1px solid var(--red)",
-          display: "flex", alignItems: "center", justifyContent: "space-between",
-        }}>
+        <div style={{ padding: "10px 14px", borderRadius: 12, background: "rgba(255,59,48,0.08)", border: "1px solid var(--red)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <span style={{ fontSize: 13, color: "var(--red)", fontWeight: 700 }}>🔴 Recording...</span>
           <button
-            onClick={stopShadow}
-            style={{
-              fontSize: 12, padding: "4px 12px", borderRadius: 20,
-              background: "var(--red)", color: "#FFFFFF",
-              border: "none", cursor: "pointer", fontWeight: 700,
-            }}
+            onClick={() => recRef.current?.stop()}
+            style={{ fontSize: 12, padding: "4px 12px", borderRadius: 20, background: "var(--red)", color: "#FFFFFF", border: "none", cursor: "pointer", fontWeight: 700 }}
           >
             Stop
           </button>
@@ -751,27 +731,22 @@ function ShadowSection({ suggestedResponse }: { suggestedResponse: string }) {
         <div style={{ padding: "12px 14px", borderRadius: 12, background: "var(--surface2)" }}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
             <span style={{ fontSize: 13, fontWeight: 700, color: "var(--text)" }}>
-              Shadow Match: {score}%
+              Match: {score}%
             </span>
             <button
-              onClick={startShadow}
-              style={{
-                fontSize: 12, padding: "3px 10px", borderRadius: 20,
-                border: "1px solid var(--border)", background: "transparent",
-                color: "var(--text-muted)", cursor: "pointer",
-              }}
+              onClick={() => { setScore(null); setHighlights([]); setMode("idle"); }}
+              style={{ fontSize: 12, padding: "3px 10px", borderRadius: 20, border: "1px solid var(--border)", background: "transparent", color: "var(--text-muted)", cursor: "pointer" }}
             >
               Try again
             </button>
           </div>
-          <div style={{ fontSize: 13, lineHeight: 1.8, flexWrap: "wrap", display: "flex", gap: 4 }}>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 4 }}>
             {highlights.map((h, i) => (
               <span key={i} style={{
-                padding: "1px 5px", borderRadius: 4,
+                padding: "2px 6px", borderRadius: 4,
                 background: h.matched ? "rgba(52,199,89,0.2)" : "rgba(255,59,48,0.15)",
                 color: h.matched ? "var(--green)" : "var(--red)",
-                fontWeight: h.matched ? 600 : 400,
-                fontSize: 12,
+                fontWeight: h.matched ? 600 : 400, fontSize: 12,
               }}>
                 {h.word}
               </span>
@@ -783,9 +758,7 @@ function ShadowSection({ suggestedResponse }: { suggestedResponse: string }) {
   );
 }
 
-function SessionSummary({
-  turnScores, savedCount, onContinue, onDone,
-}: {
+function SessionSummary({ turnScores, savedCount, onContinue, onDone }: {
   turnScores: TurnScore[];
   savedCount: number;
   onContinue: () => void;
@@ -793,9 +766,7 @@ function SessionSummary({
 }) {
   const avg = Math.round(turnScores.reduce((a, b) => a + b.overall, 0) / turnScores.length);
   const trend = turnScores.length >= 2
-    ? turnScores[turnScores.length - 1].overall - turnScores[0].overall
-    : 0;
-
+    ? turnScores[turnScores.length - 1].overall - turnScores[0].overall : 0;
   const axisKeys: (keyof TurnScore["scores"])[] = ["clarity", "persuasion", "professionalism", "strategy"];
   const axisAvgs = axisKeys.map((key) => ({
     key,
@@ -803,40 +774,18 @@ function SessionSummary({
   }));
 
   return (
-    <div style={{
-      position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)",
-      display: "flex", alignItems: "flex-end", justifyContent: "center",
-      zIndex: 100,
-      backdropFilter: "blur(4px)",
-    }}>
-      <div className="animate-fade-slide-up" style={{
-        background: "var(--surface)", borderRadius: "24px 24px 0 0",
-        padding: "28px 24px 40px",
-        width: "100%", maxWidth: 640,
-        boxShadow: "0 -8px 40px rgba(0,0,0,0.2)",
-      }}>
+    <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", display: "flex", alignItems: "flex-end", justifyContent: "center", zIndex: 100, backdropFilter: "blur(4px)" }}>
+      <div className="animate-fade-slide-up" style={{ background: "var(--surface)", borderRadius: "24px 24px 0 0", padding: "28px 24px 40px", width: "100%", maxWidth: 640, boxShadow: "0 -8px 40px rgba(0,0,0,0.2)" }}>
         <div style={{ textAlign: "center", marginBottom: 24 }}>
           <div style={{ fontSize: 36, marginBottom: 10 }}>🎉</div>
-          <h2 style={{ fontSize: 22, fontWeight: 700, color: "var(--text)", margin: "0 0 4px", letterSpacing: "-0.02em" }}>
-            Session Complete
-          </h2>
-          <p style={{ fontSize: 13, color: "var(--text-muted)", margin: 0 }}>
-            {turnScores.length} turn{turnScores.length !== 1 ? "s" : ""} completed
-          </p>
+          <h2 style={{ fontSize: 22, fontWeight: 700, color: "var(--text)", margin: "0 0 4px", letterSpacing: "-0.02em" }}>Session Complete</h2>
+          <p style={{ fontSize: 13, color: "var(--text-muted)", margin: 0 }}>{turnScores.length} turn{turnScores.length !== 1 ? "s" : ""} · saved to History</p>
         </div>
 
-        {/* Overall score */}
-        <div style={{
-          background: "var(--surface2)", borderRadius: 16, padding: "18px 20px", marginBottom: 16,
-          display: "flex", justifyContent: "space-between", alignItems: "center",
-        }}>
+        <div style={{ background: "var(--surface2)", borderRadius: 16, padding: "18px 20px", marginBottom: 16, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <div>
-            <div style={{ fontSize: 12, color: "var(--text-muted)", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 4 }}>
-              Overall Average
-            </div>
-            <div style={{ fontSize: 32, fontWeight: 700, color: avg >= 70 ? "var(--green)" : avg >= 40 ? "var(--orange)" : "var(--red)", letterSpacing: "-0.02em" }}>
-              {avg}/100
-            </div>
+            <div style={{ fontSize: 12, color: "var(--text-muted)", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 4 }}>Overall Average</div>
+            <div style={{ fontSize: 32, fontWeight: 700, color: avg >= 70 ? "var(--green)" : avg >= 40 ? "var(--orange)" : "var(--red)", letterSpacing: "-0.02em" }}>{avg}/100</div>
           </div>
           {trend !== 0 && (
             <div style={{ fontSize: 14, fontWeight: 700, color: trend > 0 ? "var(--green)" : "var(--red)" }}>
@@ -845,12 +794,9 @@ function SessionSummary({
           )}
         </div>
 
-        {/* Turn progression */}
         {turnScores.length > 1 && (
           <div style={{ marginBottom: 16 }}>
-            <div style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--text-muted)", marginBottom: 8 }}>
-              Turn Scores
-            </div>
+            <div style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--text-muted)", marginBottom: 8 }}>Turn Scores</div>
             <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
               {turnScores.map((ts, i) => (
                 <div key={ts.turn} style={{ display: "flex", alignItems: "center", gap: 5 }}>
@@ -862,53 +808,26 @@ function SessionSummary({
           </div>
         )}
 
-        {/* Axis averages */}
         <div style={{ marginBottom: 16 }}>
-          <div style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--text-muted)", marginBottom: 8 }}>
-            Axis Averages
-          </div>
+          <div style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--text-muted)", marginBottom: 8 }}>Axis Averages</div>
           <div style={{ display: "flex", flexDirection: "column", gap: 7 }}>
-            {axisAvgs.map(({ key, value }) => (
-              <ScoreRow key={key} label={key} value={value} />
-            ))}
+            {axisAvgs.map(({ key, value }) => <ScoreRow key={key} label={key} value={value} />)}
           </div>
         </div>
 
-        {/* Saved expressions */}
         {savedCount > 0 && (
-          <div style={{
-            background: "var(--accent-bg)", borderRadius: 12, padding: "12px 16px", marginBottom: 20,
-            display: "flex", alignItems: "center", justifyContent: "space-between",
-          }}>
+          <div style={{ background: "var(--accent-bg)", borderRadius: 12, padding: "12px 16px", marginBottom: 20 }}>
             <span style={{ fontSize: 13, color: "var(--accent)", fontWeight: 600 }}>
               📒 {savedCount} expression{savedCount !== 1 ? "s" : ""} saved this session
             </span>
           </div>
         )}
 
-        {/* Actions */}
         <div style={{ display: "flex", gap: 10 }}>
-          <button
-            onClick={onContinue}
-            style={{
-              flex: 1, padding: "14px",
-              background: "var(--surface2)", color: "var(--text)",
-              border: "1px solid var(--border)", borderRadius: 14,
-              fontWeight: 700, fontSize: 14, cursor: "pointer",
-            }}
-          >
+          <button onClick={onContinue} style={{ flex: 1, padding: "14px", background: "var(--surface2)", color: "var(--text)", border: "1px solid var(--border)", borderRadius: 14, fontWeight: 700, fontSize: 14, cursor: "pointer" }}>
             Continue Practice
           </button>
-          <button
-            onClick={onDone}
-            style={{
-              flex: 1, padding: "14px",
-              background: "var(--accent)", color: "#FFFFFF",
-              border: "none", borderRadius: 14,
-              fontWeight: 700, fontSize: 14, cursor: "pointer",
-              boxShadow: "0 4px 14px rgba(0,102,204,0.3)",
-            }}
-          >
+          <button onClick={onDone} style={{ flex: 1, padding: "14px", background: "var(--accent)", color: "#FFFFFF", border: "none", borderRadius: 14, fontWeight: 700, fontSize: 14, cursor: "pointer", boxShadow: "0 4px 14px rgba(0,102,204,0.3)" }}>
             Done → Home
           </button>
         </div>
@@ -918,11 +837,7 @@ function SessionSummary({
 }
 
 function SectionLabel({ children }: { children: React.ReactNode }) {
-  return (
-    <div style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--text-muted)", marginBottom: 8 }}>
-      {children}
-    </div>
-  );
+  return <div style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--text-muted)", marginBottom: 8 }}>{children}</div>;
 }
 
 function ScoreRow({ label, value }: { label: string; value: number }) {
@@ -941,11 +856,7 @@ function ScoreRow({ label, value }: { label: string; value: number }) {
 function ScoreBadge({ score, label, small }: { score: number; label?: string; small?: boolean }) {
   const color = score >= 70 ? "var(--green)" : score >= 40 ? "var(--orange)" : "var(--red)";
   return (
-    <span style={{
-      padding: small ? "2px 7px" : "3px 11px", borderRadius: 20,
-      background: color + "22", color, fontWeight: 700,
-      fontSize: small ? 11 : 13,
-    }}>
+    <span style={{ padding: small ? "2px 7px" : "3px 11px", borderRadius: 20, background: color + "22", color, fontWeight: 700, fontSize: small ? 11 : 13 }}>
       {score}{label ? ` ${label}` : ""}
     </span>
   );
@@ -955,11 +866,7 @@ function TypingDots() {
   return (
     <span style={{ display: "inline-flex", gap: 4 }}>
       {[0, 1, 2].map((i) => (
-        <span key={i} style={{
-          width: 6, height: 6, borderRadius: "50%", background: "var(--text-muted)",
-          display: "inline-block",
-          animation: `bounce 1s ease-in-out ${i * 0.15}s infinite`,
-        }} />
+        <span key={i} style={{ width: 6, height: 6, borderRadius: "50%", background: "var(--text-muted)", display: "inline-block", animation: `bounce 1s ease-in-out ${i * 0.15}s infinite` }} />
       ))}
       <style>{`@keyframes bounce { 0%,80%,100% { transform: translateY(0); } 40% { transform: translateY(-5px); } }`}</style>
     </span>
@@ -968,9 +875,7 @@ function TypingDots() {
 
 function MicIcon({ recording }: { recording: boolean }) {
   return (
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none"
-      stroke={recording ? "var(--red)" : "#FFFFFF"}
-      strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={recording ? "var(--red)" : "#FFFFFF"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <rect x="9" y="2" width="6" height="12" rx="3" />
       <path d="M5 10a7 7 0 0 0 14 0" />
       <line x1="12" y1="19" x2="12" y2="22" />
@@ -981,8 +886,7 @@ function MicIcon({ recording }: { recording: boolean }) {
 
 function SendIcon() {
   return (
-    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-      strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
       <line x1="22" y1="2" x2="11" y2="13" />
       <polygon points="22 2 15 22 11 13 2 9 22 2" />
     </svg>
