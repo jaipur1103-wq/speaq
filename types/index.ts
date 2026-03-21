@@ -33,21 +33,23 @@ export interface Message {
 }
 
 export interface ScoreBreakdown {
-  clarity: number;
-  persuasion: number;
-  professionalism: number;
-  strategy: number;
+  grammar: number;
+  vocabulary: number;
+  naturalness: number;
+  communication: number;
 }
 
 export interface NaturalExpression {
   original: string;
   natural: string;
   explanation: string;
+  example: string;
 }
 
 export interface Feedback {
   scores: ScoreBreakdown;
   overall: number;
+  encouragement: string;
   strengths: string[];
   improvements: string[];
   foundPhrases: string[];
@@ -88,7 +90,6 @@ export interface AppSettings {
   industry: Industry;
   personaStyle: PersonaStyle;
   apiKey: string;
-  timerEnabled: boolean;
 }
 
 export interface CustomScenario extends Scenario {

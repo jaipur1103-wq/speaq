@@ -209,10 +209,10 @@ export default function PracticePage() {
     if (scores.length === 0 || scoreSaved) return;
     const overall = Math.round(scores.reduce((a, b) => a + b.overall, 0) / scores.length);
     const avgScores = {
-      clarity: Math.round(scores.reduce((a, b) => a + b.scores.clarity, 0) / scores.length),
-      persuasion: Math.round(scores.reduce((a, b) => a + b.scores.persuasion, 0) / scores.length),
-      professionalism: Math.round(scores.reduce((a, b) => a + b.scores.professionalism, 0) / scores.length),
-      strategy: Math.round(scores.reduce((a, b) => a + b.scores.strategy, 0) / scores.length),
+      grammar: Math.round(scores.reduce((a, b) => a + b.scores.grammar, 0) / scores.length),
+      vocabulary: Math.round(scores.reduce((a, b) => a + b.scores.vocabulary, 0) / scores.length),
+      naturalness: Math.round(scores.reduce((a, b) => a + b.scores.naturalness, 0) / scores.length),
+      communication: Math.round(scores.reduce((a, b) => a + b.scores.communication, 0) / scores.length),
     };
     saveScoreRecord({ date: new Date().toISOString().slice(0, 10), scenarioTitle: title, overall, scores: avgScores, turnCount: scores.length });
     setScoreSaved(true);
@@ -541,11 +541,12 @@ function FeedbackPanel({ feedback, turn, scenarioTitle, savedIds, tr, onSaveExpr
 }) {
   const [showSuggested, setShowSuggested] = useState(false);
   const [showShadow, setShowShadow] = useState(false);
+  const [expandedExample, setExpandedExample] = useState<string | null>(null);
   const overall = feedback.overall;
   const scoreColor = overall >= 70 ? "var(--green)" : overall >= 40 ? "var(--orange)" : "var(--red)";
 
   const axisLabel = (key: string) => {
-    const map: Record<string, string> = { clarity: tr.clarity, persuasion: tr.persuasion, professionalism: tr.professionalism, strategy: tr.strategy };
+    const map: Record<string, string> = { grammar: tr.grammar, vocabulary: tr.vocabulary, naturalness: tr.naturalness, communication: tr.communication };
     return map[key] ?? key;
   };
 
@@ -555,11 +556,17 @@ function FeedbackPanel({ feedback, turn, scenarioTitle, savedIds, tr, onSaveExpr
         <span style={{ fontWeight: 700, fontSize: 12, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.07em" }}>{tr.feedbackTitle(turn)}</span>
         <span style={{ padding: "4px 12px", borderRadius: 20, background: scoreColor + "22", color: scoreColor, fontWeight: 700, fontSize: 15 }}>{overall}/100</span>
       </div>
-      <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 16 }}>
+      <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 12 }}>
         {(Object.entries(feedback.scores) as [string, number][]).map(([key, val]) => (
           <ScoreRow key={key} label={axisLabel(key)} value={val} />
         ))}
       </div>
+      {feedback.encouragement && (
+        <div style={{ padding: "10px 14px", borderRadius: 12, background: "linear-gradient(135deg, rgba(52,199,89,0.08), rgba(48,209,88,0.08))", border: "1px solid rgba(52,199,89,0.25)", marginBottom: 12 }}>
+          <span style={{ fontSize: 11, fontWeight: 700, color: "#34C759", textTransform: "uppercase", letterSpacing: "0.06em" }}>🌱 {tr.encouragementTitle}</span>
+          <p style={{ fontSize: 13, color: "var(--text)", margin: "4px 0 0", lineHeight: 1.6 }}>{feedback.encouragement}</p>
+        </div>
+      )}
       {feedback.strengths.length > 0 && (
         <div style={{ marginBottom: 12 }}>
           <SectionLabel>{tr.whatWorked}</SectionLabel>
@@ -586,14 +593,29 @@ function FeedbackPanel({ feedback, turn, scenarioTitle, savedIds, tr, onSaveExpr
               <div key={i} style={{ background: "var(--surface2)", borderRadius: 12, padding: "12px 14px", marginBottom: 8 }}>
                 <div style={{ fontSize: 12, color: "var(--text-muted)", marginBottom: 4, textDecoration: "line-through" }}>{expr.original}</div>
                 <div style={{ fontSize: 14, color: "var(--text)", fontWeight: 700, marginBottom: 5 }}>→ {expr.natural}</div>
-                <div style={{ fontSize: 12, color: "var(--text-secondary)", lineHeight: 1.5, marginBottom: 10 }}>{expr.explanation}</div>
-                <button
-                  onClick={() => !saved && onSaveExpression(expr, scenarioTitle, key)}
-                  disabled={saved}
-                  style={{ fontSize: 12, padding: "4px 12px", borderRadius: 20, border: `1.5px solid ${saved ? "var(--green)" : "var(--border)"}`, background: saved ? "rgba(52,199,89,0.12)" : "transparent", color: saved ? "var(--green)" : "var(--text-muted)", cursor: saved ? "default" : "pointer", fontWeight: 700 }}
-                >
-                  {saved ? tr.savedToNotebook : tr.saveToNotebook}
-                </button>
+                <div style={{ fontSize: 12, color: "var(--text-secondary)", lineHeight: 1.5, marginBottom: 8 }}>{expr.explanation}</div>
+                {expandedExample === expr.original && expr.example && (
+                  <div style={{ fontSize: 12, color: "var(--accent)", lineHeight: 1.6, marginBottom: 8, borderLeft: "2px solid var(--accent)", paddingLeft: 8, fontStyle: "italic" }}>
+                    &ldquo;{expr.example}&rdquo;
+                  </div>
+                )}
+                <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                  {expr.example && (
+                    <button
+                      onClick={() => setExpandedExample(expandedExample === expr.original ? null : expr.original)}
+                      style={{ fontSize: 12, padding: "4px 12px", borderRadius: 20, border: `1px solid ${expandedExample === expr.original ? "var(--accent)" : "var(--border)"}`, background: expandedExample === expr.original ? "var(--accent-bg)" : "transparent", color: expandedExample === expr.original ? "var(--accent)" : "var(--text-muted)", cursor: "pointer", fontWeight: 600 }}
+                    >
+                      {expandedExample === expr.original ? tr.hideExample : tr.showExample}
+                    </button>
+                  )}
+                  <button
+                    onClick={() => !saved && onSaveExpression(expr, scenarioTitle, key)}
+                    disabled={saved}
+                    style={{ fontSize: 12, padding: "4px 12px", borderRadius: 20, border: `1.5px solid ${saved ? "var(--green)" : "var(--border)"}`, background: saved ? "rgba(52,199,89,0.12)" : "transparent", color: saved ? "var(--green)" : "var(--text-muted)", cursor: saved ? "default" : "pointer", fontWeight: 700 }}
+                  >
+                    {saved ? tr.savedToNotebook : tr.saveToNotebook}
+                  </button>
+                </div>
               </div>
             );
           })}
@@ -698,7 +720,7 @@ function SessionSummary({ turnScores, savedCount, tr, onContinue, onDone }: {
 }) {
   const avg = Math.round(turnScores.reduce((a, b) => a + b.overall, 0) / turnScores.length);
   const trend = turnScores.length >= 2 ? turnScores[turnScores.length - 1].overall - turnScores[0].overall : 0;
-  const axisKeys: (keyof TurnScore["scores"])[] = ["clarity", "persuasion", "professionalism", "strategy"];
+  const axisKeys: (keyof TurnScore["scores"])[] = ["grammar", "vocabulary", "naturalness", "communication"];
   const axisAvgs = axisKeys.map((key) => ({
     key,
     label: (tr as Record<string, unknown>)[key] as string ?? key,

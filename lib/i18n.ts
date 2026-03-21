@@ -6,7 +6,7 @@ export const i18n = {
     howToUse: "How to use",
     // settings
     difficulty: "Difficulty", topic: "Topic", industry: "Industry",
-    counterpart: "Counterpart", timer: "Timer", timerOn: "⏱ ON", timerOff: "⏱ OFF",
+    counterpart: "Counterpart",
     // difficulty
     beginner: "Beginner", intermediate: "Intermediate", advanced: "Advanced",
     // topics
@@ -37,6 +37,7 @@ export const i18n = {
     readAloud: "Read aloud", stop: "Stop",
     translate: "和訳", translating: "翻訳中...", showTranslation: "和訳を見る", hideTranslation: "和訳を隠す",
     keyPhrasesHint: "Key Phrases",
+    showExample: "Show example", hideExample: "Hide example",
     retake: "🔄 Retake", send: "Send",
     feedbackTitle: (turn: number) => `Turn ${turn} Feedback`,
     whatWorked: "✓ What worked", tryNextTime: "→ Try next time",
@@ -51,8 +52,9 @@ export const i18n = {
     overallAverage: "Overall Average", turnScores: "Turn Scores", axisAverages: "Axis Averages",
     expressionsSaved: (count: number) => `📒 ${count} expression(s) saved this session`,
     continuePractice: "Continue Practice", doneHome: "Done → Home",
-    clarity: "Clarity", persuasion: "Persuasion",
-    professionalism: "Professionalism", strategy: "Strategy",
+    grammar: "Grammar", vocabulary: "Vocabulary",
+    naturalness: "Naturalness", communication: "Communication",
+    encouragementTitle: "Growth Point",
     // notebook
     saved: "Saved", toLearn: "To Learn", learned: "Learned", all: "All",
     quiz: "🧠 Quiz", quizCount: (n: number) => `🧠 Quiz (${n})`,
@@ -91,7 +93,7 @@ export const i18n = {
     howToUse: "使い方",
     // settings
     difficulty: "難易度", topic: "トピック", industry: "業種",
-    counterpart: "相手", timer: "タイマー", timerOn: "⏱ ON", timerOff: "⏱ OFF",
+    counterpart: "相手",
     // difficulty
     beginner: "初級", intermediate: "中級", advanced: "上級",
     // topics
@@ -122,6 +124,7 @@ export const i18n = {
     readAloud: "読み上げ", stop: "停止",
     translate: "和訳", translating: "翻訳中...", showTranslation: "和訳を見る", hideTranslation: "和訳を隠す",
     keyPhrasesHint: "参考表現",
+    showExample: "例文を見る", hideExample: "例文を隠す",
     retake: "🔄 再録音", send: "送信",
     feedbackTitle: (turn: number) => `ターン${turn} フィードバック`,
     whatWorked: "✓ 良かった点", tryNextTime: "→ 改善点",
@@ -136,8 +139,9 @@ export const i18n = {
     overallAverage: "総合平均", turnScores: "ターン別スコア", axisAverages: "軸別平均",
     expressionsSaved: (count: number) => `📒 ${count}個の表現をノートに保存しました`,
     continuePractice: "練習を続ける", doneHome: "完了 → ホーム",
-    clarity: "明瞭さ", persuasion: "説得力",
-    professionalism: "プロ意識", strategy: "戦略性",
+    grammar: "文法", vocabulary: "語彙力",
+    naturalness: "自然さ", communication: "会話力",
+    encouragementTitle: "成長ポイント",
     // notebook
     saved: "保存済み", toLearn: "学習中", learned: "習得済み", all: "すべて",
     quiz: "🧠 クイズ", quizCount: (n: number) => `🧠 クイズ (${n}件)`,

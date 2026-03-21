@@ -47,7 +47,7 @@ export default function ScenarioCard({ scenario, onDelete, isFavorite, onFavorit
       const res = await fetch("/api/translate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ texts: [scenario.brief] }),
+        body: JSON.stringify({ texts: [scenario.title] }),
       });
       const data = await res.json();
       setTranslation(data.translations?.[0] ?? null);
@@ -92,21 +92,17 @@ export default function ScenarioCard({ scenario, onDelete, isFavorite, onFavorit
               {scenario.industry}
             </span>
           </div>
-          <div style={{ fontWeight: 700, fontSize: 15, color: "var(--text)", marginBottom: 3, letterSpacing: "-0.01em" }}>
+          <div style={{ fontWeight: 700, fontSize: 15, color: "var(--text)", marginBottom: 2, letterSpacing: "-0.01em" }}>
             {scenario.title}
           </div>
-          <div style={{ fontSize: 12, color: "var(--text-secondary)", marginBottom: 6 }}>
-            {scenario.personaName} · {scenario.personaRole}
-          </div>
-          {/* Brief */}
-          <div style={{ fontSize: 12, color: "var(--text-muted)", lineHeight: 1.5, marginBottom: showTranslation && translation ? 6 : 8 }}>
-            {scenario.brief}
-          </div>
           {showTranslation && translation && (
-            <div style={{ fontSize: 12, color: "var(--accent)", lineHeight: 1.5, marginBottom: 8, borderLeft: "2px solid var(--accent)", paddingLeft: 8 }}>
+            <div style={{ fontSize: 12, color: "var(--text-muted)", marginBottom: 2, lineHeight: 1.4 }}>
               {translation}
             </div>
           )}
+          <div style={{ fontSize: 12, color: "var(--text-secondary)", marginBottom: 6 }}>
+            {scenario.personaName} · {scenario.personaRole}
+          </div>
           <button
             onClick={handleTranslate}
             style={{

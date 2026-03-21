@@ -104,23 +104,6 @@ export default function SettingsBar({ settings, onChange }: Props) {
           ))}
         </Group>
 
-        <Divider />
-
-        <Group label={tr.timer}>
-          <button
-            onClick={() => set("timerEnabled", !settings.timerEnabled)}
-            style={{
-              padding: "4px 12px", borderRadius: 20,
-              border: settings.timerEnabled ? "1.5px solid var(--accent)" : "1px solid var(--border)",
-              background: settings.timerEnabled ? "var(--accent-bg)" : "transparent",
-              color: settings.timerEnabled ? "var(--accent)" : "var(--text-secondary)",
-              fontSize: 13, fontWeight: settings.timerEnabled ? 600 : 400,
-              cursor: "pointer", transition: "all 0.15s", whiteSpace: "nowrap",
-            }}
-          >
-            {settings.timerEnabled ? tr.timerOn : tr.timerOff}
-          </button>
-        </Group>
       </div>
     </div>
   );

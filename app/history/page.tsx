@@ -118,10 +118,10 @@ function HistoryCard({ record, tr }: { record: ScoreRecord; tr: Tr }) {
   const axes = Object.entries(record.scores) as [string, number][];
   const axisLabel = (key: string) => {
     const map: Record<string, string> = {
-      clarity: tr.clarity,
-      persuasion: tr.persuasion,
-      professionalism: tr.professionalism,
-      strategy: tr.strategy,
+      grammar: tr.grammar,
+      vocabulary: tr.vocabulary,
+      naturalness: tr.naturalness,
+      communication: tr.communication,
     };
     return map[key] ?? key;
   };

@@ -14,7 +14,6 @@ export const DEFAULT_SETTINGS: AppSettings = {
   industry: "general",
   personaStyle: "neutral",
   apiKey: "",
-  timerEnabled: false,
 };
 
 export function getSettings(): AppSettings {
