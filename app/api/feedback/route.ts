@@ -44,30 +44,28 @@ CRITICAL RULES:
 - "strengths": ALWAYS return at least 2 specific strengths. Even beginners do something right. Find what the user expressed correctly, any vocabulary used, any attempt at politeness. NEVER return an empty array.${isJa ? " Write in Japanese." : ""}
 - "encouragement": A single encouraging sentence highlighting growth or effort. ALWAYS return this.${isJa ? " Write in Japanese." : ""}
 - "improvements": Max 2 items. Focus on the most impactful improvements only.${isJa ? " Write in Japanese." : ""}
-- "naturalExpressions": Only include phrases that genuinely sound unnatural to a native speaker. If the response is already quite natural, return an empty array. Do not invent minor nitpicks.
+- "naturalExpressions": ALWAYS include 1-2 items. Even if the response is mostly natural, find a phrase where a more native-sounding alternative would help the learner grow. Every learner benefits from seeing a more natural option.
 - "naturalExpressions[].explanation": One sentence explaining why it sounds more natural.${isJa ? " Write in Japanese." : ""}
-- "naturalExpressions[].example": REQUIRED. One short example sentence using the natural expression in context. Always in English.
+- "naturalExpressions[].example": REQUIRED — ALWAYS include this. One short English sentence showing the natural expression used in a similar context.
 
-Return ONLY valid JSON:
+Return ONLY valid JSON (no markdown, no explanation outside JSON):
 {
-  "scores": { "grammar": <0-100>, "vocabulary": <0-100>, "naturalness": <0-100>, "communication": <0-100> },
-  "overall": <average rounded>,
-  "encouragement": "${isJa ? "<日本語で励ましの一文>" : "<one encouraging sentence>"}",
-  "strengths": ["${isJa ? "<日本語で具体的な良かった点1>" : "<specific strength 1>"}"],
-  "improvements": ["${isJa ? "<日本語で改善点1>" : "<specific tip 1>"}"],
-  "foundPhrases": ["<key phrase used if any>"],
-  "suggestedResponse": "<model response, 2-4 sentences, natural spoken English>",
+  "scores": { "grammar": <number 0-100>, "vocabulary": <number 0-100>, "naturalness": <number 0-100>, "communication": <number 0-100> },
+  "overall": <number>,
+  "encouragement": "<${isJa ? "日本語で励ましの一文" : "one encouraging sentence"}>",
+  "strengths": ["<${isJa ? "日本語で良かった点" : "specific strength"}>", "<${isJa ? "日本語で良かった点" : "specific strength"}>"],
+  "improvements": ["<${isJa ? "日本語で改善点" : "specific tip"}>"],
+  "foundPhrases": [],
+  "suggestedResponse": "<2-4 sentence natural English response>",
   "naturalExpressions": [
     {
-      "original": "<exact phrase the user said>",
-      "natural": "<more natural English version>",
-      "explanation": "${isJa ? "<日本語で理由を一文>" : "<one sentence: why this sounds more natural>"}",
-      "example": "<REQUIRED: one short English example sentence using the natural expression>"
+      "original": "<exact words from user response>",
+      "natural": "<more native-sounding English>",
+      "explanation": "<${isJa ? "日本語で理由" : "why this sounds more natural"}>",
+      "example": "<one short English example sentence>"
     }
   ]
-}
-
-For naturalExpressions: pick 1-3 specific phrases from the user's response that could be improved. If the response is already very natural, return an empty array. Never suggest adding punctuation — this is spoken English.`,
+}`,
         },
       ],
       temperature: 0.3,

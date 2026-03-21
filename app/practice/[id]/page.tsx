@@ -372,9 +372,6 @@ function BriefingArea({ scenario, tr }: { scenario: Scenario; tr: Tr }) {
   const [briefTrans, setBriefTrans] = useState<string | null>(null);
   const [showBriefTrans, setShowBriefTrans] = useState(false);
   const [briefTranslating, setBriefTranslating] = useState(false);
-  const [phraseTrans, setPhraseTrans] = useState<string[] | null>(null);
-  const [showPhraseTrans, setShowPhraseTrans] = useState(false);
-  const [phraseTranslating, setPhraseTranslating] = useState(false);
 
   const translateBrief = async () => {
     if (showBriefTrans) { setShowBriefTrans(false); return; }
@@ -386,18 +383,6 @@ function BriefingArea({ scenario, tr }: { scenario: Scenario; tr: Tr }) {
       setBriefTrans(d.translations?.[0] ?? null);
       setShowBriefTrans(true);
     } catch { /* silent */ } finally { setBriefTranslating(false); }
-  };
-
-  const translatePhrases = async () => {
-    if (showPhraseTrans) { setShowPhraseTrans(false); return; }
-    if (phraseTrans) { setShowPhraseTrans(true); return; }
-    setPhraseTranslating(true);
-    try {
-      const res = await fetch("/api/translate", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ texts: scenario.keyPhrases }) });
-      const d = await res.json();
-      setPhraseTrans(d.translations ?? null);
-      setShowPhraseTrans(true);
-    } catch { /* silent */ } finally { setPhraseTranslating(false); }
   };
 
   return (
@@ -421,32 +406,15 @@ function BriefingArea({ scenario, tr }: { scenario: Scenario; tr: Tr }) {
 
       {/* Key phrases with label */}
       {scenario.keyPhrases.length > 0 && (
-        <div>
-          <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", marginBottom: showPhraseTrans && phraseTrans ? 6 : 0 }}>
-            <span style={{ fontSize: 10, fontWeight: 700, color: "var(--accent)", opacity: 0.7, textTransform: "uppercase", letterSpacing: "0.06em", whiteSpace: "nowrap" }}>
-              {tr.keyPhrasesHint}
+        <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+          <span style={{ fontSize: 10, fontWeight: 700, color: "var(--accent)", opacity: 0.7, textTransform: "uppercase", letterSpacing: "0.06em", whiteSpace: "nowrap" }}>
+            {tr.keyPhrasesHint}
+          </span>
+          {scenario.keyPhrases.map((p) => (
+            <span key={p} style={{ fontSize: 11, padding: "3px 10px", borderRadius: 20, background: "var(--accent)", color: "#FFFFFF", fontWeight: 700 }}>
+              {p}
             </span>
-            {scenario.keyPhrases.map((p) => (
-              <span key={p} style={{ fontSize: 11, padding: "3px 10px", borderRadius: 20, background: "var(--accent)", color: "#FFFFFF", fontWeight: 700 }}>
-                {p}
-              </span>
-            ))}
-            <button
-              onClick={translatePhrases}
-              style={{ fontSize: 11, padding: "2px 8px", borderRadius: 20, border: `1px solid ${showPhraseTrans ? "var(--accent)" : "rgba(0,102,204,0.3)"}`, background: showPhraseTrans ? "rgba(0,102,204,0.15)" : "transparent", color: "var(--accent)", cursor: "pointer", fontWeight: 600, whiteSpace: "nowrap" }}
-            >
-              {phraseTranslating ? tr.translating : showPhraseTrans ? tr.hideTranslation : tr.translate}
-            </button>
-          </div>
-          {showPhraseTrans && phraseTrans && (
-            <div style={{ display: "flex", flexWrap: "wrap", gap: 5, marginTop: 6 }}>
-              {scenario.keyPhrases.map((p, i) => (
-                <span key={p} style={{ fontSize: 11, padding: "3px 10px", borderRadius: 20, background: "rgba(0,102,204,0.12)", color: "var(--accent)", fontWeight: 500 }}>
-                  {phraseTrans[i] ?? p}
-                </span>
-              ))}
-            </div>
-          )}
+          ))}
         </div>
       )}
     </div>
