@@ -57,14 +57,18 @@ export default function PracticePage() {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const recognitionRef = useRef<any>(null);
   const chatEndRef = useRef<HTMLDivElement>(null);
+  const lastSessionKey = useRef<string | null>(null);
 
-  useEffect(() => {
+  const initSession = useRef(() => {});
+  initSession.current = () => {
     const raw = sessionStorage.getItem("current_scenario");
+    const sessionKey = sessionStorage.getItem("practice_session_key") ?? "";
     if (!raw) { router.push("/"); return; }
+    if (lastSessionKey.current === sessionKey && lastSessionKey.current !== null) return;
+    lastSessionKey.current = sessionKey;
     const s: Scenario = JSON.parse(raw);
     setScenario(s);
     setChatItems([{ kind: "message", data: { role: "counterpart", text: s.opener, timestamp: Date.now() } }]);
-    // Reset all session state so previous sessions don't bleed through
     setPendingTurns([]);
     setFinalFeedback(null);
     setTurn(1);
@@ -81,7 +85,16 @@ export default function PracticePage() {
     setLang(l);
     setTr(i18n[l]);
     setSessionLength(settings.sessionLength ?? 5);
-  }, [router]);
+  };
+
+  useEffect(() => {
+    initSession.current();
+    const handlePageShow = (e: PageTransitionEvent) => {
+      if (e.persisted) initSession.current();
+    };
+    window.addEventListener("pageshow", handlePageShow);
+    return () => window.removeEventListener("pageshow", handlePageShow);
+  }, []);
 
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -226,6 +239,9 @@ export default function PracticePage() {
 
   const resetSession = () => {
     if (!scenario) return;
+    const newKey = Date.now().toString();
+    sessionStorage.setItem("practice_session_key", newKey);
+    lastSessionKey.current = newKey;
     setChatItems([{ kind: "message", data: { role: "counterpart", text: scenario.opener, timestamp: Date.now() } }]);
     setPendingTurns([]);
     setFinalFeedback(null);

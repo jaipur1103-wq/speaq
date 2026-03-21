@@ -30,6 +30,7 @@ export default function ScenarioCard({ scenario, onDelete, isFavorite, onFavorit
 
   const handleStart = () => {
     sessionStorage.setItem("current_scenario", JSON.stringify(scenario));
+    sessionStorage.setItem("practice_session_key", Date.now().toString());
     router.push(`/practice/${scenario.id}`);
   };
 
