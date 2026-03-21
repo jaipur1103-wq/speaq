@@ -5,7 +5,8 @@ const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
 export async function POST(req: NextRequest) {
   try {
-    const { scenario, counterpartMessage, userResponse } = await req.json();
+    const { scenario, counterpartMessage, userResponse, language } = await req.json();
+    const isJa = language === "ja";
 
     const completion = await groq.chat.completions.create({
       model: "llama-3.3-70b-versatile",
@@ -24,6 +25,8 @@ Difficulty: ${scenario.difficulty}
 ${scenario.personaName} (${scenario.personaRole}) said: "${counterpartMessage}"
 User responded: "${userResponse}"
 Key vocabulary: ${scenario.keyPhrases.join(", ")}
+
+${isJa ? "IMPORTANT: Write ALL strengths, improvements, and naturalExpressions.explanation in Japanese." : ""}
 
 ${scenario.difficulty === "beginner"
   ? "IMPORTANT: Score generously for beginner level. Simple, clear communication = 70+. Any attempt to communicate politely = at least 60. Tips must be very simple, encouraging, and positive. Do NOT mention advanced techniques."

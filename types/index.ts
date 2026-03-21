@@ -1,3 +1,4 @@
+export type Language = "en" | "ja";
 export type Difficulty = "beginner" | "intermediate" | "advanced";
 export type Topic = "business" | "travel" | "daily" | "social" | "study";
 export type Industry =
@@ -81,6 +82,7 @@ export interface ScoreRecord {
 }
 
 export interface AppSettings {
+  language: Language;
   topic: Topic;
   difficulty: Difficulty;
   industry: Industry;

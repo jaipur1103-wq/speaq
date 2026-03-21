@@ -6,16 +6,11 @@ import ScenarioCard from "@/components/ScenarioCard";
 import SettingsBar from "@/components/SettingsBar";
 import SpeaqLogo from "@/components/SpeaqLogo";
 import {
-  getSettings,
-  saveSettings,
-  getSavedScenarios,
-  saveGeneratedScenario,
-  deleteSavedScenario,
-  getCustomScenarios,
-  deleteCustomScenario,
-  getFavoriteIds,
+  getSettings, saveSettings, getSavedScenarios, saveGeneratedScenario,
+  deleteSavedScenario, getCustomScenarios, deleteCustomScenario, getFavoriteIds,
 } from "@/lib/storage";
-import type { AppSettings, Scenario } from "@/types";
+import { i18n } from "@/lib/i18n";
+import type { AppSettings, Language, Scenario } from "@/types";
 
 export default function Home() {
   const router = useRouter();
@@ -26,6 +21,8 @@ export default function Home() {
   const [generating, setGenerating] = useState(false);
   const [error, setError] = useState("");
   const [dark, setDark] = useState(false);
+
+  const tr = i18n[settings.language ?? "en"];
 
   const reload = () => {
     setSavedScenarios(getSavedScenarios());
@@ -48,6 +45,13 @@ export default function Home() {
     saveSettings(s);
   };
 
+  const toggleLang = () => {
+    const newLang: Language = (settings.language ?? "en") === "en" ? "ja" : "en";
+    const newSettings = { ...settings, language: newLang };
+    setSettings(newSettings);
+    saveSettings(newSettings);
+  };
+
   const generateScenario = async () => {
     setGenerating(true);
     setError("");
@@ -66,49 +70,30 @@ export default function Home() {
       const data = await res.json();
       const scenario: Scenario = {
         id: "gen_" + Date.now(),
-        category: data.category,
-        title: data.title,
-        brief: data.brief,
-        opener: data.opener,
-        keyPhrases: data.keyPhrases,
-        difficulty: data.difficulty,
-        industry: data.industry,
-        personaStyle: data.personaStyle,
-        personaName: data.personaName,
+        category: data.category, title: data.title, brief: data.brief,
+        opener: data.opener, keyPhrases: data.keyPhrases,
+        difficulty: data.difficulty, industry: data.industry,
+        personaStyle: data.personaStyle, personaName: data.personaName,
         personaRole: data.personaRole,
       };
       saveGeneratedScenario(scenario);
       reload();
     } catch {
-      setError("Failed to generate scenario. Please try again.");
+      setError(tr.generateFailed);
     } finally {
       setGenerating(false);
     }
   };
 
-  const handleDeleteSaved = (id: string) => {
-    deleteSavedScenario(id);
-    reload();
-  };
-
-  const handleDeleteCustom = (id: string) => {
-    deleteCustomScenario(id);
-    reload();
-  };
+  const handleDeleteSaved = (id: string) => { deleteSavedScenario(id); reload(); };
+  const handleDeleteCustom = (id: string) => { deleteCustomScenario(id); reload(); };
 
   const allScenarios = [...customScenarios, ...savedScenarios];
   const favoriteScenarios = allScenarios.filter((s) => favoriteIds.includes(s.id));
   const nonFavoriteScenarios = allScenarios.filter((s) => !favoriteIds.includes(s.id));
 
   return (
-    <main
-      style={{
-        maxWidth: 640,
-        margin: "0 auto",
-        padding: "24px 16px 80px",
-        minHeight: "100vh",
-      }}
-    >
+    <main style={{ maxWidth: 640, margin: "0 auto", padding: "24px 16px 80px", minHeight: "100vh" }}>
       {/* Header */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
         <SpeaqLogo />
@@ -122,7 +107,18 @@ export default function Home() {
               cursor: "pointer", boxShadow: "var(--shadow-sm)",
             }}
           >
-            How to use
+            {tr.howToUse}
+          </button>
+          <button
+            onClick={toggleLang}
+            style={{
+              padding: "6px 10px", borderRadius: 20,
+              background: "var(--surface)", border: "1px solid var(--border)",
+              color: "var(--accent)", fontSize: 12, fontWeight: 700,
+              cursor: "pointer", boxShadow: "var(--shadow-sm)",
+            }}
+          >
+            {(settings.language ?? "en") === "en" ? "JA" : "EN"}
           </button>
           <button
             onClick={() => setDark(!dark)}
@@ -133,7 +129,7 @@ export default function Home() {
               display: "flex", alignItems: "center", justifyContent: "center",
               boxShadow: "var(--shadow-sm)",
             }}
-          aria-label="Toggle dark mode"
+            aria-label="Toggle dark mode"
           >
             {dark ? "☀️" : "🌙"}
           </button>
@@ -141,13 +137,10 @@ export default function Home() {
       </div>
 
       {/* Nav tabs */}
-      <div style={{
-        display: "flex", gap: 4, marginBottom: 20,
-        background: "var(--surface2)", borderRadius: 14, padding: 4,
-      }}>
-        <NavTab active icon="🎙" label="Practice" />
-        <NavTab onClick={() => router.push("/notebook")} icon="📒" label="Notebook" />
-        <NavTab onClick={() => router.push("/history")} icon="📊" label="History" />
+      <div style={{ display: "flex", gap: 4, marginBottom: 20, background: "var(--surface2)", borderRadius: 14, padding: 4 }}>
+        <NavTab active icon="🎙" label={tr.navPractice} />
+        <NavTab onClick={() => router.push("/notebook")} icon="📒" label={tr.navNotebook} />
+        <NavTab onClick={() => router.push("/history")} icon="📊" label={tr.navHistory} />
       </div>
 
       <div style={{ marginBottom: 20 }}>
@@ -160,116 +153,76 @@ export default function Home() {
           onClick={generateScenario}
           disabled={generating}
           style={{
-            flex: 1,
-            padding: "15px",
-            borderRadius: 14,
+            flex: 1, padding: "15px", borderRadius: 14,
             background: generating ? "var(--surface2)" : "var(--accent)",
             color: generating ? "var(--text-muted)" : "#FFFFFF",
-            border: "none",
-            fontWeight: 700,
-            fontSize: 15,
+            border: "none", fontWeight: 700, fontSize: 15,
             cursor: generating ? "not-allowed" : "pointer",
-            transition: "all 0.15s",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            gap: 8,
+            transition: "all 0.15s", display: "flex", alignItems: "center",
+            justifyContent: "center", gap: 8,
             boxShadow: generating ? "none" : "0 4px 14px rgba(0, 102, 204, 0.3)",
             letterSpacing: "-0.01em",
           }}
         >
-          {generating ? (
-            <>
-              <SpinnerIcon />
-              Generating...
-            </>
-          ) : (
-            <>✨ Generate Scenario</>
-          )}
+          {generating ? <><SpinnerIcon />{tr.generating}</> : <>{tr.generateScenario}</>}
         </button>
         <button
           onClick={() => router.push("/create")}
           style={{
-            padding: "15px 18px",
-            borderRadius: 14,
-            background: "var(--surface)",
-            color: "var(--text)",
-            border: "1px solid var(--border)",
-            fontWeight: 700,
-            fontSize: 15,
-            cursor: "pointer",
-            transition: "all 0.15s",
-            boxShadow: "var(--shadow-sm)",
-            whiteSpace: "nowrap",
+            padding: "15px 18px", borderRadius: 14,
+            background: "var(--surface)", color: "var(--text)",
+            border: "1px solid var(--border)", fontWeight: 700, fontSize: 15,
+            cursor: "pointer", transition: "all 0.15s",
+            boxShadow: "var(--shadow-sm)", whiteSpace: "nowrap",
           }}
         >
-          ＋ Create
+          {tr.createScenario}
         </button>
       </div>
 
-      {error && (
-        <p style={{ color: "var(--red)", fontSize: 13, marginBottom: 12 }}>{error}</p>
-      )}
+      {error && <p style={{ color: "var(--red)", fontSize: 13, marginBottom: 12 }}>{error}</p>}
 
       {allScenarios.length === 0 ? (
-        <div
-          style={{
-            textAlign: "center",
-            padding: "56px 24px",
-            color: "var(--text-muted)",
-            background: "var(--surface)",
-            borderRadius: 18,
-            marginTop: 20,
-            boxShadow: "var(--shadow-sm)",
-          }}
-        >
+        <div style={{
+          textAlign: "center", padding: "56px 24px", color: "var(--text-muted)",
+          background: "var(--surface)", borderRadius: 18, marginTop: 20, boxShadow: "var(--shadow-sm)",
+        }}>
           <div style={{ fontSize: 40, marginBottom: 16 }}>🎯</div>
           <p style={{ fontWeight: 700, color: "var(--text-secondary)", marginBottom: 6, fontSize: 16 }}>
-            No scenarios yet
+            {tr.noScenarios}
           </p>
-          <p style={{ fontSize: 13, lineHeight: 1.6 }}>
-            Generate a scenario or create your own.
-          </p>
+          <p style={{ fontSize: 13, lineHeight: 1.6 }}>{tr.noScenariosDesc}</p>
         </div>
       ) : (
         <div style={{ marginTop: 20 }}>
-          {/* Favorites section */}
           {favoriteScenarios.length > 0 && (
             <div style={{ marginBottom: 20 }}>
               <div style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.07em", color: "var(--text-muted)", marginBottom: 10 }}>
-                ⭐ Favorites
+                {tr.favorites}
               </div>
               <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
                 {favoriteScenarios.map((s) => (
-                  <ScenarioCard
-                    key={s.id}
-                    scenario={s}
-                    isFavorite={true}
+                  <ScenarioCard key={s.id} scenario={s} isFavorite={true}
+                    lang={settings.language}
                     onFavoriteChange={reload}
-                    onDelete={s.id.startsWith("c_") ? handleDeleteCustom : handleDeleteSaved}
-                  />
+                    onDelete={s.id.startsWith("c_") ? handleDeleteCustom : handleDeleteSaved} />
                 ))}
               </div>
             </div>
           )}
-
-          {/* All scenarios */}
           {nonFavoriteScenarios.length > 0 && (
             <div>
               {favoriteScenarios.length > 0 && (
                 <div style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.07em", color: "var(--text-muted)", marginBottom: 10 }}>
-                  All Scenarios
+                  {tr.allScenarios}
                 </div>
               )}
               <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
                 {nonFavoriteScenarios.map((s) => (
-                  <ScenarioCard
-                    key={s.id}
-                    scenario={s}
-                    isFavorite={false}
+                  <ScenarioCard key={s.id} scenario={s} isFavorite={false}
+                    lang={settings.language}
                     onFavoriteChange={reload}
-                    onDelete={s.id.startsWith("c_") ? handleDeleteCustom : handleDeleteSaved}
-                  />
+                    onDelete={s.id.startsWith("c_") ? handleDeleteCustom : handleDeleteSaved} />
                 ))}
               </div>
             </div>
@@ -282,18 +235,13 @@ export default function Home() {
 
 function NavTab({ icon, label, active, onClick }: { icon: string; label: string; active?: boolean; onClick?: () => void }) {
   return (
-    <button
-      onClick={onClick}
-      style={{
-        flex: 1, padding: "10px 0", borderRadius: 11, border: "none",
-        background: active ? "var(--surface)" : "transparent",
-        color: active ? "var(--text)" : "var(--text-muted)",
-        cursor: "pointer",
-        boxShadow: active ? "var(--shadow-sm)" : "none",
-        transition: "all 0.15s",
-        display: "flex", flexDirection: "column", alignItems: "center", gap: 3,
-      }}
-    >
+    <button onClick={onClick} style={{
+      flex: 1, padding: "10px 0", borderRadius: 11, border: "none",
+      background: active ? "var(--surface)" : "transparent",
+      color: active ? "var(--text)" : "var(--text-muted)",
+      cursor: "pointer", boxShadow: active ? "var(--shadow-sm)" : "none",
+      transition: "all 0.15s", display: "flex", flexDirection: "column", alignItems: "center", gap: 3,
+    }}>
       <span style={{ fontSize: 18, lineHeight: 1 }}>{icon}</span>
       <span style={{ fontSize: 11, fontWeight: active ? 700 : 500, letterSpacing: "0.01em" }}>{label}</span>
     </button>

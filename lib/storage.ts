@@ -8,6 +8,7 @@ const SCORE_HISTORY_KEY = "bep_score_history";
 const FAVORITES_KEY = "bep_favorites";
 
 export const DEFAULT_SETTINGS: AppSettings = {
+  language: "en",
   topic: "business",
   difficulty: "intermediate",
   industry: "general",
