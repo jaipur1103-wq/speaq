@@ -43,6 +43,7 @@ export interface ScoreBreakdown {
 export interface NaturalExpression {
   original: string;
   natural: string;
+  chunk: string;
   explanation: string;
   example: string;
 }
@@ -63,10 +64,14 @@ export interface SavedExpression {
   id: string;
   original: string;
   natural: string;
+  chunk: string;
+  example: string;
   explanation: string;
   scenarioTitle: string;
+  category: string;
   savedAt: number;
   learned: boolean;
+  quizCount: number;
 }
 
 export interface TurnScore {

@@ -205,7 +205,7 @@ export default function PracticePage() {
   };
 
   const handleSaveExpression = (expr: NaturalExpression, scenarioTitle: string, exprKey: string) => {
-    saveExpression({ ...expr, scenarioTitle });
+    saveExpression({ ...expr, scenarioTitle, category: scenario?.category ?? "" });
     setSavedIds((prev) => new Set(prev).add(exprKey));
   };
 

@@ -52,6 +52,7 @@ CRITICAL RULES:
 - "improvements": Max 2 items for the most impactful improvements.${isJa ? " Write in Japanese." : ""}
 - "naturalExpressions": Pick 2-4 of the most useful corrections from across ALL turns. Return [] if the user's English was already natural — do NOT force suggestions if there is nothing meaningful to improve.
 - "naturalExpressions[].explanation": One sentence why it sounds more natural.${isJa ? " Write in Japanese." : ""}
+- "naturalExpressions[].chunk": The core pattern/template of the natural expression, with "~" for the variable part. E.g. "I'd strongly recommend ~", "Would it be possible to ~". Keep it short (3-6 words + ~).
 - "naturalExpressions[].example": REQUIRED when naturalExpressions is non-empty. One short English example sentence.
 - "suggestedResponse": A better version of the user's LAST turn response in English.
 
@@ -68,6 +69,7 @@ Return ONLY valid JSON:
     {
       "original": "<user's phrase from any turn>",
       "natural": "<more natural English>",
+      "chunk": "<core pattern e.g. 'I'd strongly recommend ~'>",
       "explanation": "<${isJa ? "日本語で理由" : "why more natural"}>",
       "example": "<short English example>"
     }

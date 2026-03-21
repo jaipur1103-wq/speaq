@@ -87,28 +87,43 @@ export function getSavedExpressions(): SavedExpression[] {
   if (typeof window === "undefined") return [];
   try {
     const raw = localStorage.getItem(EXPRESSIONS_KEY);
-    return raw ? JSON.parse(raw) : [];
+    if (!raw) return [];
+    const parsed: SavedExpression[] = JSON.parse(raw);
+    return parsed.map((e) => ({
+      ...e,
+      chunk: e.chunk ?? "",
+      example: e.example ?? "",
+      category: e.category ?? "",
+      quizCount: e.quizCount ?? 0,
+    }));
   } catch {
     return [];
   }
 }
 
-export function saveExpression(expr: Omit<SavedExpression, "id" | "savedAt" | "learned">): SavedExpression {
+export function saveExpression(expr: Omit<SavedExpression, "id" | "savedAt" | "learned" | "quizCount">): SavedExpression {
   const existing = getSavedExpressions();
   const newExpr: SavedExpression = {
     ...expr,
     id: "expr_" + Date.now() + "_" + Math.random().toString(36).slice(2, 7),
     savedAt: Date.now(),
     learned: false,
+    quizCount: 0,
   };
   localStorage.setItem(EXPRESSIONS_KEY, JSON.stringify([newExpr, ...existing]));
   return newExpr;
 }
 
-export function toggleLearned(id: string): void {
+// Quizで「使えた」を押したとき呼ぶ。sessionUsedIdsに既にあればカウントしない。
+// trueを返したらカウント済み（累計カウンター更新が必要）、falseはスキップ。
+export function markQuizSuccess(id: string, sessionUsedIds: Set<string>): boolean {
+  if (sessionUsedIds.has(id)) return false;
   const existing = getSavedExpressions();
-  const updated = existing.map((e) => e.id === id ? { ...e, learned: !e.learned } : e);
+  const updated = existing.map((e) =>
+    e.id === id ? { ...e, quizCount: e.quizCount + 1, learned: true } : e
+  );
   localStorage.setItem(EXPRESSIONS_KEY, JSON.stringify(updated));
+  return true;
 }
 
 export function deleteExpression(id: string): void {
