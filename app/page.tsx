@@ -129,12 +129,12 @@ export default function Home() {
 
       {/* Nav tabs */}
       <div style={{
-        display: "flex", gap: 4, marginBottom: 24,
-        background: "var(--surface2)", borderRadius: 12, padding: 4,
+        display: "flex", gap: 4, marginBottom: 20,
+        background: "var(--surface2)", borderRadius: 14, padding: 4,
       }}>
-        <NavTab active>🎙 Practice</NavTab>
-        <NavTab onClick={() => router.push("/notebook")}>📒 Notebook</NavTab>
-        <NavTab onClick={() => router.push("/history")}>📊 History</NavTab>
+        <NavTab active icon="🎙" label="Practice" />
+        <NavTab onClick={() => router.push("/notebook")} icon="📒" label="Notebook" />
+        <NavTab onClick={() => router.push("/history")} icon="📊" label="History" />
       </div>
 
       <div style={{ marginBottom: 20 }}>
@@ -267,21 +267,22 @@ export default function Home() {
   );
 }
 
-function NavTab({ children, active, onClick }: { children: React.ReactNode; active?: boolean; onClick?: () => void }) {
+function NavTab({ icon, label, active, onClick }: { icon: string; label: string; active?: boolean; onClick?: () => void }) {
   return (
     <button
       onClick={onClick}
       style={{
-        flex: 1, padding: "8px 0", borderRadius: 9, border: "none",
+        flex: 1, padding: "10px 0", borderRadius: 11, border: "none",
         background: active ? "var(--surface)" : "transparent",
         color: active ? "var(--text)" : "var(--text-muted)",
-        fontWeight: active ? 700 : 400,
-        fontSize: 13, cursor: "pointer",
+        cursor: "pointer",
         boxShadow: active ? "var(--shadow-sm)" : "none",
         transition: "all 0.15s",
+        display: "flex", flexDirection: "column", alignItems: "center", gap: 3,
       }}
     >
-      {children}
+      <span style={{ fontSize: 18, lineHeight: 1 }}>{icon}</span>
+      <span style={{ fontSize: 11, fontWeight: active ? 700 : 500, letterSpacing: "0.01em" }}>{label}</span>
     </button>
   );
 }

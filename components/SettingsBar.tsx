@@ -46,103 +46,105 @@ export default function SettingsBar({ settings, onChange }: Props) {
       style={{
         background: "var(--surface)",
         borderRadius: 16,
-        padding: "14px 16px",
+        padding: "12px 14px",
         display: "flex",
-        flexWrap: "wrap",
+        flexDirection: "column",
         gap: 10,
-        alignItems: "center",
         boxShadow: "var(--shadow-sm)",
       }}
     >
-      <Group label="Difficulty">
-        {difficulties.map((d) => (
-          <Chip
-            key={d.value}
-            active={settings.difficulty === d.value}
-            onClick={() => set("difficulty", d.value)}
-          >
-            {d.label}
-          </Chip>
-        ))}
-      </Group>
+      {/* Row 1: Topic — 1行スクロール */}
+      <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+        <span style={{ fontSize: 10, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--text-muted)", fontWeight: 600, whiteSpace: "nowrap" }}>
+          Topic
+        </span>
+        <div style={{ display: "flex", gap: 4, overflowX: "auto", flexWrap: "nowrap", scrollbarWidth: "none" }}>
+          {topics.map((t) => (
+            <Chip key={t.value} active={settings.topic === t.value} onClick={() => set("topic", t.value)}>
+              {t.label}
+            </Chip>
+          ))}
+        </div>
+      </div>
 
-      <Divider />
-
-      <Group label="Topic">
-        {topics.map((t) => (
-          <Chip
-            key={t.value}
-            active={settings.topic === t.value}
-            onClick={() => set("topic", t.value)}
-          >
-            {t.label}
-          </Chip>
-        ))}
-      </Group>
-
-      {settings.topic === "business" && (
-        <>
-          <Divider />
-          <Group label="Industry">
-            <select
-              value={settings.industry}
-              onChange={(e) => set("industry", e.target.value as Industry)}
-              style={{
-                background: "var(--surface2)",
-                color: "var(--text)",
-                border: "1px solid var(--border)",
-                borderRadius: 10,
-                padding: "4px 10px",
-                fontSize: 13,
-                cursor: "pointer",
-                outline: "none",
-              }}
+      {/* Row 2: Difficulty / Industry / Counterpart / Timer */}
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 8, alignItems: "center" }}>
+        <Group label="Difficulty">
+          {difficulties.map((d) => (
+            <Chip
+              key={d.value}
+              active={settings.difficulty === d.value}
+              onClick={() => set("difficulty", d.value)}
             >
-              {industries.map((i) => (
-                <option key={i.value} value={i.value}>
-                  {i.label}
-                </option>
-              ))}
-            </select>
-          </Group>
-        </>
-      )}
+              {d.label}
+            </Chip>
+          ))}
+        </Group>
 
-      <Divider />
+        {settings.topic === "business" && (
+          <>
+            <Divider />
+            <Group label="Industry">
+              <select
+                value={settings.industry}
+                onChange={(e) => set("industry", e.target.value as Industry)}
+                style={{
+                  background: "var(--surface2)",
+                  color: "var(--text)",
+                  border: "1px solid var(--border)",
+                  borderRadius: 10,
+                  padding: "4px 10px",
+                  fontSize: 13,
+                  cursor: "pointer",
+                  outline: "none",
+                }}
+              >
+                {industries.map((i) => (
+                  <option key={i.value} value={i.value}>
+                    {i.label}
+                  </option>
+                ))}
+              </select>
+            </Group>
+          </>
+        )}
 
-      <Group label="Counterpart">
-        {personas.map((p) => (
-          <Chip
-            key={p.value}
-            active={settings.personaStyle === p.value}
-            onClick={() => set("personaStyle", p.value)}
+        <Divider />
+
+        <Group label="Counterpart">
+          {personas.map((p) => (
+            <Chip
+              key={p.value}
+              active={settings.personaStyle === p.value}
+              onClick={() => set("personaStyle", p.value)}
+            >
+              {p.label}
+            </Chip>
+          ))}
+        </Group>
+
+        <Divider />
+
+        <Group label="Timer">
+          <button
+            onClick={() => set("timerEnabled", !settings.timerEnabled)}
+            title={settings.timerEnabled ? "Timer ON — 30s countdown" : "Timer OFF"}
+            style={{
+              padding: "4px 12px",
+              borderRadius: 20,
+              border: settings.timerEnabled ? "1.5px solid var(--accent)" : "1px solid var(--border)",
+              background: settings.timerEnabled ? "var(--accent-bg)" : "transparent",
+              color: settings.timerEnabled ? "var(--accent)" : "var(--text-secondary)",
+              fontSize: 13,
+              fontWeight: settings.timerEnabled ? 600 : 400,
+              cursor: "pointer",
+              transition: "all 0.15s",
+            }}
           >
-            {p.label}
-          </Chip>
-        ))}
-      </Group>
-
-      <Divider />
-
-      <Group label="Timer">
-        <button
-          onClick={() => set("timerEnabled", !settings.timerEnabled)}
-          title={settings.timerEnabled ? "Timer ON — 30s countdown" : "Timer OFF"}
-          style={{
-            padding: "4px 12px",
-            borderRadius: 20,
-            border: settings.timerEnabled ? "1.5px solid var(--accent)" : "1px solid var(--border)",
-            background: settings.timerEnabled ? "var(--accent-bg)" : "transparent",
-            color: settings.timerEnabled ? "var(--accent)" : "var(--text-secondary)",
-            fontSize: 13,
-            fontWeight: settings.timerEnabled ? 600 : 400,
-            cursor: "pointer",
-            transition: "all 0.15s",
-          }}
-        >
-          {settings.timerEnabled ? "⏱ ON" : "⏱ OFF"}
-        </button>
-      </Group>
+            {settings.timerEnabled ? "⏱ ON" : "⏱ OFF"}
+          </button>
+        </Group>
+      </div>
     </div>
   );
 }
