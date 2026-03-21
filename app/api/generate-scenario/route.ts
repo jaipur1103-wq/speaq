@@ -27,28 +27,41 @@ const PERSONAS: Record<PersonaStyle, string> = {
   neutral: "professional and balanced, straightforward",
 };
 
-const DIFFICULTIES: Record<Difficulty, string> = {
-  beginner:
-    "CEFR A2-B1 only. Extremely easy, low-stakes situation. No jargon whatsoever. " +
-    "Friendly, patient counterpart. Short simple sentences only. " +
-    "IMPORTANT: Generate a VARIED scenario. Do NOT repeat meeting scheduling or new-team introductions. " +
-    "Pick randomly from a wide range of everyday situations such as: " +
-    "recommending a restaurant to a coworker, chatting about weekend plans, asking for directions at an airport, " +
-    "ordering coffee or lunch, checking into a hotel, complaining politely about a wrong order, " +
-    "asking a neighbor to turn down music, shopping for a gift, returning a purchase, " +
-    "asking a classmate about homework, joining a study group, chatting at a social event, " +
-    "asking about local attractions as a tourist, talking with a hotel receptionist about facilities, " +
-    "making small talk about the weather or hobbies, asking for help at a library, " +
-    "talking to a gym staff member, arranging to meet a friend, discussing a movie or show, " +
-    "asking a pharmacist for advice on medicine, talking to a doctor about mild symptoms. " +
-    "Keep the situation specific and concrete — avoid generic openers.",
-  intermediate:
-    "CEFR B1-B2. Conversational business English. Accessible vocabulary. " +
-    "Counterpart is professional but approachable. Mild challenges only. Real but manageable situations.",
-  advanced:
-    "CEFR C1-C2. Sophisticated business language, complex negotiations, high stakes. " +
-    "Counterpart is challenging and demanding. Use industry-specific terminology.",
-};
+const BEGINNER_BUSINESS_EXAMPLES =
+  "greeting a new colleague, asking your manager a simple question, " +
+  "requesting to reschedule a meeting, introducing yourself to a client, " +
+  "thanking a coworker for their help, asking for clarification on a task, " +
+  "checking in with your team about progress, asking about the dress code, " +
+  "complimenting a colleague on their presentation, asking about office facilities.";
+
+const BEGINNER_NONBUSINESS_EXAMPLES =
+  "recommending a restaurant, chatting about weekend plans, asking for directions, " +
+  "ordering coffee or lunch, checking into a hotel, complaining about a wrong order, " +
+  "shopping for a gift, returning a purchase, asking a classmate about homework, " +
+  "chatting at a social event, making small talk about hobbies, discussing a movie.";
+
+function getDifficultyDesc(difficulty: Difficulty, topic: Topic): string {
+  if (difficulty === "beginner") {
+    const examples = topic === "business" ? BEGINNER_BUSINESS_EXAMPLES : BEGINNER_NONBUSINESS_EXAMPLES;
+    return (
+      "CEFR A2-B1 only. Extremely easy, low-stakes situation. No jargon whatsoever. " +
+      "Friendly, patient counterpart. Short simple sentences only. " +
+      "IMPORTANT: Generate a VARIED scenario appropriate for the topic above. " +
+      `Pick from situations like: ${examples} ` +
+      "Keep the situation specific and concrete — avoid generic openers."
+    );
+  }
+  if (difficulty === "intermediate") {
+    return (
+      "CEFR B1-B2. Conversational English. Accessible vocabulary. " +
+      "Counterpart is professional but approachable. Mild challenges only. Real but manageable situations."
+    );
+  }
+  return (
+    "CEFR C1-C2. Sophisticated language, complex negotiations, high stakes. " +
+    "Counterpart is challenging and demanding. Use topic-appropriate terminology."
+  );
+}
 
 export async function POST(req: NextRequest) {
   try {
@@ -75,7 +88,7 @@ export async function POST(req: NextRequest) {
           content: `Generate a realistic English speaking scenario for practice.
 
 ${themeContext}
-Difficulty: ${difficulty} — ${DIFFICULTIES[difficulty]}
+Difficulty: ${difficulty} — ${getDifficultyDesc(difficulty, topic)}
 Counterpart persona: ${PERSONAS[personaStyle]}
 
 Return ONLY valid JSON with this exact structure:
