@@ -44,8 +44,9 @@ ${turnsText}
 
 ${cefrGuide}
 
-Score the OVERALL session on 4 axes (0-100). CEFR scale: 90-100=C2, 75-89=C1, 55-74=B2, 35-54=B1, 15-34=A2, 0-14=A1. Spoken English — ignore all punctuation.
-- accuracy: grammatical accuracy (tenses, articles, prepositions, sentence structure)
+Score the OVERALL session on 4 axes (0-100). CEFR scale: 90-100=C2, 75-89=C1, 55-74=B2, 35-54=B1, 15-34=A2, 0-14=A1.
+IMPORTANT: This is TRANSCRIBED VOICE INPUT. There is no punctuation. Do NOT deduct points for missing punctuation. Do NOT mention punctuation anywhere in the feedback.
+- accuracy: grammatical accuracy (tenses, articles, prepositions, sentence structure only — never punctuation)
 - range: range and variety of vocabulary and grammatical structures
 - interaction: relevance and substance of responses; score below 35 if under 10 words, off-topic, or ignores the question
 - coherence: logical organization and use of connectors
@@ -56,7 +57,7 @@ CRITICAL RULES:
 - "improvements": Exactly 2 items. Each MUST start with [AxisName Score]. Use 「」to quote English phrases (never use double quotes inside JSON strings).${isJa ? " Add a brief Japanese explanation. Example: [Coherence 52]：「I want to make the budget more」→「I'd like to increase the budget because it's critical for Q3」理由を付けることで主張に説得力が出ます。" : " Example: [Coherence 52]: 「I want to make the budget more.」— better: 「I'd like to increase the budget because it's critical for Q3.」"}
 - "naturalExpressions": Pick 2-4 of the most useful corrections from across ALL turns. Return [] if English was already natural.
 - "naturalExpressions[].explanation": One concrete sentence about WHEN and HOW to use this in this specific business scene (negotiation/refusal/request etc). Do NOT write generic phrases like "more natural".${isJa ? " Write in Japanese. Example: 交渉で断りを入れながら代替案を示す場面で使います。" : " Example: Use this when pushing back without damaging the relationship."}
-- "naturalExpressions[].chunk": Core pattern with "~" for variable part. E.g. "I'd strongly recommend ~". Keep short (3-6 words + ~).
+- "naturalExpressions[].chunk": Extract the core reusable pattern DIRECTLY from the natural expression above. Replace variable parts with "~". E.g. if natural is "I'd like to explore some alternatives", chunk = "I'd like to explore ~". Do NOT invent a pattern unrelated to the natural expression. Keep short (3-6 words + ~).
 - "naturalExpressions[].example": One short English example sentence using the chunk.
 - "suggestedResponse": A better version of the user's LAST turn response in English.
 

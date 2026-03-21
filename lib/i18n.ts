@@ -78,6 +78,8 @@ export const i18n = {
     quizNotUsed: "Not yet",
     quizChunk: "Key Pattern",
     quizExample: "Example",
+    quizModelAnswer: "Model Answer",
+    quizUsage: "When to use",
     learnedBadge: (n: number, t: number) => `${n} / ${t} learned`,
     collectionEmpty: "No expressions saved in this category yet.",
     // history
@@ -184,6 +186,8 @@ export const i18n = {
     quizNotUsed: "使えなかった",
     quizChunk: "キーパターン",
     quizExample: "使用例",
+    quizModelAnswer: "模範表現",
+    quizUsage: "使いどころ",
     learnedBadge: (n: number, t: number) => `${n} / ${t} 習得`,
     collectionEmpty: "このカテゴリにはまだ表現がありません。",
     // history

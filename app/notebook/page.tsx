@@ -492,24 +492,36 @@ function QuizCard({
           )}
 
           <div style={{ background: "var(--surface2)", borderRadius: 14, padding: "18px 20px" }}>
-            {/* Chunk */}
-            <div style={{ marginBottom: card.example ? 14 : 0 }}>
+            {/* Model Answer */}
+            <div style={{ marginBottom: 14 }}>
               <div style={{ fontSize: 11, color: "var(--accent)", fontWeight: 700, letterSpacing: "0.05em", marginBottom: 6, textTransform: "uppercase" }}>
-                {tr.quizChunk}
+                {tr.quizModelAnswer}
               </div>
-              <div style={{ fontSize: 20, fontWeight: 700, color: "var(--text)", letterSpacing: "-0.01em" }}>
-                {chunkDisplay}
+              <div style={{ fontSize: 18, fontWeight: 700, color: "var(--text)", letterSpacing: "-0.01em", lineHeight: 1.5 }}>
+                &ldquo;{card.natural}&rdquo;
               </div>
             </div>
 
-            {/* Example */}
-            {card.example && (
+            {/* Key Pattern */}
+            {card.chunk && (
+              <div style={{ paddingTop: 14, borderTop: "1px solid var(--border)", marginBottom: 14 }}>
+                <div style={{ fontSize: 11, color: "var(--text-muted)", fontWeight: 700, letterSpacing: "0.05em", marginBottom: 6, textTransform: "uppercase" }}>
+                  {tr.quizChunk}
+                </div>
+                <div style={{ fontSize: 15, fontWeight: 700, color: "var(--accent)" }}>
+                  🔑 {card.chunk}
+                </div>
+              </div>
+            )}
+
+            {/* When to use */}
+            {card.explanation && (
               <div style={{ paddingTop: 14, borderTop: "1px solid var(--border)" }}>
                 <div style={{ fontSize: 11, color: "var(--text-muted)", fontWeight: 700, letterSpacing: "0.05em", marginBottom: 6, textTransform: "uppercase" }}>
-                  {tr.quizExample}
+                  {tr.quizUsage}
                 </div>
-                <div style={{ fontSize: 14, color: "var(--text)", lineHeight: 1.6, fontStyle: "italic" }}>
-                  &ldquo;{card.example}&rdquo;
+                <div style={{ fontSize: 13, color: "var(--text-secondary)", lineHeight: 1.6 }}>
+                  {card.explanation}
                 </div>
               </div>
             )}

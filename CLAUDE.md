@@ -22,7 +22,7 @@
 
 | 軸 | 内容 |
 |---|---|
-| **accuracy** | 文法的正確さ（時制・冠詞・前置詞・文構造） |
+| **accuracy** | 文法的正確さ（時制・冠詞・前置詞・文構造）※句読点は評価対象外 |
 | **range** | 語彙・文法構造の幅広さ |
 | **interaction** | 相手の発言への適切な応答・会話維持力 |
 | **coherence** | 論理的なつながり・接続詞の使用・談話構造 |
@@ -43,11 +43,16 @@
 - `strengths`: 必ず2件。`[AxisName Score]` で始め、ユーザーの実際のセリフを引用して具体的に褒める
 - `improvements`: 必ず2件。`[AxisName Score]` で始め、実際のセリフ→改善案の形式
 - `naturalExpressions`: 2〜4件。英語として不自然だった表現を修正提案。問題がなければ `[]`
-  - `chunk`: キーパターン。`~` で可変部分を表す（例: `"I'd strongly recommend ~"`）
-  - `explanation`: なぜ自然かの理由（JA設定時は日本語）
+  - `chunk`: `natural` から直接抽出したキーパターン。`~` で可変部分を表す（例: naturalが "I'd like to explore some alternatives" なら chunk = "I'd like to explore ~"）
+  - `explanation`: いつ・どう使うかの具体的な説明（JA設定時は日本語）。「より自然」等の抽象的な表現禁止
   - `example`: chunkを使った短い英文例
 - `suggestedResponse`: 最後のターンの模範回答（英語）
 - `overall`: 4軸の平均値
+
+### 句読点ルール（重要）
+- 音声入力（Web Speech API）のため、ユーザーの発話に句読点は存在しない
+- accuracyスコアで句読点の欠如を減点してはいけない
+- フィードバック文中で句読点に言及してはいけない
 
 ### 難易度別スコアリング方針
 
