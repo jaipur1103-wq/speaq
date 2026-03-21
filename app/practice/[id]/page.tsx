@@ -233,7 +233,7 @@ export default function PracticePage() {
   const sessionDone = completedTurns >= sessionLength || finalFeedback !== null;
 
   return (
-    <div style={{ maxWidth: 640, margin: "0 auto", display: "flex", flexDirection: "column", height: "100dvh", background: "var(--bg)" }}>
+    <div style={{ maxWidth: 640, width: "100%", margin: "0 auto", display: "flex", flexDirection: "column", height: "100dvh", background: "var(--bg)" }}>
 
       {/* Header */}
       <div style={{ padding: "12px 16px", borderBottom: "1px solid var(--border)", background: "var(--surface)", backdropFilter: "blur(20px) saturate(180%)", WebkitBackdropFilter: "blur(20px) saturate(180%)", position: "sticky", top: 0, zIndex: 10 }}>

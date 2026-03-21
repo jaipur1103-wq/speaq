@@ -69,7 +69,7 @@ export default function CreatePage() {
   };
 
   return (
-    <main style={{ maxWidth: 640, margin: "0 auto", padding: "40px 16px 100px", minHeight: "100vh" }}>
+    <main style={{ maxWidth: 640, width: "100%", margin: "0 auto", padding: "40px 16px 100px", minHeight: "100vh" }}>
       {/* Header */}
       <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 28 }}>
         <button

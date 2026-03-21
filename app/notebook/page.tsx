@@ -90,7 +90,7 @@ export default function NotebookPage() {
   const learnedCount = expressions.filter((e) => e.learned).length;
 
   return (
-    <main style={{ maxWidth: 640, margin: "0 auto", padding: "24px 16px 88px", minHeight: "100vh" }}>
+    <main style={{ maxWidth: 640, width: "100%", margin: "0 auto", padding: "24px 16px 88px", minHeight: "100vh" }}>
       {/* Header */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
         <SpeaqLogo />

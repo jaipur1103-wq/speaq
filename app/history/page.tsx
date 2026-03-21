@@ -39,7 +39,7 @@ export default function HistoryPage() {
     s >= 70 ? "var(--green)" : s >= 40 ? "var(--orange)" : "var(--red)";
 
   return (
-    <main style={{ maxWidth: 640, margin: "0 auto", padding: "24px 16px 88px", minHeight: "100vh" }}>
+    <main style={{ maxWidth: 640, width: "100%", margin: "0 auto", padding: "24px 16px 88px", minHeight: "100vh" }}>
       {/* Header */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
         <SpeaqLogo />
