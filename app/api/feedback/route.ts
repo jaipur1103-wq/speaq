@@ -53,9 +53,9 @@ Score the OVERALL session on 4 axes (0-100). CEFR scale: 90-100=C2, 75-89=C1, 55
 CRITICAL RULES:
 - "strengths": Exactly 2 items. Each MUST start with [AxisName Score] in brackets. Then QUOTE a specific phrase the user actually said that demonstrates the strength. Be concrete — do NOT write vague praise.${isJa ? " Write content in Japanese but keep [AxisName Score] in English." : ""}
   Example: "[Accuracy 78]: You correctly used past tense in 'we had discussed this last week' — tense agreement was accurate throughout."
-- "improvements": Exactly 2 items. Each MUST start with [AxisName Score]. Quote the user's English phrase, then show the better English version.${isJa ? " Add a brief Japanese explanation at the end. ENTIRE content MUST be in Japanese except quoted English phrases and [AxisName Score]. Example: \"[Coherence 52]：'I want to make the budget more. It is important.' → 'I'd like to increase the budget because it's critical for Q3 delivery.' — 理由を付けることで主張に説得力が出ます。\"" : " Example: \"[Coherence 52]: You said 'I want to make the budget more.' — better: 'I'd like to increase the budget because it's critical for Q3 delivery.'\""}
+- "improvements": Exactly 2 items. Each MUST start with [AxisName Score]. Use 「」to quote English phrases (never use double quotes inside JSON strings).${isJa ? " Add a brief Japanese explanation. Example: [Coherence 52]：「I want to make the budget more」→「I'd like to increase the budget because it's critical for Q3」理由を付けることで主張に説得力が出ます。" : " Example: [Coherence 52]: 「I want to make the budget more.」— better: 「I'd like to increase the budget because it's critical for Q3.」"}
 - "naturalExpressions": Pick 2-4 of the most useful corrections from across ALL turns. Return [] if English was already natural.
-- "naturalExpressions[].explanation": One concrete sentence about WHEN and HOW to use this expression in business conversation — reference the specific scene in this scenario (e.g. negotiation, refusal, request, persuasion). Do NOT write generic phrases like "more natural" or "sounds better".${isJa ? " Write in Japanese. Example: '交渉で断りを入れながら代替案を示す場面で、相手との関係を保ちつつ主張できます。'" : " Example: 'Use this when you need to push back on a request without damaging the relationship — it signals flexibility while holding your position.'"}
+- "naturalExpressions[].explanation": One concrete sentence about WHEN and HOW to use this in this specific business scene (negotiation/refusal/request etc). Do NOT write generic phrases like "more natural".${isJa ? " Write in Japanese. Example: 交渉で断りを入れながら代替案を示す場面で使います。" : " Example: Use this when pushing back without damaging the relationship."}
 - "naturalExpressions[].chunk": Core pattern with "~" for variable part. E.g. "I'd strongly recommend ~". Keep short (3-6 words + ~).
 - "naturalExpressions[].example": One short English example sentence using the chunk.
 - "suggestedResponse": A better version of the user's LAST turn response in English.
@@ -86,8 +86,11 @@ Return ONLY valid JSON:
     });
 
     const text = completion.choices[0].message.content?.trim() ?? "";
-    const cleaned = text.replace(/^```json?\n?/, "").replace(/\n?```$/, "").trim();
-    const data = JSON.parse(cleaned);
+    // Strip markdown fences, then extract the first complete JSON object
+    const stripped = text.replace(/^```json?\n?/m, "").replace(/\n?```$/m, "").trim();
+    const jsonMatch = stripped.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) throw new Error("No JSON object found in response");
+    const data = JSON.parse(jsonMatch[0]);
 
     return NextResponse.json({ ...data, wordCount: totalWords });
   } catch (error) {
