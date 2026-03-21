@@ -36,7 +36,16 @@ export default function HistoryPage() {
     : null;
 
   const scoreColor = (s: number) =>
-    s >= 70 ? "var(--green)" : s >= 40 ? "var(--orange)" : "var(--red)";
+    s >= 75 ? "var(--green)" : s >= 35 ? "var(--orange)" : "var(--red)";
+
+  const toCEFR = (score: number) => {
+    if (score >= 90) return "C2";
+    if (score >= 75) return "C1";
+    if (score >= 55) return "B2";
+    if (score >= 35) return "B1";
+    if (score >= 15) return "A2";
+    return "A1";
+  };
 
   return (
     <main style={{ maxWidth: 640, width: "100%", margin: "0 auto", padding: "24px 16px 88px", minHeight: "100vh" }}>
@@ -105,15 +114,24 @@ export default function HistoryPage() {
   );
 }
 
+function toCEFR(score: number): string {
+  if (score >= 90) return "C2";
+  if (score >= 75) return "C1";
+  if (score >= 55) return "B2";
+  if (score >= 35) return "B1";
+  if (score >= 15) return "A2";
+  return "A1";
+}
+
 function HistoryCard({ record, tr }: { record: ScoreRecord; tr: Tr }) {
-  const color = record.overall >= 70 ? "var(--green)" : record.overall >= 40 ? "var(--orange)" : "var(--red)";
+  const color = record.overall >= 75 ? "var(--green)" : record.overall >= 35 ? "var(--orange)" : "var(--red)";
   const axes = Object.entries(record.scores) as [string, number][];
   const axisLabel = (key: string) => {
     const map: Record<string, string> = {
-      grammar: tr.grammar,
-      vocabulary: tr.vocabulary,
-      naturalness: tr.naturalness,
-      communication: tr.communication,
+      accuracy: tr.accuracy,
+      range: tr.range,
+      interaction: tr.interaction,
+      coherence: tr.coherence,
     };
     return map[key] ?? key;
   };
@@ -136,7 +154,7 @@ function HistoryCard({ record, tr }: { record: ScoreRecord; tr: Tr }) {
           padding: "4px 12px", borderRadius: 20,
           background: color + "22", color, fontWeight: 700, fontSize: 15,
         }}>
-          {record.overall}
+          {toCEFR(record.overall)}
         </span>
       </div>
       <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
@@ -147,8 +165,8 @@ function HistoryCard({ record, tr }: { record: ScoreRecord; tr: Tr }) {
             color: "var(--text-secondary)",
           }}>
             <span>{axisLabel(key)}</span>
-            <span style={{ fontWeight: 700, marginLeft: 4, color: val >= 70 ? "var(--green)" : val >= 40 ? "var(--orange)" : "var(--red)" }}>
-              {val}
+            <span style={{ fontWeight: 700, marginLeft: 4, color: val >= 75 ? "var(--green)" : val >= 35 ? "var(--orange)" : "var(--red)" }}>
+              {toCEFR(val)}
             </span>
           </div>
         ))}

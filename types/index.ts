@@ -34,10 +34,10 @@ export interface Message {
 }
 
 export interface ScoreBreakdown {
-  grammar: number;
-  vocabulary: number;
-  naturalness: number;
-  communication: number;
+  accuracy: number;
+  range: number;
+  interaction: number;
+  coherence: number;
 }
 
 export interface NaturalExpression {

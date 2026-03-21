@@ -570,10 +570,10 @@ function FeedbackPanel({ feedback, scenarioTitle, savedIds, tr, onSaveExpression
   const [showShadow, setShowShadow] = useState(false);
   const [expandedExample, setExpandedExample] = useState<string | null>(null);
   const overall = feedback.overall;
-  const scoreColor = overall >= 70 ? "var(--green)" : overall >= 40 ? "var(--orange)" : "var(--red)";
+  const scoreColor = cefrColor(overall);
 
   const axisLabel = (key: string) => {
-    const map: Record<string, string> = { grammar: tr.grammar, vocabulary: tr.vocabulary, naturalness: tr.naturalness, communication: tr.communication };
+    const map: Record<string, string> = { accuracy: tr.accuracy, range: tr.range, interaction: tr.interaction, coherence: tr.coherence };
     return map[key] ?? key;
   };
 
@@ -581,7 +581,7 @@ function FeedbackPanel({ feedback, scenarioTitle, savedIds, tr, onSaveExpression
     <div className="animate-fade-slide-up" style={{ background: "var(--surface)", borderRadius: 18, padding: "16px 18px", boxShadow: "var(--shadow-md)" }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
         <span style={{ fontWeight: 700, fontSize: 12, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.07em" }}>{tr.sessionFeedbackTitle}</span>
-        <span style={{ padding: "4px 12px", borderRadius: 20, background: scoreColor + "22", color: scoreColor, fontWeight: 700, fontSize: 15 }}>{overall}/100</span>
+        <span style={{ padding: "4px 12px", borderRadius: 20, background: scoreColor + "22", color: scoreColor, fontWeight: 700, fontSize: 15 }}>{toCEFR(overall)}</span>
       </div>
       <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 12 }}>
         {(Object.entries(feedback.scores) as [string, number][]).map(([key, val]) => (
@@ -745,10 +745,10 @@ function SessionSummary({ feedback, turnCount, savedCount, tr, onContinue, onDon
   feedback: Feedback; turnCount: number; savedCount: number; tr: Tr; onContinue: () => void; onDone: () => void;
 }) {
   const overall = feedback.overall;
-  const color = overall >= 70 ? "var(--green)" : overall >= 40 ? "var(--orange)" : "var(--red)";
+  const color = cefrColor(overall);
   const axisEntries = Object.entries(feedback.scores) as [string, number][];
   const axisLabel = (key: string) => {
-    const map: Record<string, string> = { grammar: tr.grammar, vocabulary: tr.vocabulary, naturalness: tr.naturalness, communication: tr.communication };
+    const map: Record<string, string> = { accuracy: tr.accuracy, range: tr.range, interaction: tr.interaction, coherence: tr.coherence };
     return map[key] ?? key;
   };
 
@@ -762,7 +762,7 @@ function SessionSummary({ feedback, turnCount, savedCount, tr, onContinue, onDon
         </div>
         <div style={{ background: "var(--surface2)", borderRadius: 16, padding: "18px 20px", marginBottom: 16 }}>
           <div style={{ fontSize: 12, color: "var(--text-muted)", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 6 }}>{tr.overallAverage}</div>
-          <div style={{ fontSize: 36, fontWeight: 700, color, letterSpacing: "-0.02em", marginBottom: 14 }}>{overall}/100</div>
+          <div style={{ fontSize: 36, fontWeight: 700, color, letterSpacing: "-0.02em", marginBottom: 14 }}>{toCEFR(overall)}</div>
           <div style={{ display: "flex", flexDirection: "column", gap: 7 }}>
             {axisEntries.map(([key, val]) => <ScoreRow key={key} label={axisLabel(key)} value={val} />)}
           </div>
@@ -785,24 +785,37 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
   return <div style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--text-muted)", marginBottom: 8 }}>{children}</div>;
 }
 
+function toCEFR(score: number): string {
+  if (score >= 90) return "C2";
+  if (score >= 75) return "C1";
+  if (score >= 55) return "B2";
+  if (score >= 35) return "B1";
+  if (score >= 15) return "A2";
+  return "A1";
+}
+
+function cefrColor(score: number): string {
+  return score >= 75 ? "var(--green)" : score >= 35 ? "var(--orange)" : "var(--red)";
+}
+
 function ScoreRow({ label, value }: { label: string; value: number }) {
-  const color = value >= 70 ? "var(--green)" : value >= 40 ? "var(--orange)" : "var(--red)";
+  const color = cefrColor(value);
   return (
     <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
       <span style={{ fontSize: 12, color: "var(--text-secondary)", width: 120 }}>{label}</span>
       <div style={{ flex: 1, height: 5, background: "var(--surface2)", borderRadius: 3, overflow: "hidden" }}>
         <div style={{ width: `${value}%`, height: "100%", background: color, borderRadius: 3, transition: "width 0.6s ease" }} />
       </div>
-      <span style={{ fontSize: 12, fontWeight: 700, color, width: 28, textAlign: "right" }}>{value}</span>
+      <span style={{ fontSize: 12, fontWeight: 700, color, width: 28, textAlign: "right" }}>{toCEFR(value)}</span>
     </div>
   );
 }
 
 function ScoreBadge({ score, label, small }: { score: number; label?: string; small?: boolean }) {
-  const color = score >= 70 ? "var(--green)" : score >= 40 ? "var(--orange)" : "var(--red)";
+  const color = cefrColor(score);
   return (
     <span style={{ padding: small ? "2px 7px" : "3px 11px", borderRadius: 20, background: color + "22", color, fontWeight: 700, fontSize: small ? 11 : 13 }}>
-      {score}{label ? ` ${label}` : ""}
+      {toCEFR(score)}{label ? ` ${label}` : ""}
     </span>
   );
 }

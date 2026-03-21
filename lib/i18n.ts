@@ -57,8 +57,8 @@ export const i18n = {
     overallAverage: "Overall Average", turnScores: "Turn Scores", axisAverages: "Axis Averages",
     expressionsSaved: (count: number) => `📒 ${count} expression(s) saved this session`,
     continuePractice: "Continue Practice", doneHome: "Done → Home",
-    grammar: "Grammar", vocabulary: "Vocabulary",
-    naturalness: "Naturalness", communication: "Communication",
+    accuracy: "Accuracy", range: "Range",
+    interaction: "Interaction", coherence: "Coherence",
     encouragementTitle: "Growth Point",
     // notebook
     saved: "Saved", toLearn: "To Learn", learned: "Learned", all: "All",
@@ -163,8 +163,8 @@ export const i18n = {
     overallAverage: "総合平均", turnScores: "ターン別スコア", axisAverages: "軸別平均",
     expressionsSaved: (count: number) => `📒 ${count}個の表現をノートに保存しました`,
     continuePractice: "練習を続ける", doneHome: "完了 → ホーム",
-    grammar: "文法", vocabulary: "語彙力",
-    naturalness: "自然さ", communication: "会話力",
+    accuracy: "正確さ", range: "語彙・文法幅",
+    interaction: "会話力", coherence: "一貫性",
     encouragementTitle: "成長ポイント",
     // notebook
     saved: "保存済み", toLearn: "学習中", learned: "習得済み", all: "すべて",
