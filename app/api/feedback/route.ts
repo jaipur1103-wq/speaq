@@ -44,28 +44,11 @@ ${turnsText}
 
 ${cefrGuide}
 
-Score the OVERALL session on 4 axes (0-100) using CEFR-aligned rubrics. Spoken English from voice input — ignore all punctuation.
-
-- accuracy: Grammatical accuracy (tenses, articles, prepositions, sentence structure).
-  90-100 (C2): Errors rare and imperceptible. 75-89 (C1): High control, minor slips only.
-  55-74 (B2): Good control, errors don't cause misunderstanding. 35-54 (B1): Reasonably accurate in familiar contexts.
-  15-34 (A2): Basic patterns but frequent errors. 0-14 (A1): Very limited control, meaning often unclear.
-
-- range: Range of vocabulary and grammatical structures.
-  90-100 (C2): Wide vocabulary including idioms, precise and varied structures. 75-89 (C1): Broad lexical repertoire, gaps covered by paraphrasing.
-  55-74 (B2): Good range on familiar topics, varied structures. 35-54 (B1): Sufficient for routine situations, noticeable repetition.
-  15-34 (A2): Limited vocabulary, relies on simple words. 0-14 (A1): Very basic words only.
-
-- interaction: Ability to respond relevantly and maintain conversation.
-  90-100 (C2): Interacts effortlessly, leads conversation. 75-89 (C1): Uses language flexibly for professional purposes.
-  55-74 (B2): Interacts with spontaneity on familiar topics. 35-54 (B1): Keeps conversation going, responses adequate.
-  15-34 (A2): Simple interaction, short responses to basic questions. 0-14 (A1): Minimal or off-topic; fails to maintain exchange.
-  — Score below 35 if responses are under 10 words, off-topic, or fail to address what was asked.
-
-- coherence: Logical organization, use of connectors, discourse structure.
-  90-100 (C2): Full discourse markers, highly cohesive. 75-89 (C1): Clear, well-organized with appropriate connectors.
-  55-74 (B2): Clear descriptions, logically connected ideas. 35-54 (B1): Basic connectors used (and, but, because, then).
-  15-34 (A2): Simple sequences, minimal connectors. 0-14 (A1): No logical connection, just isolated words or phrases.
+Score the OVERALL session on 4 axes (0-100). CEFR scale: 90-100=C2, 75-89=C1, 55-74=B2, 35-54=B1, 15-34=A2, 0-14=A1. Spoken English — ignore all punctuation.
+- accuracy: grammatical accuracy (tenses, articles, prepositions, sentence structure)
+- range: range and variety of vocabulary and grammatical structures
+- interaction: relevance and substance of responses; score below 35 if under 10 words, off-topic, or ignores the question
+- coherence: logical organization and use of connectors
 
 CRITICAL RULES:
 - "strengths": Exactly 2 items. Each MUST start with [AxisName Score] in brackets. Then QUOTE a specific phrase the user actually said that demonstrates the strength. Be concrete — do NOT write vague praise.${isJa ? " Write content in Japanese but keep [AxisName Score] in English." : ""}
