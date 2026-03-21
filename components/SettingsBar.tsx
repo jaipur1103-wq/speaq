@@ -57,7 +57,7 @@ export default function SettingsBar({ settings, onChange }: Props) {
   const diffLabel = difficulties.find((d) => d.value === settings.difficulty)?.label ?? settings.difficulty;
   const personaLabel = personas.find((p) => p.value === settings.personaStyle)?.label ?? settings.personaStyle;
   const industryLabel = settings.topic === "business"
-    ? industries.find((i) => i.value === settings.industry)?.label ?? settings.industry
+    ? industries.find((i) => i.value === settings.industry)?.label ?? null
     : null;
   const sessionLabel = `${settings.sessionLength ?? 5}`;
 
@@ -72,10 +72,12 @@ export default function SettingsBar({ settings, onChange }: Props) {
         display: "flex", alignItems: "center", gap: 6,
         padding: "10px 14px", flexWrap: "wrap",
       }}>
+        <span style={{ fontSize: 11, fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.06em", whiteSpace: "nowrap", marginRight: 2 }}>
+          {tr.scenarioSettings}
+        </span>
         <SummaryChip label={topicLabel} />
         <SummaryChip label={diffLabel} />
         {industryLabel && <SummaryChip label={industryLabel} />}
-        <SummaryChip label={personaLabel} />
         <SummaryChip label={`${sessionLabel} turns`} />
         <button
           onClick={() => setExpanded((e) => !e)}

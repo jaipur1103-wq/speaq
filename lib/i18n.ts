@@ -7,6 +7,7 @@ export const i18n = {
     // settings
     difficulty: "Difficulty", topic: "Topic", industry: "Industry",
     counterpart: "Counterpart", sessionTurnsLabel: "Session",
+    scenarioSettings: "Scenario Settings",
     // difficulty
     beginner: "Beginner", intermediate: "Intermediate", advanced: "Advanced",
     // topics
@@ -98,6 +99,7 @@ export const i18n = {
     // settings
     difficulty: "難易度", topic: "トピック", industry: "業種",
     counterpart: "相手", sessionTurnsLabel: "セッション",
+    scenarioSettings: "シナリオ設定",
     // difficulty
     beginner: "初級", intermediate: "中級", advanced: "上級",
     // topics

@@ -17,11 +17,18 @@ export const DEFAULT_SETTINGS: AppSettings = {
   sessionLength: 5,
 };
 
+const VALID_INDUSTRIES = ["general", "technology", "finance", "consulting", "healthcare", "retail", "manufacturing"];
+
 export function getSettings(): AppSettings {
   if (typeof window === "undefined") return DEFAULT_SETTINGS;
   try {
     const raw = localStorage.getItem(SETTINGS_KEY);
-    return raw ? { ...DEFAULT_SETTINGS, ...JSON.parse(raw) } : DEFAULT_SETTINGS;
+    if (!raw) return DEFAULT_SETTINGS;
+    const parsed = JSON.parse(raw);
+    if (parsed.industry && !VALID_INDUSTRIES.includes(parsed.industry)) {
+      parsed.industry = DEFAULT_SETTINGS.industry;
+    }
+    return { ...DEFAULT_SETTINGS, ...parsed };
   } catch {
     return DEFAULT_SETTINGS;
   }
