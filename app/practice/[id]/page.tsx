@@ -216,6 +216,22 @@ export default function PracticePage() {
     callFeedbackApi(pendingTurns);
   };
 
+  const resetSession = () => {
+    if (!scenario) return;
+    setChatItems([{ kind: "message", data: { role: "counterpart", text: scenario.opener, timestamp: Date.now() } }]);
+    setPendingTurns([]);
+    setFinalFeedback(null);
+    setTurn(1);
+    setSavedIds(new Set());
+    setScoreSaved(false);
+    setShowSummary(false);
+    setInputText("");
+    setInterimText("");
+    setRecordingSeconds(0);
+    setLoadingReply(false);
+    setLoadingFinalFeedback(false);
+  };
+
   const handleSaveExpression = (expr: NaturalExpression, scenarioTitle: string, exprKey: string) => {
     saveExpression({ ...expr, scenarioTitle, category: scenario?.category ?? "" });
     setSavedIds((prev) => new Set(prev).add(exprKey));
@@ -404,7 +420,7 @@ export default function PracticePage() {
 
       {/* Session Summary Modal */}
       {showSummary && scenario && finalFeedback && (
-        <SessionSummary feedback={finalFeedback} turnCount={pendingTurns.length} savedCount={savedIds.size} tr={tr} onContinue={() => setShowSummary(false)} onDone={() => router.push("/")} />
+        <SessionSummary feedback={finalFeedback} turnCount={pendingTurns.length} savedCount={savedIds.size} tr={tr} onContinue={resetSession} onDone={() => router.push("/")} />
       )}
     </div>
   );
@@ -572,12 +588,6 @@ function FeedbackPanel({ feedback, scenarioTitle, savedIds, tr, onSaveExpression
           <ScoreRow key={key} label={axisLabel(key)} value={val} />
         ))}
       </div>
-      {feedback.encouragement && (
-        <div style={{ padding: "10px 14px", borderRadius: 12, background: "linear-gradient(135deg, rgba(52,199,89,0.08), rgba(48,209,88,0.08))", border: "1px solid rgba(52,199,89,0.25)", marginBottom: 12 }}>
-          <span style={{ fontSize: 11, fontWeight: 700, color: "#34C759", textTransform: "uppercase", letterSpacing: "0.06em" }}>🌱 {tr.encouragementTitle}</span>
-          <p style={{ fontSize: 13, color: "var(--text)", margin: "4px 0 0", lineHeight: 1.6 }}>{feedback.encouragement}</p>
-        </div>
-      )}
       {feedback.strengths.length > 0 && (
         <div style={{ marginBottom: 12 }}>
           <SectionLabel>{tr.whatWorked}</SectionLabel>

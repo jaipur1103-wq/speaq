@@ -11,7 +11,7 @@ export async function POST(req: NextRequest) {
     const isJa = language === "ja";
 
     const systemContent = isJa
-      ? "You are an English speaking coach. The learner's language is Japanese. You MUST write strengths, improvements, encouragement, and naturalExpressions[].explanation in Japanese. All other fields (original, natural, example, suggestedResponse) remain in English. Always return valid JSON only, no markdown, no backticks."
+      ? "You are an English speaking coach. The learner's language is Japanese. You MUST write strengths, improvements, and naturalExpressions[].explanation in Japanese. All other fields (original, natural, chunk, example, suggestedResponse) remain in English. Always return valid JSON only, no markdown, no backticks."
       : "You are an English speaking coach. Always return valid JSON only, no markdown, no backticks.";
 
     const turnsText = turns.map((t, i) =>
@@ -20,13 +20,19 @@ export async function POST(req: NextRequest) {
 
     const totalWords = turns.reduce((sum, t) => sum + t.userMessage.trim().split(/\s+/).filter(Boolean).length, 0);
 
+    const cefrGuide = scenario.difficulty === "beginner"
+      ? `CEFR target: A2. Score 80-100 if the user communicates at A2 level (familiar phrases, simple sentences, basic topics). A2 does NOT require perfect grammar — reward clear intent and basic communication. Score below 60 only if communication broke down entirely.`
+      : scenario.difficulty === "intermediate"
+      ? `CEFR target: B1-B2. Score 75-90 for B2 (handles unfamiliar topics, some fluency, good range). Score 60-74 for B1 (manages familiar situations, simple connected sentences). Score below 60 if mostly broken phrases.`
+      : `CEFR target: C1-C2. Score 85-100 for near-native fluency, complex language, precision. Score 70-84 for C1-level competence. Score below 70 if clearly below C level.`;
+
     const completion = await groq.chat.completions.create({
       model: "llama-3.3-70b-versatile",
       messages: [
         { role: "system", content: systemContent },
         {
           role: "user",
-          content: `${isJa ? "⚠️ MANDATORY: Write strengths[], improvements[], encouragement, and naturalExpressions[].explanation IN JAPANESE. Do NOT use English for these fields.\n\n" : ""}Analyze this English conversation session (${turns.length} turn${turns.length > 1 ? "s" : ""}).
+          content: `${isJa ? "⚠️ MANDATORY: Write strengths[], improvements[], and naturalExpressions[].explanation IN JAPANESE. Do NOT use English for these fields.\n\n" : ""}Analyze this English conversation session (${turns.length} turn${turns.length > 1 ? "s" : ""}).
 
 Scenario: ${scenario.title}
 Situation: ${scenario.brief}
@@ -36,33 +42,32 @@ Key vocabulary: ${scenario.keyPhrases.join(", ")}
 
 ${turnsText}
 
-${scenario.difficulty === "beginner"
-  ? "IMPORTANT: Score generously for beginner level. Simple, clear communication = 70+. Any attempt to communicate politely = at least 60. Tips must be very simple, encouraging, and positive."
-  : ""}
+${cefrGuide}
 
 Score the OVERALL session on 4 axes (0-100):
-- grammar: correct use of tenses, articles, prepositions, sentence structure. This is spoken English from voice input — ignore all punctuation entirely.
-- vocabulary: range and appropriateness of words used across the session
-- naturalness: how native-like the phrasing sounds overall
-- communication: ability to convey intent, respond relevantly, keep conversation going. Score below 65 if responses are too short (under 10 words), off-topic, or fail to directly address what was asked. Do NOT inflate this score just because the user attempted to speak.
+- grammar: correct use of tenses, articles, prepositions, sentence structure. Spoken English from voice input — ignore punctuation entirely.
+- vocabulary: range and appropriateness of words. Penalise repetition of the same basic words across turns.
+- naturalness: how native-like the phrasing sounds. Penalise direct translations from Japanese, unnatural word order, or overly stiff expressions.
+- communication: relevance and substance of responses. Score below 65 if responses are too short (under 10 words), off-topic, or fail to directly address what was asked.
 
 CRITICAL RULES:
-- "strengths": ALWAYS return exactly 2 items. Each MUST start with the axis name and score in brackets, e.g. "[Grammar 82]". Be specific about what the user did well.${isJa ? " Write content in Japanese but keep the bracket label in English, e.g. [Grammar 82]：文法的に正確な..." : ""}
-- "encouragement": 1-2 sentences. MUST name the highest-scoring axis with its score AND the axis needing most improvement with its score. Be honest and direct — do NOT give vague praise.${isJa ? " Write in Japanese." : ""}
-- "improvements": Exactly 2 items. Each MUST start with the axis name and score in brackets, e.g. "[Naturalness 54]". Give a concrete, actionable tip for that axis.${isJa ? " Write content in Japanese but keep the bracket label in English." : ""}
-- "naturalExpressions": Pick 2-4 of the most useful corrections from across ALL turns. Return [] if the user's English was already natural — do NOT force suggestions if there is nothing meaningful to improve.
+- "strengths": Exactly 2 items. Each MUST start with [AxisName Score] in brackets. Then QUOTE a specific phrase the user actually said that demonstrates the strength. Be concrete — do NOT write vague praise.${isJa ? " Write content in Japanese but keep [AxisName Score] in English." : ""}
+  Example: "[Grammar 78]: You correctly used past tense in 'we had discussed this last week' — tense agreement was accurate throughout."
+- "improvements": Exactly 2 items. Each MUST start with [AxisName Score]. QUOTE the user's actual phrase, then show a better version. Be specific.${isJa ? " Write content in Japanese but keep [AxisName Score] in English." : ""}
+  Example: "[Naturalness 52]: You said 'I want to make the budget more' — more natural: 'I'd like to increase the budget allocation'."
+- "naturalExpressions": Pick 2-4 of the most useful corrections from across ALL turns. Return [] if English was already natural.
 - "naturalExpressions[].explanation": One sentence why it sounds more natural.${isJa ? " Write in Japanese." : ""}
-- "naturalExpressions[].chunk": The core pattern/template of the natural expression, with "~" for the variable part. E.g. "I'd strongly recommend ~", "Would it be possible to ~". Keep it short (3-6 words + ~).
-- "naturalExpressions[].example": REQUIRED when naturalExpressions is non-empty. One short English example sentence.
+- "naturalExpressions[].chunk": Core pattern with "~" for variable part. E.g. "I'd strongly recommend ~". Keep short (3-6 words + ~).
+- "naturalExpressions[].example": One short English example sentence using the chunk.
 - "suggestedResponse": A better version of the user's LAST turn response in English.
 
 Return ONLY valid JSON:
 {
   "scores": { "grammar": <number>, "vocabulary": <number>, "naturalness": <number>, "communication": <number> },
   "overall": <number>,
-  "encouragement": "<${isJa ? "日本語で励ましの一文" : "one encouraging sentence"}>",
-  "strengths": ["<${isJa ? "日本語で良かった点" : "strength"}>", "<${isJa ? "日本語で良かった点" : "strength"}>"],
-  "improvements": ["<${isJa ? "日本語で改善点" : "tip"}>"],
+  "encouragement": "",
+  "strengths": ["<[AxisName Score]${isJa ? " 具体的な良かった点" : " specific strength with quoted phrase"}>", "<[AxisName Score]${isJa ? " 具体的な良かった点" : " specific strength"}>"],
+  "improvements": ["<[AxisName Score]${isJa ? " 引用→改善案" : " quoted phrase → better version"}>", "<[AxisName Score]${isJa ? " 引用→改善案" : " quoted phrase → better version"}>"],
   "foundPhrases": [],
   "suggestedResponse": "<natural English response for the last turn>",
   "naturalExpressions": [
@@ -71,14 +76,14 @@ Return ONLY valid JSON:
       "natural": "<more natural English>",
       "chunk": "<core pattern e.g. 'I'd strongly recommend ~'>",
       "explanation": "<${isJa ? "日本語で理由" : "why more natural"}>",
-      "example": "<short English example>"
+      "example": "<short English example using the chunk>"
     }
   ]
 }`,
         },
       ],
       temperature: 0.3,
-      max_tokens: 1500,
+      max_tokens: 1600,
     });
 
     const text = completion.choices[0].message.content?.trim() ?? "";
