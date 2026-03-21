@@ -2,13 +2,17 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { saveCustomScenario } from "@/lib/storage";
-import type { Difficulty, Industry, Scenario } from "@/types";
+import { saveCustomScenario, getSettings, saveSettings } from "@/lib/storage";
+import { i18n } from "@/lib/i18n";
+import type { Difficulty, Industry, Language, Scenario } from "@/types";
 
 const CATEGORIES = ["Negotiation", "Sales", "1-on-1", "Cross-team", "Presentation", "Client Meeting", "Performance Review", "Crisis Management", "Partnership", "Hiring"];
 
 export default function CreatePage() {
   const router = useRouter();
+  const [lang, setLang] = useState<Language>(() => getSettings().language ?? "en");
+  const tr = i18n[lang];
+
   const [form, setForm] = useState({
     title: "",
     brief: "",
@@ -22,6 +26,13 @@ export default function CreatePage() {
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
 
+  const toggleLang = () => {
+    const newLang: Language = lang === "en" ? "ja" : "en";
+    setLang(newLang);
+    const s = getSettings();
+    saveSettings({ ...s, language: newLang });
+  };
+
   const set = (key: string, value: string) => {
     setForm((prev) => ({ ...prev, [key]: value }));
     setErrors((prev) => ({ ...prev, [key]: "" }));
@@ -29,10 +40,10 @@ export default function CreatePage() {
 
   const validate = () => {
     const e: Record<string, string> = {};
-    if (!form.title.trim()) e.title = "Title is required";
-    if (!form.brief.trim()) e.brief = "Brief is required";
-    if (!form.personaName.trim()) e.personaName = "Name is required";
-    if (!form.opener.trim()) e.opener = "Opening line is required";
+    if (!form.title.trim()) e.title = tr.titleRequired;
+    if (!form.brief.trim()) e.brief = tr.briefRequired;
+    if (!form.personaName.trim()) e.personaName = tr.nameRequired;
+    if (!form.opener.trim()) e.opener = tr.openerRequired;
     return e;
   };
 
@@ -69,35 +80,46 @@ export default function CreatePage() {
             color: "var(--text-secondary)", fontSize: 13, fontWeight: 600,
           }}
         >
-          ← Back
+          {tr.back}
         </button>
-        <div>
+        <div style={{ flex: 1 }}>
           <h1 style={{ fontSize: 22, fontWeight: 700, color: "var(--text)", margin: 0, letterSpacing: "-0.02em" }}>
-            Create Scenario
+            {tr.createTitle}
           </h1>
           <p style={{ fontSize: 13, color: "var(--text-muted)", margin: "2px 0 0" }}>
-            Build your own practice situation
+            {tr.createSubtitle}
           </p>
         </div>
+        <button
+          onClick={toggleLang}
+          style={{
+            padding: "6px 10px", borderRadius: 20,
+            background: "var(--surface)", border: "1px solid var(--border)",
+            color: "var(--accent)", fontSize: 12, fontWeight: 700,
+            cursor: "pointer", boxShadow: "var(--shadow-sm)",
+          }}
+        >
+          {lang === "en" ? "JA" : "EN"}
+        </button>
       </div>
 
       <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
         {/* Title */}
-        <Field label="Title *" error={errors.title}>
+        <Field label={tr.titleLabel} error={errors.title}>
           <input
             value={form.title}
             onChange={(e) => set("title", e.target.value)}
-            placeholder="e.g. Budget Review with CFO"
+            placeholder={tr.titlePlaceholder}
             style={inputStyle(!!errors.title)}
           />
         </Field>
 
         {/* Brief */}
-        <Field label="Situation & Goal *" error={errors.brief}>
+        <Field label={tr.situationLabel} error={errors.brief}>
           <textarea
             value={form.brief}
             onChange={(e) => set("brief", e.target.value)}
-            placeholder="Describe the situation and what you need to achieve..."
+            placeholder={tr.situationPlaceholder}
             rows={3}
             style={{ ...inputStyle(!!errors.brief), resize: "vertical" }}
           />
@@ -105,68 +127,68 @@ export default function CreatePage() {
 
         {/* Persona */}
         <div style={{ display: "flex", gap: 10 }}>
-          <Field label="Counterpart Name *" error={errors.personaName} style={{ flex: 1 }}>
+          <Field label={tr.nameLabel} error={errors.personaName} style={{ flex: 1 }}>
             <input
               value={form.personaName}
               onChange={(e) => set("personaName", e.target.value)}
-              placeholder="e.g. Sarah"
+              placeholder={tr.namePlaceholder}
               style={inputStyle(!!errors.personaName)}
             />
           </Field>
-          <Field label="Their Role" style={{ flex: 1 }}>
+          <Field label={tr.roleLabel} style={{ flex: 1 }}>
             <input
               value={form.personaRole}
               onChange={(e) => set("personaRole", e.target.value)}
-              placeholder="e.g. CFO"
+              placeholder={tr.rolePlaceholder}
               style={inputStyle(false)}
             />
           </Field>
         </div>
 
         {/* Opener */}
-        <Field label="Their Opening Line *" error={errors.opener}>
+        <Field label={tr.openerLabel} error={errors.opener}>
           <textarea
             value={form.opener}
             onChange={(e) => set("opener", e.target.value)}
-            placeholder="What does the counterpart say first?"
+            placeholder={tr.openerPlaceholder}
             rows={2}
             style={{ ...inputStyle(!!errors.opener), resize: "vertical" }}
           />
         </Field>
 
         {/* Key phrases */}
-        <Field label="Key Phrases (comma separated)">
+        <Field label={tr.keyPhrasesLabel}>
           <input
             value={form.keyPhrases}
             onChange={(e) => set("keyPhrases", e.target.value)}
-            placeholder="e.g. cost reduction, ROI, Q3 targets"
+            placeholder={tr.keyPhrasesPlaceholder}
             style={inputStyle(false)}
           />
         </Field>
 
         {/* Category + Difficulty + Industry */}
         <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-          <Field label="Category" style={{ flex: 1, minWidth: 140 }}>
+          <Field label={tr.categoryLabel} style={{ flex: 1, minWidth: 140 }}>
             <select value={form.category} onChange={(e) => set("category", e.target.value)} style={selectStyle}>
               {CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
             </select>
           </Field>
-          <Field label="Difficulty" style={{ flex: 1, minWidth: 120 }}>
+          <Field label={tr.difficultyLabel} style={{ flex: 1, minWidth: 120 }}>
             <select value={form.difficulty} onChange={(e) => set("difficulty", e.target.value as Difficulty)} style={selectStyle}>
-              <option value="beginner">Beginner</option>
-              <option value="intermediate">Intermediate</option>
-              <option value="advanced">Advanced</option>
+              <option value="beginner">{tr.beginner}</option>
+              <option value="intermediate">{tr.intermediate}</option>
+              <option value="advanced">{tr.advanced}</option>
             </select>
           </Field>
-          <Field label="Industry" style={{ flex: 1, minWidth: 120 }}>
+          <Field label={tr.industryLabel} style={{ flex: 1, minWidth: 120 }}>
             <select value={form.industry} onChange={(e) => set("industry", e.target.value as Industry)} style={selectStyle}>
-              <option value="general">General</option>
-              <option value="technology">Tech</option>
-              <option value="finance">Finance</option>
-              <option value="consulting">Consulting</option>
-              <option value="healthcare">Healthcare</option>
-              <option value="retail">Retail</option>
-              <option value="manufacturing">Manufacturing</option>
+              <option value="general">{tr.industryGeneral}</option>
+              <option value="technology">{tr.industryTech}</option>
+              <option value="finance">{tr.industryFinance}</option>
+              <option value="consulting">{tr.industryConsulting}</option>
+              <option value="healthcare">{tr.industryHealthcare}</option>
+              <option value="retail">{tr.industryRetail}</option>
+              <option value="manufacturing">{tr.industryManufacturing}</option>
             </select>
           </Field>
         </div>
@@ -183,7 +205,7 @@ export default function CreatePage() {
           letterSpacing: "-0.01em",
         }}
       >
-        Save Scenario
+        {tr.saveScenario}
       </button>
     </main>
   );

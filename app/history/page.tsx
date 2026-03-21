@@ -2,19 +2,31 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { getScoreHistory } from "@/lib/storage";
-import type { ScoreRecord } from "@/types";
+import { getScoreHistory, getSettings, saveSettings } from "@/lib/storage";
+import { i18n } from "@/lib/i18n";
+import type { Tr } from "@/lib/i18n";
+import type { Language, ScoreRecord } from "@/types";
 import SpeaqLogo from "@/components/SpeaqLogo";
 
 export default function HistoryPage() {
   const router = useRouter();
   const [history, setHistory] = useState<ScoreRecord[]>([]);
   const [dark, setDark] = useState(false);
+  const [lang, setLang] = useState<Language>(() => getSettings().language ?? "en");
+
+  const tr = i18n[lang];
 
   useEffect(() => {
     setHistory(getScoreHistory());
     setDark(document.documentElement.classList.contains("dark"));
   }, []);
+
+  const toggleLang = () => {
+    const newLang: Language = lang === "en" ? "ja" : "en";
+    setLang(newLang);
+    const s = getSettings();
+    saveSettings({ ...s, language: newLang });
+  };
 
   const avg = history.length
     ? Math.round(history.reduce((a, b) => a + b.overall, 0) / history.length)
@@ -32,33 +44,46 @@ export default function HistoryPage() {
       {/* Header */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
         <SpeaqLogo />
-        <button
-          onClick={() => { setDark(!dark); document.documentElement.classList.toggle("dark"); }}
-          style={{
-            width: 36, height: 36, borderRadius: "50%",
-            background: "var(--surface)", border: "none",
-            cursor: "pointer", fontSize: 16,
-            display: "flex", alignItems: "center", justifyContent: "center",
-            boxShadow: "var(--shadow-sm)",
-          }}
-        >
-          {dark ? "☀️" : "🌙"}
-        </button>
+        <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+          <button
+            onClick={toggleLang}
+            style={{
+              padding: "6px 10px", borderRadius: 20,
+              background: "var(--surface)", border: "1px solid var(--border)",
+              color: "var(--accent)", fontSize: 12, fontWeight: 700,
+              cursor: "pointer", boxShadow: "var(--shadow-sm)",
+            }}
+          >
+            {lang === "en" ? "JA" : "EN"}
+          </button>
+          <button
+            onClick={() => { setDark(!dark); document.documentElement.classList.toggle("dark"); }}
+            style={{
+              width: 36, height: 36, borderRadius: "50%",
+              background: "var(--surface)", border: "none",
+              cursor: "pointer", fontSize: 16,
+              display: "flex", alignItems: "center", justifyContent: "center",
+              boxShadow: "var(--shadow-sm)",
+            }}
+          >
+            {dark ? "☀️" : "🌙"}
+          </button>
+        </div>
       </div>
 
       {/* Nav tabs */}
       <div style={{ display: "flex", gap: 4, marginBottom: 20, background: "var(--surface2)", borderRadius: 14, padding: 4 }}>
-        <NavTab onClick={() => router.push("/")} icon="🎙" label="Practice" />
-        <NavTab onClick={() => router.push("/notebook")} icon="📒" label="Notebook" />
-        <NavTab active icon="📊" label="History" />
+        <NavTab onClick={() => router.push("/")} icon="🎙" label={tr.navPractice} />
+        <NavTab onClick={() => router.push("/notebook")} icon="📒" label={tr.navNotebook} />
+        <NavTab active icon="📊" label={tr.navHistory} />
       </div>
 
       {/* Stats */}
       {history.length > 0 && (
         <div style={{ display: "flex", gap: 10, marginBottom: 24 }}>
-          <StatCard label="Sessions" value={history.length} />
-          <StatCard label="Avg Score" value={avg ?? 0} color={scoreColor(avg ?? 0)} />
-          <StatCard label="Best" value={best ?? 0} color={scoreColor(best ?? 0)} />
+          <StatCard label={tr.sessions} value={history.length} />
+          <StatCard label={tr.avgScore} value={avg ?? 0} color={scoreColor(avg ?? 0)} />
+          <StatCard label={tr.best} value={best ?? 0} color={scoreColor(best ?? 0)} />
         </div>
       )}
 
@@ -71,16 +96,16 @@ export default function HistoryPage() {
         }}>
           <div style={{ fontSize: 40, marginBottom: 16 }}>📊</div>
           <p style={{ fontWeight: 700, color: "var(--text-secondary)", marginBottom: 6, fontSize: 15 }}>
-            No history yet
+            {tr.noHistory}
           </p>
           <p style={{ fontSize: 13, lineHeight: 1.6 }}>
-            Complete a practice session to see your scores here.
+            {tr.noHistoryDesc}
           </p>
         </div>
       ) : (
         <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
           {history.map((record) => (
-            <HistoryCard key={record.id} record={record} />
+            <HistoryCard key={record.id} record={record} tr={tr} />
           ))}
         </div>
       )}
@@ -88,9 +113,18 @@ export default function HistoryPage() {
   );
 }
 
-function HistoryCard({ record }: { record: ScoreRecord }) {
+function HistoryCard({ record, tr }: { record: ScoreRecord; tr: Tr }) {
   const color = record.overall >= 70 ? "var(--green)" : record.overall >= 40 ? "var(--orange)" : "var(--red)";
   const axes = Object.entries(record.scores) as [string, number][];
+  const axisLabel = (key: string) => {
+    const map: Record<string, string> = {
+      clarity: tr.clarity,
+      persuasion: tr.persuasion,
+      professionalism: tr.professionalism,
+      strategy: tr.strategy,
+    };
+    return map[key] ?? key;
+  };
 
   return (
     <div style={{
@@ -103,7 +137,7 @@ function HistoryCard({ record }: { record: ScoreRecord }) {
             {record.scenarioTitle}
           </div>
           <div style={{ fontSize: 11, color: "var(--text-muted)" }}>
-            {record.date} · {record.turnCount} turn{record.turnCount !== 1 ? "s" : ""}
+            {record.date} · {record.turnCount} {record.turnCount !== 1 ? tr.turns : tr.turnSingular}
           </div>
         </div>
         <span style={{
@@ -120,7 +154,7 @@ function HistoryCard({ record }: { record: ScoreRecord }) {
             background: "var(--surface2)",
             color: "var(--text-secondary)",
           }}>
-            <span style={{ textTransform: "capitalize" }}>{key}</span>
+            <span>{axisLabel(key)}</span>
             <span style={{ fontWeight: 700, marginLeft: 4, color: val >= 70 ? "var(--green)" : val >= 40 ? "var(--orange)" : "var(--red)" }}>
               {val}
             </span>

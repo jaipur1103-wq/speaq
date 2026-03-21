@@ -4,6 +4,8 @@ import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import type { Feedback, Message, NaturalExpression, Scenario, TurnScore } from "@/types";
 import { saveExpression, getSettings, saveScoreRecord } from "@/lib/storage";
+import { i18n } from "@/lib/i18n";
+import type { Tr } from "@/lib/i18n";
 
 type ChatItem =
   | { kind: "message"; data: Message }
@@ -37,6 +39,7 @@ export default function PracticePage() {
   const [savedIds, setSavedIds] = useState<Set<string>>(new Set());
   const [showSummary, setShowSummary] = useState(false);
   const [scoreSaved, setScoreSaved] = useState(false);
+  const [tr, setTr] = useState<Tr>(i18n.en);
 
   // Timer
   const [timerEnabled, setTimerEnabled] = useState(false);
@@ -54,7 +57,9 @@ export default function PracticePage() {
     const s: Scenario = JSON.parse(raw);
     setScenario(s);
     setChatItems([{ kind: "message", data: { role: "counterpart", text: s.opener, timestamp: Date.now() } }]);
-    setTimerEnabled(getSettings().timerEnabled ?? false);
+    const settings = getSettings();
+    setTimerEnabled(settings.timerEnabled ?? false);
+    setTr(i18n[settings.language ?? "en"]);
   }, [router]);
 
   useEffect(() => {
@@ -264,7 +269,7 @@ export default function PracticePage() {
               color: "var(--text-secondary)", fontSize: 13, fontWeight: 600,
             }}
           >
-            ← Back
+            {tr.back}
           </button>
           <div style={{ flex: 1 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 2 }}>
@@ -302,7 +307,7 @@ export default function PracticePage() {
           display: "flex", alignItems: "center", gap: 8, overflowX: "auto",
         }}>
           <span style={{ fontSize: 10, color: "var(--text-muted)", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", whiteSpace: "nowrap" }}>
-            Progress
+            {tr.progress}
           </span>
           {turnScores.map((ts) => (
             <div key={ts.turn} style={{ display: "flex", alignItems: "center", gap: 3, whiteSpace: "nowrap" }}>
@@ -317,7 +322,7 @@ export default function PracticePage() {
       <div style={{ flex: 1, overflowY: "auto", padding: "16px", display: "flex", flexDirection: "column", gap: 12 }}>
         {chatItems.map((item, i) =>
           item.kind === "message" ? (
-            <ChatBubble key={i} msg={item.data} personaName={scenario.personaName} />
+            <ChatBubble key={i} msg={item.data} personaName={scenario.personaName} tr={tr} />
           ) : (
             <FeedbackPanel
               key={i}
@@ -325,13 +330,14 @@ export default function PracticePage() {
               turn={item.turn}
               scenarioTitle={item.scenarioTitle}
               savedIds={savedIds}
+              tr={tr}
               onSaveExpression={handleSaveExpression}
             />
           )
         )}
         {loadingFeedback && (
           <div style={{ fontSize: 12, color: "var(--text-muted)", textAlign: "center", padding: "4px 0" }}>
-            Analyzing your response...
+            {tr.analyzing}
           </div>
         )}
         {loadingReply && (
@@ -355,7 +361,7 @@ export default function PracticePage() {
                 ⏱ {timeLeft}s
               </span>
               {timeLeft === 0 && (
-                <span style={{ fontSize: 12, color: "var(--red)", fontWeight: 600 }}>Time&apos;s up! Send your response 🕐</span>
+                <span style={{ fontSize: 12, color: "var(--red)", fontWeight: 600 }}>{tr.timesUp}</span>
               )}
             </div>
             <div style={{ height: 3, background: "var(--surface2)", borderRadius: 2 }}>
@@ -366,7 +372,7 @@ export default function PracticePage() {
 
         {!speechSupported && (
           <p style={{ fontSize: 12, color: "var(--orange)", marginBottom: 8 }}>
-            ⚠️ Speech recognition not supported. Please use Chrome.
+            {tr.speechNotSupported}
           </p>
         )}
         <div style={{ display: "flex", gap: 10, alignItems: "flex-end" }}>
@@ -382,7 +388,7 @@ export default function PracticePage() {
                 flexShrink: 0, transition: "all 0.15s",
                 boxShadow: isRecording ? "0 0 0 4px rgba(255,59,48,0.15)" : "0 4px 14px rgba(0,102,204,0.35)",
               }}
-              aria-label={isRecording ? "Stop recording" : "Start recording"}
+              aria-label={isRecording ? tr.stopRecording : tr.startRecording}
             >
               <MicIcon recording={isRecording} />
             </button>
@@ -397,7 +403,7 @@ export default function PracticePage() {
               value={inputText + (interimText ? " " + interimText : "")}
               onChange={(e) => { if (!isRecording) setInputText(e.target.value); }}
               onKeyDown={handleKeyDown}
-              placeholder={isRecording ? "Listening..." : "Tap mic and speak, or type here..."}
+              placeholder={isRecording ? tr.listening : tr.tapToSpeak}
               rows={2}
               style={{ flex: 1, background: "transparent", border: "none", outline: "none", resize: "none", color: interimText ? "var(--text-muted)" : "var(--text)", fontSize: 14, lineHeight: 1.5, fontFamily: "inherit" }}
             />
@@ -420,7 +426,7 @@ export default function PracticePage() {
           </div>
         </div>
         <p style={{ fontSize: 11, color: "var(--text-muted)", marginTop: 8, textAlign: "center" }}>
-          Turn {turn} · {isRecording ? "Recording — tap mic to stop" : "Tap mic to speak"} · Enter to send
+          Turn {turn} · {isRecording ? tr.recordingHint : tr.tapMicHint}
         </p>
       </div>
 
@@ -429,6 +435,7 @@ export default function PracticePage() {
         <SessionSummary
           turnScores={turnScores}
           savedCount={savedIds.size}
+          tr={tr}
           onContinue={() => setShowSummary(false)}
           onDone={() => router.push("/")}
         />
@@ -450,7 +457,7 @@ function Avatar({ name }: { name: string }) {
   );
 }
 
-function ChatBubble({ msg, personaName }: { msg: Message; personaName: string }) {
+function ChatBubble({ msg, personaName, tr }: { msg: Message; personaName: string; tr: Tr }) {
   const isUser = msg.role === "user";
   const [speaking, setSpeaking] = useState(false);
 
@@ -502,7 +509,7 @@ function ChatBubble({ msg, personaName }: { msg: Message; personaName: string })
               fontSize: 13, flexShrink: 0, transition: "all 0.15s",
               marginLeft: 38,
             }}
-            title={speaking ? "Stop" : "Read aloud"}
+            title={speaking ? tr.stop : tr.readAloud}
           >
             {speaking ? "⏸" : "🔊"}
           </button>
@@ -513,18 +520,29 @@ function ChatBubble({ msg, personaName }: { msg: Message; personaName: string })
 }
 
 function FeedbackPanel({
-  feedback, turn, scenarioTitle, savedIds, onSaveExpression,
+  feedback, turn, scenarioTitle, savedIds, tr, onSaveExpression,
 }: {
   feedback: Feedback;
   turn: number;
   scenarioTitle: string;
   savedIds: Set<string>;
+  tr: Tr;
   onSaveExpression: (expr: NaturalExpression, scenarioTitle: string, key: string) => void;
 }) {
   const [showSuggested, setShowSuggested] = useState(false);
   const [showShadow, setShowShadow] = useState(false);
   const overall = feedback.overall;
   const scoreColor = overall >= 70 ? "var(--green)" : overall >= 40 ? "var(--orange)" : "var(--red)";
+
+  const axisLabel = (key: string) => {
+    const map: Record<string, string> = {
+      clarity: tr.clarity,
+      persuasion: tr.persuasion,
+      professionalism: tr.professionalism,
+      strategy: tr.strategy,
+    };
+    return map[key] ?? key;
+  };
 
   const handleShadow = () => {
     setShowSuggested(true);
@@ -539,7 +557,7 @@ function FeedbackPanel({
       {/* Header */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
         <span style={{ fontWeight: 700, fontSize: 12, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.07em" }}>
-          Turn {turn} Feedback
+          {tr.feedbackTitle(turn)}
         </span>
         <span style={{ padding: "4px 12px", borderRadius: 20, background: scoreColor + "22", color: scoreColor, fontWeight: 700, fontSize: 15 }}>
           {overall}/100
@@ -549,14 +567,14 @@ function FeedbackPanel({
       {/* Score bars */}
       <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 16 }}>
         {(Object.entries(feedback.scores) as [string, number][]).map(([key, val]) => (
-          <ScoreRow key={key} label={key} value={val} />
+          <ScoreRow key={key} label={axisLabel(key)} value={val} />
         ))}
       </div>
 
       {/* Strengths */}
       {feedback.strengths.length > 0 && (
         <div style={{ marginBottom: 12 }}>
-          <SectionLabel>✓ What worked</SectionLabel>
+          <SectionLabel>{tr.whatWorked}</SectionLabel>
           {feedback.strengths.map((s, i) => (
             <div key={i} style={{ fontSize: 13, color: "var(--text-secondary)", paddingLeft: 12, lineHeight: 1.6, borderLeft: "2.5px solid var(--green)", marginBottom: 4 }}>
               {s}
@@ -568,7 +586,7 @@ function FeedbackPanel({
       {/* Improvements */}
       {feedback.improvements.length > 0 && (
         <div style={{ marginBottom: 12 }}>
-          <SectionLabel>→ Try next time</SectionLabel>
+          <SectionLabel>{tr.tryNextTime}</SectionLabel>
           {feedback.improvements.map((s, i) => (
             <div key={i} style={{ fontSize: 13, color: "var(--text-secondary)", paddingLeft: 12, lineHeight: 1.6, borderLeft: "2.5px solid var(--orange)", marginBottom: 4 }}>
               {s}
@@ -580,7 +598,7 @@ function FeedbackPanel({
       {/* Natural expressions */}
       {feedback.naturalExpressions?.length > 0 && (
         <div style={{ marginBottom: 12 }}>
-          <SectionLabel>💬 More natural</SectionLabel>
+          <SectionLabel>{tr.moreNatural}</SectionLabel>
           {feedback.naturalExpressions.map((expr, i) => {
             const key = `${turn}-${i}`;
             const saved = savedIds.has(key);
@@ -606,7 +624,7 @@ function FeedbackPanel({
                     cursor: saved ? "default" : "pointer", fontWeight: 700,
                   }}
                 >
-                  {saved ? "✓ Saved" : "+ Save to Notebook"}
+                  {saved ? tr.savedToNotebook : tr.saveToNotebook}
                 </button>
               </div>
             );
@@ -625,7 +643,7 @@ function FeedbackPanel({
         </div>
       )}
 
-      {/* Model response + Shadowing — always visible */}
+      {/* Model response + Shadowing */}
       {feedback.suggestedResponse && (
         <div>
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
@@ -633,7 +651,7 @@ function FeedbackPanel({
               onClick={() => setShowSuggested(!showSuggested)}
               style={{ fontSize: 12, color: "var(--text-muted)", background: "transparent", border: "none", cursor: "pointer", padding: 0, textDecoration: "underline" }}
             >
-              {showSuggested ? "Hide" : "Show"} model response
+              {showSuggested ? tr.hideModelResponse : tr.showModelResponse}
             </button>
             <button
               onClick={handleShadow}
@@ -645,7 +663,7 @@ function FeedbackPanel({
                 cursor: "pointer", fontWeight: 600,
               }}
             >
-              🎙 Shadow this
+              {tr.shadowThis}
             </button>
           </div>
           {showSuggested && (
@@ -654,7 +672,7 @@ function FeedbackPanel({
             </div>
           )}
           {showShadow && (
-            <ShadowSection suggestedResponse={feedback.suggestedResponse} />
+            <ShadowSection suggestedResponse={feedback.suggestedResponse} tr={tr} />
           )}
         </div>
       )}
@@ -662,7 +680,7 @@ function FeedbackPanel({
   );
 }
 
-function ShadowSection({ suggestedResponse }: { suggestedResponse: string }) {
+function ShadowSection({ suggestedResponse, tr }: { suggestedResponse: string; tr: Tr }) {
   const [mode, setMode] = useState<"idle" | "recording" | "result">("idle");
   const [score, setScore] = useState<number | null>(null);
   const [highlights, setHighlights] = useState<{ word: string; matched: boolean }[]>([]);
@@ -711,18 +729,18 @@ function ShadowSection({ suggestedResponse }: { suggestedResponse: string }) {
             cursor: "pointer", fontWeight: 700,
           }}
         >
-          🎙 Start Recording
+          {tr.startRecordingBtn}
         </button>
       )}
 
       {mode === "recording" && (
         <div style={{ padding: "10px 14px", borderRadius: 12, background: "rgba(255,59,48,0.08)", border: "1px solid var(--red)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <span style={{ fontSize: 13, color: "var(--red)", fontWeight: 700 }}>🔴 Recording...</span>
+          <span style={{ fontSize: 13, color: "var(--red)", fontWeight: 700 }}>{tr.recording}</span>
           <button
             onClick={() => recRef.current?.stop()}
             style={{ fontSize: 12, padding: "4px 12px", borderRadius: 20, background: "var(--red)", color: "#FFFFFF", border: "none", cursor: "pointer", fontWeight: 700 }}
           >
-            Stop
+            {tr.stop}
           </button>
         </div>
       )}
@@ -731,13 +749,13 @@ function ShadowSection({ suggestedResponse }: { suggestedResponse: string }) {
         <div style={{ padding: "12px 14px", borderRadius: 12, background: "var(--surface2)" }}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
             <span style={{ fontSize: 13, fontWeight: 700, color: "var(--text)" }}>
-              Match: {score}%
+              {tr.match(score)}
             </span>
             <button
               onClick={() => { setScore(null); setHighlights([]); setMode("idle"); }}
               style={{ fontSize: 12, padding: "3px 10px", borderRadius: 20, border: "1px solid var(--border)", background: "transparent", color: "var(--text-muted)", cursor: "pointer" }}
             >
-              Try again
+              {tr.tryAgain}
             </button>
           </div>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 4 }}>
@@ -758,9 +776,10 @@ function ShadowSection({ suggestedResponse }: { suggestedResponse: string }) {
   );
 }
 
-function SessionSummary({ turnScores, savedCount, onContinue, onDone }: {
+function SessionSummary({ turnScores, savedCount, tr, onContinue, onDone }: {
   turnScores: TurnScore[];
   savedCount: number;
+  tr: Tr;
   onContinue: () => void;
   onDone: () => void;
 }) {
@@ -770,6 +789,7 @@ function SessionSummary({ turnScores, savedCount, onContinue, onDone }: {
   const axisKeys: (keyof TurnScore["scores"])[] = ["clarity", "persuasion", "professionalism", "strategy"];
   const axisAvgs = axisKeys.map((key) => ({
     key,
+    label: (tr as Record<string, unknown>)[key] as string ?? key,
     value: Math.round(turnScores.reduce((a, b) => a + b.scores[key], 0) / turnScores.length),
   }));
 
@@ -778,13 +798,13 @@ function SessionSummary({ turnScores, savedCount, onContinue, onDone }: {
       <div className="animate-fade-slide-up" style={{ background: "var(--surface)", borderRadius: "24px 24px 0 0", padding: "28px 24px 40px", width: "100%", maxWidth: 640, boxShadow: "0 -8px 40px rgba(0,0,0,0.2)" }}>
         <div style={{ textAlign: "center", marginBottom: 24 }}>
           <div style={{ fontSize: 36, marginBottom: 10 }}>🎉</div>
-          <h2 style={{ fontSize: 22, fontWeight: 700, color: "var(--text)", margin: "0 0 4px", letterSpacing: "-0.02em" }}>Session Complete</h2>
-          <p style={{ fontSize: 13, color: "var(--text-muted)", margin: 0 }}>{turnScores.length} turn{turnScores.length !== 1 ? "s" : ""} · saved to History</p>
+          <h2 style={{ fontSize: 22, fontWeight: 700, color: "var(--text)", margin: "0 0 4px", letterSpacing: "-0.02em" }}>{tr.sessionComplete}</h2>
+          <p style={{ fontSize: 13, color: "var(--text-muted)", margin: 0 }}>{tr.savedToHistory(turnScores.length)}</p>
         </div>
 
         <div style={{ background: "var(--surface2)", borderRadius: 16, padding: "18px 20px", marginBottom: 16, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <div>
-            <div style={{ fontSize: 12, color: "var(--text-muted)", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 4 }}>Overall Average</div>
+            <div style={{ fontSize: 12, color: "var(--text-muted)", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 4 }}>{tr.overallAverage}</div>
             <div style={{ fontSize: 32, fontWeight: 700, color: avg >= 70 ? "var(--green)" : avg >= 40 ? "var(--orange)" : "var(--red)", letterSpacing: "-0.02em" }}>{avg}/100</div>
           </div>
           {trend !== 0 && (
@@ -796,7 +816,7 @@ function SessionSummary({ turnScores, savedCount, onContinue, onDone }: {
 
         {turnScores.length > 1 && (
           <div style={{ marginBottom: 16 }}>
-            <div style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--text-muted)", marginBottom: 8 }}>Turn Scores</div>
+            <div style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--text-muted)", marginBottom: 8 }}>{tr.turnScores}</div>
             <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
               {turnScores.map((ts, i) => (
                 <div key={ts.turn} style={{ display: "flex", alignItems: "center", gap: 5 }}>
@@ -809,26 +829,26 @@ function SessionSummary({ turnScores, savedCount, onContinue, onDone }: {
         )}
 
         <div style={{ marginBottom: 16 }}>
-          <div style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--text-muted)", marginBottom: 8 }}>Axis Averages</div>
+          <div style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--text-muted)", marginBottom: 8 }}>{tr.axisAverages}</div>
           <div style={{ display: "flex", flexDirection: "column", gap: 7 }}>
-            {axisAvgs.map(({ key, value }) => <ScoreRow key={key} label={key} value={value} />)}
+            {axisAvgs.map(({ label, value }) => <ScoreRow key={label} label={label} value={value} />)}
           </div>
         </div>
 
         {savedCount > 0 && (
           <div style={{ background: "var(--accent-bg)", borderRadius: 12, padding: "12px 16px", marginBottom: 20 }}>
             <span style={{ fontSize: 13, color: "var(--accent)", fontWeight: 600 }}>
-              📒 {savedCount} expression{savedCount !== 1 ? "s" : ""} saved this session
+              {tr.expressionsSaved(savedCount)}
             </span>
           </div>
         )}
 
         <div style={{ display: "flex", gap: 10 }}>
           <button onClick={onContinue} style={{ flex: 1, padding: "14px", background: "var(--surface2)", color: "var(--text)", border: "1px solid var(--border)", borderRadius: 14, fontWeight: 700, fontSize: 14, cursor: "pointer" }}>
-            Continue Practice
+            {tr.continuePractice}
           </button>
           <button onClick={onDone} style={{ flex: 1, padding: "14px", background: "var(--accent)", color: "#FFFFFF", border: "none", borderRadius: 14, fontWeight: 700, fontSize: 14, cursor: "pointer", boxShadow: "0 4px 14px rgba(0,102,204,0.3)" }}>
-            Done → Home
+            {tr.doneHome}
           </button>
         </div>
       </div>
@@ -844,7 +864,7 @@ function ScoreRow({ label, value }: { label: string; value: number }) {
   const color = value >= 70 ? "var(--green)" : value >= 40 ? "var(--orange)" : "var(--red)";
   return (
     <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-      <span style={{ fontSize: 12, color: "var(--text-secondary)", width: 120, textTransform: "capitalize" }}>{label}</span>
+      <span style={{ fontSize: 12, color: "var(--text-secondary)", width: 120 }}>{label}</span>
       <div style={{ flex: 1, height: 5, background: "var(--surface2)", borderRadius: 3, overflow: "hidden" }}>
         <div style={{ width: `${value}%`, height: "100%", background: color, borderRadius: 3, transition: "width 0.6s ease" }} />
       </div>

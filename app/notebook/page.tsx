@@ -2,8 +2,10 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { getSavedExpressions, toggleLearned, deleteExpression } from "@/lib/storage";
-import type { SavedExpression } from "@/types";
+import { getSavedExpressions, toggleLearned, deleteExpression, getSettings, saveSettings } from "@/lib/storage";
+import { i18n } from "@/lib/i18n";
+import type { Tr } from "@/lib/i18n";
+import type { Language, SavedExpression } from "@/types";
 import SpeaqLogo from "@/components/SpeaqLogo";
 
 type Filter = "all" | "tolearn" | "learned" | "quiz";
@@ -13,6 +15,7 @@ export default function NotebookPage() {
   const [expressions, setExpressions] = useState<SavedExpression[]>([]);
   const [filter, setFilter] = useState<Filter>("all");
   const [dark, setDark] = useState(false);
+  const [lang, setLang] = useState<Language>(() => getSettings().language ?? "en");
 
   // Quiz state
   const [quizQueue, setQuizQueue] = useState<SavedExpression[]>([]);
@@ -21,10 +24,19 @@ export default function NotebookPage() {
   const [quizCorrect, setQuizCorrect] = useState(0);
   const [quizDone, setQuizDone] = useState(false);
 
+  const tr = i18n[lang];
+
   useEffect(() => {
     setExpressions(getSavedExpressions());
     setDark(document.documentElement.classList.contains("dark"));
   }, []);
+
+  const toggleLang = () => {
+    const newLang: Language = lang === "en" ? "ja" : "en";
+    setLang(newLang);
+    const s = getSettings();
+    saveSettings({ ...s, language: newLang });
+  };
 
   const handleToggle = (id: string) => {
     toggleLearned(id);
@@ -83,32 +95,45 @@ export default function NotebookPage() {
       {/* Header */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
         <SpeaqLogo />
-        <button
-          onClick={() => { setDark(!dark); document.documentElement.classList.toggle("dark"); }}
-          style={{
-            width: 36, height: 36, borderRadius: "50%",
-            background: "var(--surface)", border: "none",
-            cursor: "pointer", fontSize: 16,
-            display: "flex", alignItems: "center", justifyContent: "center",
-            boxShadow: "var(--shadow-sm)",
-          }}
-        >
-          {dark ? "☀️" : "🌙"}
-        </button>
+        <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+          <button
+            onClick={toggleLang}
+            style={{
+              padding: "6px 10px", borderRadius: 20,
+              background: "var(--surface)", border: "1px solid var(--border)",
+              color: "var(--accent)", fontSize: 12, fontWeight: 700,
+              cursor: "pointer", boxShadow: "var(--shadow-sm)",
+            }}
+          >
+            {lang === "en" ? "JA" : "EN"}
+          </button>
+          <button
+            onClick={() => { setDark(!dark); document.documentElement.classList.toggle("dark"); }}
+            style={{
+              width: 36, height: 36, borderRadius: "50%",
+              background: "var(--surface)", border: "none",
+              cursor: "pointer", fontSize: 16,
+              display: "flex", alignItems: "center", justifyContent: "center",
+              boxShadow: "var(--shadow-sm)",
+            }}
+          >
+            {dark ? "☀️" : "🌙"}
+          </button>
+        </div>
       </div>
 
       {/* Nav tabs */}
       <div style={{ display: "flex", gap: 4, marginBottom: 20, background: "var(--surface2)", borderRadius: 14, padding: 4 }}>
-        <NavTab onClick={() => router.push("/")} icon="🎙" label="Practice" />
-        <NavTab active icon="📒" label="Notebook" />
-        <NavTab onClick={() => router.push("/history")} icon="📊" label="History" />
+        <NavTab onClick={() => router.push("/")} icon="🎙" label={tr.navPractice} />
+        <NavTab active icon="📒" label={tr.navNotebook} />
+        <NavTab onClick={() => router.push("/history")} icon="📊" label={tr.navHistory} />
       </div>
 
       {/* Stats */}
       <div style={{ display: "flex", gap: 10, marginBottom: 24 }}>
-        <StatCard label="Saved" value={expressions.length} />
-        <StatCard label="To Learn" value={toLearnCount} color="var(--orange)" />
-        <StatCard label="Learned" value={learnedCount} color="var(--green)" />
+        <StatCard label={tr.saved} value={expressions.length} />
+        <StatCard label={tr.toLearn} value={toLearnCount} color="var(--orange)" />
+        <StatCard label={tr.learned} value={learnedCount} color="var(--green)" />
       </div>
 
       {/* Filter + Quiz tabs */}
@@ -130,7 +155,7 @@ export default function NotebookPage() {
                 textAlign: "center",
               }}
             >
-              {f === "all" ? "All" : f === "tolearn" ? "To Learn" : "Learned"}
+              {f === "all" ? tr.all : f === "tolearn" ? tr.toLearn : tr.learned}
             </button>
           ))}
         </div>
@@ -149,7 +174,7 @@ export default function NotebookPage() {
             boxShadow: toLearnCount > 0 && filter !== "quiz" ? "0 4px 14px rgba(0,102,204,0.25)" : "none",
           }}
         >
-          🧠 Quiz {toLearnCount > 0 ? `— ${toLearnCount} cards` : "(no cards to learn)"}
+          {toLearnCount > 0 ? tr.quizCount(toLearnCount) : tr.quiz}
         </button>
       </div>
 
@@ -161,6 +186,7 @@ export default function NotebookPage() {
           revealed={quizRevealed}
           done={quizDone}
           correct={quizCorrect}
+          tr={tr}
           onReveal={() => setQuizRevealed(true)}
           onGotIt={handleQuizGotIt}
           onNotYet={handleQuizNotYet}
@@ -179,11 +205,11 @@ export default function NotebookPage() {
           }}>
             <div style={{ fontSize: 36, marginBottom: 14 }}>📒</div>
             <p style={{ fontWeight: 700, color: "var(--text-secondary)", marginBottom: 6, fontSize: 15 }}>
-              {filter === "all" ? "No expressions saved yet" : filter === "tolearn" ? "Nothing to learn!" : "No learned expressions yet"}
+              {filter === "all" ? tr.noExpressions : filter === "tolearn" ? tr.toLearn : tr.learned}
             </p>
             {filter === "all" && (
               <p style={{ fontSize: 13, lineHeight: 1.6 }}>
-                Practice a scenario and save expressions from feedback.
+                {tr.noExpressionsDesc}
               </p>
             )}
           </div>
@@ -193,6 +219,7 @@ export default function NotebookPage() {
               <ExpressionCard
                 key={expr.id}
                 expr={expr}
+                tr={tr}
                 onToggle={handleToggle}
                 onDelete={handleDelete}
               />
@@ -205,7 +232,7 @@ export default function NotebookPage() {
 }
 
 function QuizPanel({
-  queue, index, revealed, done, correct,
+  queue, index, revealed, done, correct, tr,
   onReveal, onGotIt, onNotYet, onDone, onAgain,
 }: {
   queue: SavedExpression[];
@@ -213,6 +240,7 @@ function QuizPanel({
   revealed: boolean;
   done: boolean;
   correct: number;
+  tr: Tr;
   onReveal: () => void;
   onGotIt: () => void;
   onNotYet: () => void;
@@ -228,16 +256,13 @@ function QuizPanel({
       }}>
         <div style={{ fontSize: 40, marginBottom: 16 }}>🎉</div>
         <div style={{ fontSize: 22, fontWeight: 700, color: "var(--text)", marginBottom: 8, letterSpacing: "-0.02em" }}>
-          Quiz Complete!
+          {tr.quizComplete}
         </div>
         <div style={{ fontSize: 32, fontWeight: 700, color: pct >= 70 ? "var(--green)" : "var(--orange)", marginBottom: 6 }}>
-          {correct} / {queue.length}
-        </div>
-        <div style={{ fontSize: 13, color: "var(--text-secondary)", marginBottom: 8 }}>
-          {pct}% — {pct >= 80 ? "Excellent!" : pct >= 60 ? "Good work!" : "Keep practicing!"}
+          {tr.quizScore(correct, queue.length)}
         </div>
         <div style={{ fontSize: 12, color: "var(--text-muted)", marginBottom: 28 }}>
-          表現は削除するまで残ります。何度でも練習できます。
+          {tr.notebookNote}
         </div>
         <div style={{ display: "flex", gap: 10 }}>
           <button
@@ -249,7 +274,7 @@ function QuizPanel({
               cursor: "pointer", boxShadow: "0 4px 14px rgba(0,102,204,0.3)",
             }}
           >
-            🔄 Quiz Again
+            {tr.quizAgain}
           </button>
           <button
             onClick={onDone}
@@ -260,7 +285,7 @@ function QuizPanel({
               cursor: "pointer",
             }}
           >
-            Back to Notebook
+            {tr.backToList}
           </button>
         </div>
       </div>
@@ -281,7 +306,7 @@ function QuizPanel({
           Quiz
         </span>
         <span style={{ fontSize: 13, color: "var(--text-secondary)", fontWeight: 600 }}>
-          {remaining} remaining
+          {remaining}
         </span>
       </div>
 
@@ -308,7 +333,7 @@ function QuizPanel({
         {revealed && (
           <div className="animate-fade-slide-up" style={{ borderTop: "1px solid var(--border)", paddingTop: 20 }}>
             <div style={{ fontSize: 11, color: "var(--accent)", fontWeight: 700, letterSpacing: "0.05em", marginBottom: 8, textTransform: "uppercase" }}>
-              More natural
+              {tr.moreNatural}
             </div>
             <div style={{ fontSize: 17, fontWeight: 700, color: "var(--text)", marginBottom: 10 }}>
               → {card.natural}
@@ -331,7 +356,7 @@ function QuizPanel({
             boxShadow: "0 4px 14px rgba(0,102,204,0.3)",
           }}
         >
-          Reveal Answer
+          {tr.showModelResponse}
         </button>
       ) : (
         <div style={{ display: "flex", gap: 10 }}>
@@ -344,7 +369,7 @@ function QuizPanel({
               fontWeight: 600, fontSize: 14, cursor: "pointer",
             }}
           >
-            Not yet
+            {tr.tryAgain}
           </button>
           <button
             onClick={onGotIt}
@@ -356,7 +381,7 @@ function QuizPanel({
               boxShadow: "0 4px 12px rgba(52,199,89,0.3)",
             }}
           >
-            Got it ✓
+            {tr.markLearned} ✓
           </button>
         </div>
       )}
@@ -365,9 +390,10 @@ function QuizPanel({
 }
 
 function ExpressionCard({
-  expr, onToggle, onDelete,
+  expr, tr, onToggle, onDelete,
 }: {
   expr: SavedExpression;
+  tr: Tr;
   onToggle: (id: string) => void;
   onDelete: (id: string) => void;
 }) {
@@ -410,7 +436,7 @@ function ExpressionCard({
             transition: "all 0.15s",
           }}
         >
-          {expr.learned ? "✓ Learned" : "Mark as learned"}
+          {expr.learned ? `✓ ${tr.learned}` : tr.markLearned}
         </button>
         <button
           onClick={() => onDelete(expr.id)}
@@ -421,7 +447,7 @@ function ExpressionCard({
             fontSize: 12, cursor: "pointer",
           }}
         >
-          Delete
+          {tr.deleteBtn}
         </button>
       </div>
     </div>
