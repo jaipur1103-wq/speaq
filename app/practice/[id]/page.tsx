@@ -63,6 +63,18 @@ export default function PracticePage() {
     const s: Scenario = JSON.parse(raw);
     setScenario(s);
     setChatItems([{ kind: "message", data: { role: "counterpart", text: s.opener, timestamp: Date.now() } }]);
+    // Reset all session state so previous sessions don't bleed through
+    setPendingTurns([]);
+    setFinalFeedback(null);
+    setTurn(1);
+    setSavedIds(new Set());
+    setScoreSaved(false);
+    setShowSummary(false);
+    setInputText("");
+    setInterimText("");
+    setRecordingSeconds(0);
+    setLoadingReply(false);
+    setLoadingFinalFeedback(false);
     const settings = getSettings();
     const l = settings.language ?? "en";
     setLang(l);
@@ -590,8 +602,13 @@ function FeedbackPanel({ feedback, scenarioTitle, savedIds, tr, onSaveExpression
             const saved = savedIds.has(key);
             return (
               <div key={i} style={{ background: "var(--surface2)", borderRadius: 12, padding: "12px 14px", marginBottom: 8 }}>
-                <div style={{ fontSize: 12, color: "var(--text-muted)", marginBottom: 4, textDecoration: "line-through" }}>{expr.original}</div>
-                <div style={{ fontSize: 14, color: "var(--text)", fontWeight: 700, marginBottom: 5 }}>→ {expr.natural}</div>
+                <div style={{ fontSize: 12, color: "var(--text-muted)", marginBottom: 6, textDecoration: "line-through" }}>{expr.original}</div>
+                {expr.chunk && (
+                  <div style={{ fontSize: 13, fontWeight: 700, color: "var(--accent)", marginBottom: 4, letterSpacing: "-0.01em" }}>
+                    🔑 {expr.chunk}
+                  </div>
+                )}
+                <div style={{ fontSize: 14, color: "var(--text)", fontWeight: 600, marginBottom: 5 }}>→ {expr.natural}</div>
                 <div style={{ fontSize: 12, color: "var(--text-secondary)", lineHeight: 1.5, marginBottom: 8 }}>{expr.explanation}</div>
                 {expandedExample === expr.original && expr.example && (
                   <div style={{ fontSize: 12, color: "var(--accent)", lineHeight: 1.6, marginBottom: 8, borderLeft: "2px solid var(--accent)", paddingLeft: 8, fontStyle: "italic" }}>

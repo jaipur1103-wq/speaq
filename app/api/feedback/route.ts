@@ -44,12 +44,12 @@ Score the OVERALL session on 4 axes (0-100):
 - grammar: correct use of tenses, articles, prepositions, sentence structure. This is spoken English from voice input — ignore all punctuation entirely.
 - vocabulary: range and appropriateness of words used across the session
 - naturalness: how native-like the phrasing sounds overall
-- communication: ability to convey intent, respond relevantly, keep conversation going
+- communication: ability to convey intent, respond relevantly, keep conversation going. Score below 65 if responses are too short (under 10 words), off-topic, or fail to directly address what was asked. Do NOT inflate this score just because the user attempted to speak.
 
 CRITICAL RULES:
-- "strengths": ALWAYS return at least 2 specific strengths about the overall session. NEVER return an empty array.${isJa ? " Write in Japanese." : ""}
-- "encouragement": A single encouraging sentence about the overall session. ALWAYS return this.${isJa ? " Write in Japanese." : ""}
-- "improvements": Max 2 items for the most impactful improvements.${isJa ? " Write in Japanese." : ""}
+- "strengths": ALWAYS return exactly 2 items. Each MUST start with the axis name and score in brackets, e.g. "[Grammar 82]". Be specific about what the user did well.${isJa ? " Write content in Japanese but keep the bracket label in English, e.g. [Grammar 82]：文法的に正確な..." : ""}
+- "encouragement": 1-2 sentences. MUST name the highest-scoring axis with its score AND the axis needing most improvement with its score. Be honest and direct — do NOT give vague praise.${isJa ? " Write in Japanese." : ""}
+- "improvements": Exactly 2 items. Each MUST start with the axis name and score in brackets, e.g. "[Naturalness 54]". Give a concrete, actionable tip for that axis.${isJa ? " Write content in Japanese but keep the bracket label in English." : ""}
 - "naturalExpressions": Pick 2-4 of the most useful corrections from across ALL turns. Return [] if the user's English was already natural — do NOT force suggestions if there is nothing meaningful to improve.
 - "naturalExpressions[].explanation": One sentence why it sounds more natural.${isJa ? " Write in Japanese." : ""}
 - "naturalExpressions[].chunk": The core pattern/template of the natural expression, with "~" for the variable part. E.g. "I'd strongly recommend ~", "Would it be possible to ~". Keep it short (3-6 words + ~).

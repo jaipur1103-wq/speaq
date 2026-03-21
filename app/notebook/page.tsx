@@ -9,6 +9,7 @@ import type { Language, SavedExpression } from "@/types";
 import SpeaqLogo from "@/components/SpeaqLogo";
 
 type Filter = "all" | "tolearn" | "learned" | "quiz" | "collection";
+type QuizItem = import("@/types").SavedExpression & { quizPromptJa: string };
 
 export default function NotebookPage() {
   const [expressions, setExpressions] = useState<SavedExpression[]>([]);
@@ -17,11 +18,12 @@ export default function NotebookPage() {
   const [lang, setLang] = useState<Language>(() => getSettings().language ?? "en");
 
   // Quiz state
-  const [quizQueue, setQuizQueue] = useState<SavedExpression[]>([]);
+  const [quizQueue, setQuizQueue] = useState<QuizItem[]>([]);
   const [quizIndex, setQuizIndex] = useState(0);
   const [quizDone, setQuizDone] = useState(false);
   const [quizSessionUsed, setQuizSessionUsed] = useState<Set<string>>(new Set());
   const [quizSessionCount, setQuizSessionCount] = useState(0);
+  const [quizTranslating, setQuizTranslating] = useState(false);
 
   const tr = i18n[lang];
 
@@ -43,16 +45,30 @@ export default function NotebookPage() {
     reload();
   };
 
-  const startQuiz = () => {
+  const startQuiz = async () => {
     const toLearn = expressions.filter((e) => !e.learned);
     if (toLearn.length === 0) return;
     const shuffled = [...toLearn].sort(() => Math.random() - 0.5);
-    setQuizQueue(shuffled);
     setQuizIndex(0);
     setQuizDone(false);
     setQuizSessionUsed(new Set());
     setQuizSessionCount(0);
     setFilter("quiz");
+    setQuizTranslating(true);
+    try {
+      const res = await fetch("/api/translate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ texts: shuffled.map((e) => e.natural) }),
+      });
+      const data = await res.json();
+      const translations: string[] = data.translations ?? [];
+      setQuizQueue(shuffled.map((e, i) => ({ ...e, quizPromptJa: translations[i] || e.explanation })));
+    } catch {
+      setQuizQueue(shuffled.map((e) => ({ ...e, quizPromptJa: e.explanation })));
+    } finally {
+      setQuizTranslating(false);
+    }
   };
 
   const handleQuizUsed = (id: string) => {
@@ -176,18 +192,24 @@ export default function NotebookPage() {
 
       {/* Quiz mode */}
       {filter === "quiz" && (
-        <QuizPanel
-          queue={quizQueue}
-          index={quizIndex}
-          done={quizDone}
-          sessionCount={quizSessionCount}
-          totalLearned={learnedCount}
-          tr={tr}
-          onUsed={handleQuizUsed}
-          onNotUsed={handleQuizNotUsed}
-          onDone={() => setFilter("all")}
-          onAgain={startQuiz}
-        />
+        quizTranslating ? (
+          <div style={{ textAlign: "center", padding: "40px 0", color: "var(--text-muted)", fontSize: 14 }}>
+            ⏳ Preparing quiz...
+          </div>
+        ) : (
+          <QuizPanel
+            queue={quizQueue}
+            index={quizIndex}
+            done={quizDone}
+            sessionCount={quizSessionCount}
+            totalLearned={learnedCount}
+            tr={tr}
+            onUsed={handleQuizUsed}
+            onNotUsed={handleQuizNotUsed}
+            onDone={() => setFilter("all")}
+            onAgain={startQuiz}
+          />
+        )
       )}
 
       {/* Collection mode */}
@@ -234,7 +256,7 @@ function QuizPanel({
   queue, index, done, sessionCount, totalLearned, tr,
   onUsed, onNotUsed, onDone, onAgain,
 }: {
-  queue: SavedExpression[];
+  queue: QuizItem[];
   index: number;
   done: boolean;
   sessionCount: number;
@@ -292,7 +314,7 @@ function QuizPanel({
 
   return (
     <QuizCard
-      key={card.id}
+      key={`${card.id}-${index}`}
       card={card}
       remaining={remaining}
       total={queue.length}
@@ -309,7 +331,7 @@ function QuizPanel({
 function QuizCard({
   card, remaining, total, index, tr, onUsed, onNotUsed,
 }: {
-  card: SavedExpression;
+  card: QuizItem;
   remaining: number;
   total: number;
   index: number;
@@ -392,7 +414,7 @@ function QuizCard({
         {card.scenarioTitle}
       </div>
 
-      {/* Prompt (explanation as Japanese question) */}
+      {/* Prompt: Japanese translation of natural expression */}
       <div style={{
         background: "var(--surface2)", borderRadius: 14, padding: "18px 20px",
         marginBottom: 20,
@@ -400,8 +422,8 @@ function QuizCard({
         <div style={{ fontSize: 11, color: "var(--accent)", fontWeight: 700, letterSpacing: "0.05em", marginBottom: 8, textTransform: "uppercase" }}>
           {tr.quizSpeakPrompt}
         </div>
-        <div style={{ fontSize: 15, color: "var(--text)", lineHeight: 1.6 }}>
-          {card.explanation}
+        <div style={{ fontSize: 17, fontWeight: 600, color: "var(--text)", lineHeight: 1.6 }}>
+          {card.quizPromptJa}
         </div>
       </div>
 
@@ -471,22 +493,12 @@ function QuizCard({
 
           <div style={{ background: "var(--surface2)", borderRadius: 14, padding: "18px 20px" }}>
             {/* Chunk */}
-            <div style={{ marginBottom: 14 }}>
+            <div style={{ marginBottom: card.example ? 14 : 0 }}>
               <div style={{ fontSize: 11, color: "var(--accent)", fontWeight: 700, letterSpacing: "0.05em", marginBottom: 6, textTransform: "uppercase" }}>
                 {tr.quizChunk}
               </div>
-              <div style={{ fontSize: 18, fontWeight: 700, color: "var(--text)", letterSpacing: "-0.01em" }}>
+              <div style={{ fontSize: 20, fontWeight: 700, color: "var(--text)", letterSpacing: "-0.01em" }}>
                 {chunkDisplay}
-              </div>
-            </div>
-
-            {/* Natural */}
-            <div style={{ marginBottom: card.example ? 14 : 0, paddingTop: 14, borderTop: "1px solid var(--border)" }}>
-              <div style={{ fontSize: 11, color: "var(--text-muted)", fontWeight: 700, letterSpacing: "0.05em", marginBottom: 6, textTransform: "uppercase" }}>
-                {tr.moreNatural}
-              </div>
-              <div style={{ fontSize: 14, color: "var(--text)", lineHeight: 1.6 }}>
-                → {card.natural}
               </div>
             </div>
 
@@ -496,7 +508,7 @@ function QuizCard({
                 <div style={{ fontSize: 11, color: "var(--text-muted)", fontWeight: 700, letterSpacing: "0.05em", marginBottom: 6, textTransform: "uppercase" }}>
                   {tr.quizExample}
                 </div>
-                <div style={{ fontSize: 13, color: "var(--text-secondary)", lineHeight: 1.6, fontStyle: "italic" }}>
+                <div style={{ fontSize: 14, color: "var(--text)", lineHeight: 1.6, fontStyle: "italic" }}>
                   &ldquo;{card.example}&rdquo;
                 </div>
               </div>
@@ -646,30 +658,25 @@ function ExpressionCard({
       </div>
 
       {/* Chunk */}
-      <div style={{ fontSize: 15, fontWeight: 700, color: "var(--accent)", marginBottom: 4, letterSpacing: "-0.01em" }}>
-        {chunkDisplay}
-      </div>
-
-      {/* Natural expression */}
-      <div style={{ fontSize: 13, color: "var(--text)", marginBottom: 4, lineHeight: 1.5 }}>
-        → {expr.natural}
-      </div>
-
-      {/* Explanation */}
-      <div style={{ fontSize: 12, color: "var(--text-secondary)", lineHeight: 1.6, marginBottom: expr.example ? 8 : 12 }}>
-        {expr.explanation}
+      <div style={{ fontSize: 15, fontWeight: 700, color: "var(--accent)", marginBottom: 6, letterSpacing: "-0.01em" }}>
+        🔑 {chunkDisplay}
       </div>
 
       {/* Example */}
       {expr.example && (
         <div style={{
-          fontSize: 12, color: "var(--text-secondary)", lineHeight: 1.6,
-          fontStyle: "italic", marginBottom: 12,
-          padding: "8px 12px", background: "var(--surface2)", borderRadius: 8,
+          fontSize: 13, color: "var(--text)", lineHeight: 1.6,
+          fontStyle: "italic", marginBottom: 6,
+          padding: "8px 12px", background: compact ? "var(--surface)" : "var(--surface2)", borderRadius: 8,
         }}>
           &ldquo;{expr.example}&rdquo;
         </div>
       )}
+
+      {/* Explanation */}
+      <div style={{ fontSize: 12, color: "var(--text-secondary)", lineHeight: 1.6, marginBottom: 12 }}>
+        {expr.explanation}
+      </div>
 
       <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
         {expr.quizCount > 0 && (
