@@ -63,6 +63,14 @@ export default function SettingsBar({ settings, onChange }: Props) {
 
 
   return (
+    <div>
+      <span style={{
+        display: "block", fontSize: 10, fontWeight: 600,
+        color: "var(--text-muted)", textTransform: "uppercase",
+        letterSpacing: "0.09em", paddingLeft: 4, marginBottom: 6,
+      }}>
+        {tr.scenarioSettings}
+      </span>
     <div style={{
       background: "var(--surface)", borderRadius: 16,
       boxShadow: "var(--shadow-sm)", overflow: "hidden",
@@ -72,9 +80,6 @@ export default function SettingsBar({ settings, onChange }: Props) {
         display: "flex", alignItems: "center", gap: 6,
         padding: "10px 14px", flexWrap: "wrap",
       }}>
-        <span style={{ fontSize: 11, fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.06em", whiteSpace: "nowrap", marginRight: 2 }}>
-          {tr.scenarioSettings}
-        </span>
         <SummaryChip label={topicLabel} />
         <SummaryChip label={diffLabel} />
         {industryLabel && <SummaryChip label={industryLabel} />}
@@ -173,6 +178,7 @@ export default function SettingsBar({ settings, onChange }: Props) {
           </div>
         </div>
       )}
+    </div>
     </div>
   );
 }
