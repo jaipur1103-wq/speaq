@@ -66,6 +66,7 @@ export default function ScenarioCard({ scenario, onDelete, isFavorite, onFavorit
         boxShadow: "var(--shadow-md)",
         transition: "transform 0.15s, box-shadow 0.15s",
         border: isFavorite ? "1.5px solid rgba(255,149,0,0.35)" : "none",
+        borderLeft: `4px solid ${difficultyColor[scenario.difficulty]}`,
         cursor: "pointer",
         overflow: "hidden",
         width: "100%",
@@ -166,7 +167,7 @@ export default function ScenarioCard({ scenario, onDelete, isFavorite, onFavorit
                 if (confirm(lang === "ja" ? "このシナリオを削除しますか？" : "Delete this scenario?")) onDelete(scenario.id);
               }}
               style={{
-                width: 80, height: 44, border: "none", background: "transparent",
+                flex: 1, height: 44, border: "none", background: "transparent",
                 display: "flex", alignItems: "center", justifyContent: "center", gap: 5,
                 cursor: "pointer", color: "var(--text-muted)",
                 fontSize: 12, fontWeight: 500,

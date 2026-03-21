@@ -36,6 +36,9 @@ export function getSettings(): AppSettings {
 
 export function saveSettings(settings: AppSettings): void {
   localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
+  if (typeof window !== "undefined") {
+    window.dispatchEvent(new CustomEvent("speaq:langchange", { detail: settings.language }));
+  }
 }
 
 export function getCustomScenarios(): Scenario[] {

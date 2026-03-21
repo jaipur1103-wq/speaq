@@ -1,7 +1,7 @@
 "use client";
 
 import { usePathname, useRouter } from "next/navigation";
-import { Mic, BookOpen, BarChart2 } from "lucide-react";
+import { Mic, BookOpen, BarChart2, HelpCircle } from "lucide-react";
 import { getSettings } from "@/lib/storage";
 import { i18n } from "@/lib/i18n";
 import { useState, useEffect } from "react";
@@ -14,6 +14,9 @@ export default function BottomNav() {
 
   useEffect(() => {
     setLang(getSettings().language ?? "en");
+    const handleLangChange = (e: Event) => setLang((e as CustomEvent<Language>).detail);
+    window.addEventListener("speaq:langchange", handleLangChange);
+    return () => window.removeEventListener("speaq:langchange", handleLangChange);
   }, []);
 
   // Hide during practice
@@ -27,6 +30,7 @@ export default function BottomNav() {
     { path: "/", label: tr.navPractice, Icon: Mic },
     { path: "/notebook", label: tr.navNotebook, Icon: BookOpen },
     { path: "/history", label: tr.navHistory, Icon: BarChart2 },
+    { path: "/guide", label: tr.navGuide, Icon: HelpCircle },
   ];
 
   return (
@@ -57,6 +61,7 @@ export default function BottomNav() {
             <span style={{ fontSize: 10, fontWeight: active ? 700 : 500, letterSpacing: "0.02em" }}>
               {label}
             </span>
+            <div style={{ width: 18, height: 3, borderRadius: 2, background: active ? "var(--accent)" : "transparent", transition: "background 0.15s" }} />
           </button>
         );
       })}

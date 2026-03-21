@@ -137,7 +137,7 @@ export default function Home() {
           disabled={generating}
           style={{
             flex: 1, padding: "15px", borderRadius: 14,
-            background: generating ? "var(--surface2)" : "var(--accent)",
+            background: generating ? "var(--surface2)" : "linear-gradient(135deg, #007AFF, #0055CC)",
             color: generating ? "var(--text-muted)" : "#FFFFFF",
             border: "none", fontWeight: 700, fontSize: 15,
             cursor: generating ? "not-allowed" : "pointer",
@@ -170,11 +170,12 @@ export default function Home() {
           textAlign: "center", padding: "56px 24px", color: "var(--text-muted)",
           background: "var(--surface)", borderRadius: 18, marginTop: 20, boxShadow: "var(--shadow-sm)",
         }}>
-          <div style={{ fontSize: 40, marginBottom: 16 }}>🎯</div>
-          <p style={{ fontWeight: 700, color: "var(--text-secondary)", marginBottom: 6, fontSize: 16 }}>
+          <div style={{ fontSize: 44, marginBottom: 16 }}>🎙</div>
+          <p style={{ fontWeight: 700, color: "var(--text)", marginBottom: 8, fontSize: 17 }}>
             {tr.noScenarios}
           </p>
-          <p style={{ fontSize: 13, lineHeight: 1.6 }}>{tr.noScenariosDesc}</p>
+          <p style={{ fontSize: 14, lineHeight: 1.7, color: "var(--text-secondary)" }}>{tr.noScenariosDesc}</p>
+          <div style={{ marginTop: 8, fontSize: 13, color: "var(--accent)", fontWeight: 600 }}>↑ {tr.generateScenario.replace("✨ ", "")}</div>
         </div>
       ) : (
         <div style={{ marginTop: 20 }}>

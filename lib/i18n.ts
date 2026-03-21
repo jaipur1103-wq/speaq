@@ -1,7 +1,7 @@
 export const i18n = {
   en: {
     // nav
-    navPractice: "Practice", navNotebook: "Notebook", navHistory: "History",
+    navPractice: "Practice", navNotebook: "Notebook", navHistory: "History", navGuide: "Guide",
     // header
     howToUse: "How to use",
     // settings
@@ -76,7 +76,12 @@ export const i18n = {
     noHistoryDesc: "Complete a practice session to see your scores here.",
     turns: "turns", turnSingular: "turn",
     // create
-    createTitle: "Create Scenario", createSubtitle: "Build your own practice situation",
+    createTitle: "Create Scenario", createSubtitle: "Describe what you want to practice",
+    descriptionLabel: "Describe your scenario *",
+    descriptionPlaceholder: "e.g. I need to push back on a client demanding a 30% budget cut without losing the deal...",
+    difficultyLabel: "Difficulty",
+    saveScenario: "Create Scenario",
+    createFailed: "Failed to create scenario. Please try again.",
     titleLabel: "Title *", titlePlaceholder: "e.g. Budget Review with CFO",
     situationLabel: "Situation & Goal *",
     situationPlaceholder: "Describe the situation and what you need to achieve...",
@@ -86,14 +91,13 @@ export const i18n = {
     openerPlaceholder: "What does the counterpart say first?",
     keyPhrasesLabel: "Key Phrases (comma separated)",
     keyPhrasesPlaceholder: "e.g. cost reduction, ROI, Q3 targets",
-    categoryLabel: "Category", difficultyLabel: "Difficulty", industryLabel: "Industry",
-    saveScenario: "Save Scenario",
+    categoryLabel: "Category", industryLabel: "Industry",
     titleRequired: "Title is required", briefRequired: "Brief is required",
     nameRequired: "Name is required", openerRequired: "Opening line is required",
   },
   ja: {
     // nav
-    navPractice: "練習", navNotebook: "ノート", navHistory: "履歴",
+    navPractice: "練習", navNotebook: "ノート", navHistory: "履歴", navGuide: "使い方",
     // header
     howToUse: "使い方",
     // settings
@@ -168,7 +172,12 @@ export const i18n = {
     noHistoryDesc: "練習セッションを完了するとスコアが表示されます。",
     turns: "ターン", turnSingular: "ターン",
     // create
-    createTitle: "シナリオを作成", createSubtitle: "オリジナルの練習シナリオを作る",
+    createTitle: "シナリオを作成", createSubtitle: "練習したい状況を説明してください",
+    descriptionLabel: "シナリオを説明してください *",
+    descriptionPlaceholder: "例：予算30%削減を求めてくるクライアントに、契約を失わずに断らなければならない...",
+    difficultyLabel: "難易度",
+    saveScenario: "シナリオを作成",
+    createFailed: "シナリオの作成に失敗しました。もう一度お試しください。",
     titleLabel: "タイトル *", titlePlaceholder: "例: CFOとの予算会議",
     situationLabel: "状況と目標 *",
     situationPlaceholder: "状況と達成したいことを説明してください...",
@@ -178,8 +187,7 @@ export const i18n = {
     openerPlaceholder: "相手が最初に言うセリフを入力してください",
     keyPhrasesLabel: "キーフレーズ（カンマ区切り）",
     keyPhrasesPlaceholder: "例: cost reduction, ROI, Q3 targets",
-    categoryLabel: "カテゴリ", difficultyLabel: "難易度", industryLabel: "業種",
-    saveScenario: "シナリオを保存",
+    categoryLabel: "カテゴリ", industryLabel: "業種",
     titleRequired: "タイトルは必須です", briefRequired: "状況の説明は必須です",
     nameRequired: "名前は必須です", openerRequired: "最初のセリフは必須です",
   },
