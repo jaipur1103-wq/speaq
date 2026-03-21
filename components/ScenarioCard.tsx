@@ -70,6 +70,8 @@ export default function ScenarioCard({ scenario, onDelete, isFavorite, onFavorit
         overflow: "hidden",
         width: "100%",
         boxSizing: "border-box",
+        alignSelf: "stretch",
+        minWidth: 0,
       }}
       onClick={handleStart}
       onMouseEnter={(e) => {

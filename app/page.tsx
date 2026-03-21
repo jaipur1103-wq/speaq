@@ -183,7 +183,7 @@ export default function Home() {
               <div style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.07em", color: "var(--text-muted)", marginBottom: 10 }}>
                 {tr.favorites}
               </div>
-              <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+              <div style={{ display: "flex", flexDirection: "column", gap: 10, width: "100%", minWidth: 0 }}>
                 {favoriteScenarios.map((s) => (
                   <ScenarioCard key={s.id} scenario={s} isFavorite={true}
                     lang={settings.language}
@@ -200,7 +200,7 @@ export default function Home() {
                   {tr.allScenarios}
                 </div>
               )}
-              <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+              <div style={{ display: "flex", flexDirection: "column", gap: 10, width: "100%", minWidth: 0 }}>
                 {nonFavoriteScenarios.map((s) => (
                   <ScenarioCard key={s.id} scenario={s} isFavorite={false}
                     lang={settings.language}

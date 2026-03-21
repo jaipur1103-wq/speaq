@@ -82,7 +82,6 @@ export default function SettingsBar({ settings, onChange }: Props) {
       }}>
         <SummaryChip label={topicLabel} />
         <SummaryChip label={diffLabel} />
-        {industryLabel && <SummaryChip label={industryLabel} />}
         <SummaryChip label={`${sessionLabel} turns`} />
         <button
           onClick={() => setExpanded((e) => !e)}
