@@ -1,18 +1,24 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import Groq from "groq-sdk";
 import { NextRequest, NextResponse } from "next/server";
 
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
+const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
 export async function POST(req: NextRequest) {
   try {
     const { scenario, counterpartMessage, userResponse, language } = await req.json();
     const isJa = language === "ja";
 
-    const systemInstruction = isJa
-      ? "You are an English speaking coach. The learner's interface language is Japanese. You MUST write strengths, improvements, encouragement, and naturalExpressions[].explanation in Japanese. All other fields (original, natural, example, suggestedResponse) remain in English. Always return valid JSON only, no markdown, no backticks."
+    const systemContent = isJa
+      ? "You are an English speaking coach. The learner's language is Japanese. You MUST write strengths, improvements, encouragement, and naturalExpressions[].explanation in Japanese. All other fields (original, natural, example, suggestedResponse) remain in English. Always return valid JSON only, no markdown, no backticks."
       : "You are an English speaking coach. Always return valid JSON only, no markdown, no backticks.";
 
-    const prompt = `${isJa ? "⚠️ MANDATORY: Write strengths[], improvements[], encouragement, and naturalExpressions[].explanation IN JAPANESE. Do NOT use English for these fields.\n\n" : ""}Analyze this English response.
+    const completion = await groq.chat.completions.create({
+      model: "llama-3.3-70b-versatile",
+      messages: [
+        { role: "system", content: systemContent },
+        {
+          role: "user",
+          content: `${isJa ? "⚠️ MANDATORY: Write strengths[], improvements[], encouragement, and naturalExpressions[].explanation IN JAPANESE. Do NOT use English for these fields.\n\n" : ""}Analyze this English response.
 
 Scenario: ${scenario.title}
 Situation: ${scenario.brief}
@@ -32,43 +38,38 @@ Score on 4 axes (0-100):
 - communication: ability to convey intent, respond relevantly, keep conversation going
 
 CRITICAL RULES:
-- "strengths": ALWAYS return at least 2 specific strengths. Even beginners do something right. Find what the user expressed correctly, any vocabulary used, any attempt at politeness. NEVER return an empty array.${isJa ? " Write in Japanese." : ""}
-- "encouragement": A single encouraging sentence highlighting growth or effort. ALWAYS return this.${isJa ? " Write in Japanese." : ""}
-- "improvements": Max 2 items. Focus on the most impactful improvements only.${isJa ? " Write in Japanese." : ""}
-- "naturalExpressions": ALWAYS include 1-2 items. Even if the response is mostly natural, find a phrase where a more native-sounding alternative would help the learner grow.
-- "naturalExpressions[].explanation": One sentence explaining why it sounds more natural.${isJa ? " Write in Japanese." : ""}
-- "naturalExpressions[].example": REQUIRED — ALWAYS include this. One short English sentence showing the natural expression used in a similar context.
+- "strengths": ALWAYS return at least 2 specific strengths. NEVER return an empty array.${isJa ? " Write in Japanese." : ""}
+- "encouragement": A single encouraging sentence. ALWAYS return this.${isJa ? " Write in Japanese." : ""}
+- "improvements": Max 2 items.${isJa ? " Write in Japanese." : ""}
+- "naturalExpressions": ALWAYS include 1-2 items.
+- "naturalExpressions[].explanation": One sentence why it sounds more natural.${isJa ? " Write in Japanese." : ""}
+- "naturalExpressions[].example": REQUIRED. One short English example sentence.
 
-Return ONLY valid JSON (no markdown, no explanation outside JSON):
+Return ONLY valid JSON:
 {
-  "scores": { "grammar": <number 0-100>, "vocabulary": <number 0-100>, "naturalness": <number 0-100>, "communication": <number 0-100> },
+  "scores": { "grammar": <number>, "vocabulary": <number>, "naturalness": <number>, "communication": <number> },
   "overall": <number>,
   "encouragement": "<${isJa ? "日本語で励ましの一文" : "one encouraging sentence"}>",
-  "strengths": ["<${isJa ? "日本語で良かった点" : "specific strength"}>", "<${isJa ? "日本語で良かった点" : "specific strength"}>"],
-  "improvements": ["<${isJa ? "日本語で改善点" : "specific tip"}>"],
+  "strengths": ["<${isJa ? "日本語で良かった点" : "strength"}>", "<${isJa ? "日本語で良かった点" : "strength"}>"],
+  "improvements": ["<${isJa ? "日本語で改善点" : "tip"}>"],
   "foundPhrases": [],
-  "suggestedResponse": "<2-4 sentence natural English response>",
+  "suggestedResponse": "<natural English response>",
   "naturalExpressions": [
     {
-      "original": "<exact words from user response>",
-      "natural": "<more native-sounding English>",
-      "explanation": "<${isJa ? "日本語で理由" : "why this sounds more natural"}>",
-      "example": "<one short English example sentence>"
+      "original": "<user's phrase>",
+      "natural": "<more natural English>",
+      "explanation": "<${isJa ? "日本語で理由" : "why more natural"}>",
+      "example": "<short English example>"
     }
   ]
-}`;
-
-    const model = genAI.getGenerativeModel({
-      model: "gemini-2.0-flash",
-      systemInstruction,
-      generationConfig: {
-        temperature: 0.3,
-        maxOutputTokens: 1500,
-      },
+}`,
+        },
+      ],
+      temperature: 0.3,
+      max_tokens: 1200,
     });
 
-    const result = await model.generateContent(prompt);
-    const text = result.response.text().trim();
+    const text = completion.choices[0].message.content?.trim() ?? "";
     const cleaned = text.replace(/^```json?\n?/, "").replace(/\n?```$/, "").trim();
     const data = JSON.parse(cleaned);
     const wordCount = userResponse.trim().split(/\s+/).filter(Boolean).length;
