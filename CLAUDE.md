@@ -1,5 +1,11 @@
 @AGENTS.md
 
+## プロンプト設計ルール（`/api/feedback`）
+
+- **LLMへの例示にダブルクォートを使わない**: プロンプト内で英語フレーズを引用するときは `「」` を使う。ダブルクォートはJSONの文字列区切りと衝突し、パースエラーになる
+- **プロンプトの肥大化を避ける**: 説明が長すぎるとLLMがJSON構造を守れなくなる。各ルールは1〜2行に収める
+- **テンプレートリテラル内でバッククォートを使わない**: TypeScriptのtemplate literal内でバッククォート（`` ` ``）を使うと構文エラーになる
+
 ## 既知の制約・過去の失敗
 
 - **Gemini APIはフィードバック用途に使用禁止**：過去2回試みたが、いずれも無料枠の制限（`limit: 0`）で失敗。gemini-2.0-flash / gemini-1.5-flash / gemini-2.0-flash-lite すべて同様のエラー。フィードバック・シナリオ生成・会話応答はすべて **Groq（llama-3.3-70b-versatile）を使うこと**。Geminiは翻訳API（`/api/translate`）のみ使用可。
@@ -41,7 +47,7 @@
 ### フィードバック構成
 
 - `strengths`: 必ず2件。`[AxisName Score]` で始め、ユーザーの実際のセリフを引用して具体的に褒める
-- `improvements`: 必ず2件。`[AxisName Score]` で始め、実際のセリフ→改善案の形式
+- `improvements`: 必ず2件。`[AxisName Score]` で始め、実際のセリフ→改善案の形式。**JA設定時は説明文を日本語で書くこと**（英語フレーズの引用部分は英語のまま可）
 - `naturalExpressions`: 2〜4件。英語として不自然だった表現を修正提案。問題がなければ `[]`
   - `chunk`: `natural` から直接抽出したキーパターン。`~` で可変部分を表す（例: naturalが "I'd like to explore some alternatives" なら chunk = "I'd like to explore ~"）
   - `explanation`: いつ・どう使うかの具体的な説明（JA設定時は日本語）。「より自然」等の抽象的な表現禁止
