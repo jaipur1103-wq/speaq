@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { Moon, Sun } from "lucide-react";
 import ScenarioCard from "@/components/ScenarioCard";
 import SettingsBar from "@/components/SettingsBar";
 import SpeaqLogo from "@/components/SpeaqLogo";
@@ -93,22 +94,11 @@ export default function Home() {
   const nonFavoriteScenarios = allScenarios.filter((s) => !favoriteIds.includes(s.id));
 
   return (
-    <main style={{ maxWidth: 640, margin: "0 auto", padding: "24px 16px 80px", minHeight: "100vh" }}>
+    <main style={{ maxWidth: 640, margin: "0 auto", padding: "24px 16px 88px", minHeight: "100vh" }}>
       {/* Header */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
         <SpeaqLogo />
         <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-          <button
-            onClick={() => router.push("/guide")}
-            style={{
-              padding: "6px 12px", borderRadius: 20,
-              background: "var(--surface)", border: "1px solid var(--border)",
-              color: "var(--text-secondary)", fontSize: 12, fontWeight: 600,
-              cursor: "pointer", boxShadow: "var(--shadow-sm)",
-            }}
-          >
-            {tr.howToUse}
-          </button>
           <button
             onClick={toggleLang}
             style={{
@@ -125,22 +115,15 @@ export default function Home() {
             style={{
               width: 36, height: 36, borderRadius: "50%",
               background: "var(--surface)", border: "none",
-              cursor: "pointer", fontSize: 16,
+              cursor: "pointer",
               display: "flex", alignItems: "center", justifyContent: "center",
-              boxShadow: "var(--shadow-sm)",
+              boxShadow: "var(--shadow-sm)", color: "var(--text-secondary)",
             }}
             aria-label="Toggle dark mode"
           >
-            {dark ? "☀️" : "🌙"}
+            {dark ? <Sun size={16} /> : <Moon size={16} />}
           </button>
         </div>
-      </div>
-
-      {/* Nav tabs */}
-      <div style={{ display: "flex", gap: 4, marginBottom: 20, background: "var(--surface2)", borderRadius: 14, padding: 4 }}>
-        <NavTab active icon="🎙" label={tr.navPractice} />
-        <NavTab onClick={() => router.push("/notebook")} icon="📒" label={tr.navNotebook} />
-        <NavTab onClick={() => router.push("/history")} icon="📊" label={tr.navHistory} />
       </div>
 
       <div style={{ marginBottom: 20 }}>
@@ -230,21 +213,6 @@ export default function Home() {
         </div>
       )}
     </main>
-  );
-}
-
-function NavTab({ icon, label, active, onClick }: { icon: string; label: string; active?: boolean; onClick?: () => void }) {
-  return (
-    <button onClick={onClick} style={{
-      flex: 1, padding: "10px 0", borderRadius: 11, border: "none",
-      background: active ? "var(--surface)" : "transparent",
-      color: active ? "var(--text)" : "var(--text-muted)",
-      cursor: "pointer", boxShadow: active ? "var(--shadow-sm)" : "none",
-      transition: "all 0.15s", display: "flex", flexDirection: "column", alignItems: "center", gap: 3,
-    }}>
-      <span style={{ fontSize: 18, lineHeight: 1 }}>{icon}</span>
-      <span style={{ fontSize: 11, fontWeight: active ? 700 : 500, letterSpacing: "0.01em" }}>{label}</span>
-    </button>
   );
 }
 

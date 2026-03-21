@@ -1,5 +1,7 @@
 "use client";
 
+import { useState } from "react";
+import { Settings } from "lucide-react";
 import { type AppSettings, type Difficulty, type Industry, type PersonaStyle, type Topic } from "@/types";
 import { i18n } from "@/lib/i18n";
 
@@ -9,6 +11,7 @@ interface Props {
 }
 
 export default function SettingsBar({ settings, onChange }: Props) {
+  const [expanded, setExpanded] = useState(false);
   const set = <K extends keyof AppSettings>(key: K, value: AppSettings[K]) =>
     onChange({ ...settings, [key]: value });
 
@@ -44,68 +47,120 @@ export default function SettingsBar({ settings, onChange }: Props) {
     { value: "tough", label: tr.personaTough },
   ];
 
+  const topicLabel = topics.find((t) => t.value === settings.topic)?.label ?? settings.topic;
+  const diffLabel = difficulties.find((d) => d.value === settings.difficulty)?.label ?? settings.difficulty;
+  const personaLabel = personas.find((p) => p.value === settings.personaStyle)?.label ?? settings.personaStyle;
+  const industryLabel = settings.topic === "business"
+    ? industries.find((i) => i.value === settings.industry)?.label ?? settings.industry
+    : null;
+
   return (
     <div style={{
-      background: "var(--surface)", borderRadius: 16, padding: "12px 14px",
-      display: "flex", flexDirection: "column", gap: 10, boxShadow: "var(--shadow-sm)",
+      background: "var(--surface)", borderRadius: 16,
+      boxShadow: "var(--shadow-sm)", overflow: "hidden",
     }}>
-      {/* Row 1: Topic */}
-      <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-        <span style={{ fontSize: 10, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--text-muted)", fontWeight: 600, whiteSpace: "nowrap" }}>
-          {tr.topic}
-        </span>
-        <div style={{ display: "flex", gap: 4, overflowX: "auto", flexWrap: "nowrap", scrollbarWidth: "none" }}>
-          {topics.map((t) => (
-            <Chip key={t.value} active={settings.topic === t.value} onClick={() => set("topic", t.value)}>
-              {t.label}
-            </Chip>
-          ))}
-        </div>
+      {/* Summary row — always visible */}
+      <div style={{
+        display: "flex", alignItems: "center", gap: 6,
+        padding: "10px 14px", flexWrap: "wrap",
+      }}>
+        <SummaryChip label={topicLabel} />
+        <SummaryChip label={diffLabel} />
+        {industryLabel && <SummaryChip label={industryLabel} />}
+        <SummaryChip label={personaLabel} />
+        <button
+          onClick={() => setExpanded((e) => !e)}
+          style={{
+            marginLeft: "auto", width: 32, height: 32, borderRadius: "50%",
+            border: expanded ? "1.5px solid var(--accent)" : "1px solid var(--border)",
+            background: expanded ? "var(--accent-bg)" : "transparent",
+            color: expanded ? "var(--accent)" : "var(--text-muted)",
+            cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center",
+            transition: "all 0.15s", flexShrink: 0,
+          }}
+          aria-label="Settings"
+        >
+          <Settings size={14} strokeWidth={2} />
+        </button>
       </div>
 
-      {/* Row 2: Difficulty / Industry / Counterpart / Timer */}
-      <div style={{ display: "flex", flexWrap: "wrap", gap: 8, alignItems: "center" }}>
-        <Group label={tr.difficulty}>
-          {difficulties.map((d) => (
-            <Chip key={d.value} active={settings.difficulty === d.value} onClick={() => set("difficulty", d.value)}>
-              {d.label}
-            </Chip>
-          ))}
-        </Group>
+      {/* Expanded full settings */}
+      {expanded && (
+        <div style={{
+          borderTop: "1px solid var(--border)",
+          padding: "12px 14px",
+          display: "flex", flexDirection: "column", gap: 10,
+        }}>
+          {/* Row 1: Topic */}
+          <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+            <span style={{ fontSize: 10, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--text-muted)", fontWeight: 600, whiteSpace: "nowrap" }}>
+              {tr.topic}
+            </span>
+            <div style={{ display: "flex", gap: 4, overflowX: "auto", flexWrap: "nowrap", scrollbarWidth: "none" }}>
+              {topics.map((t) => (
+                <Chip key={t.value} active={settings.topic === t.value} onClick={() => set("topic", t.value)}>
+                  {t.label}
+                </Chip>
+              ))}
+            </div>
+          </div>
 
-        <Divider />
-
-        {settings.topic === "business" && (
-          <>
-            <Group label={tr.industry}>
-              <select
-                value={settings.industry}
-                onChange={(e) => set("industry", e.target.value as Industry)}
-                style={{
-                  background: "var(--surface2)", color: "var(--text)",
-                  border: "1px solid var(--border)", borderRadius: 10,
-                  padding: "4px 10px", fontSize: 13, cursor: "pointer", outline: "none",
-                }}
-              >
-                {industries.map((i) => (
-                  <option key={i.value} value={i.value}>{i.label}</option>
-                ))}
-              </select>
+          {/* Row 2: Difficulty / Industry / Counterpart */}
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 8, alignItems: "center" }}>
+            <Group label={tr.difficulty}>
+              {difficulties.map((d) => (
+                <Chip key={d.value} active={settings.difficulty === d.value} onClick={() => set("difficulty", d.value)}>
+                  {d.label}
+                </Chip>
+              ))}
             </Group>
+
             <Divider />
-          </>
-        )}
 
-        <Group label={tr.counterpart}>
-          {personas.map((p) => (
-            <Chip key={p.value} active={settings.personaStyle === p.value} onClick={() => set("personaStyle", p.value)}>
-              {p.label}
-            </Chip>
-          ))}
-        </Group>
+            {settings.topic === "business" && (
+              <>
+                <Group label={tr.industry}>
+                  <select
+                    value={settings.industry}
+                    onChange={(e) => set("industry", e.target.value as Industry)}
+                    style={{
+                      background: "var(--surface2)", color: "var(--text)",
+                      border: "1px solid var(--border)", borderRadius: 10,
+                      padding: "4px 10px", fontSize: 13, cursor: "pointer", outline: "none",
+                    }}
+                  >
+                    {industries.map((i) => (
+                      <option key={i.value} value={i.value}>{i.label}</option>
+                    ))}
+                  </select>
+                </Group>
+                <Divider />
+              </>
+            )}
 
-      </div>
+            <Group label={tr.counterpart}>
+              {personas.map((p) => (
+                <Chip key={p.value} active={settings.personaStyle === p.value} onClick={() => set("personaStyle", p.value)}>
+                  {p.label}
+                </Chip>
+              ))}
+            </Group>
+          </div>
+        </div>
+      )}
     </div>
+  );
+}
+
+function SummaryChip({ label }: { label: string }) {
+  return (
+    <span style={{
+      fontSize: 12, padding: "3px 10px", borderRadius: 20,
+      background: "var(--accent-bg)", color: "var(--accent)",
+      fontWeight: 600, whiteSpace: "nowrap",
+    }}>
+      {label}
+    </span>
   );
 }
 

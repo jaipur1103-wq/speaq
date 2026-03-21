@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { Star, Trash2, ChevronRight } from "lucide-react";
 import type { Language, Scenario } from "@/types";
 import { toggleFavorite } from "@/lib/storage";
 import { i18n } from "@/lib/i18n";
@@ -62,11 +63,11 @@ export default function ScenarioCard({ scenario, onDelete, isFavorite, onFavorit
       style={{
         background: "var(--surface)",
         borderRadius: 18,
-        padding: "16px 18px",
-        cursor: "pointer",
         boxShadow: "var(--shadow-md)",
         transition: "transform 0.15s, box-shadow 0.15s",
-        border: isFavorite ? "1.5px solid rgba(255,149,0,0.4)" : "none",
+        border: isFavorite ? "1.5px solid rgba(255,149,0,0.35)" : "none",
+        cursor: "pointer",
+        overflow: "hidden",
       }}
       onClick={handleStart}
       onMouseEnter={(e) => {
@@ -78,35 +79,41 @@ export default function ScenarioCard({ scenario, onDelete, isFavorite, onFavorit
         (e.currentTarget as HTMLDivElement).style.boxShadow = "var(--shadow-md)";
       }}
     >
-      <div style={{ display: "flex", alignItems: "flex-start", gap: 14 }}>
-        {/* Left: content */}
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 4 }}>
-            <span style={{ fontSize: 11, textTransform: "uppercase", letterSpacing: "0.07em", color: "var(--text-muted)", fontWeight: 700 }}>
-              {scenario.category}
-            </span>
-            <span style={{ fontSize: 10, padding: "2px 8px", borderRadius: 20, background: difficultyColor[scenario.difficulty] + "20", color: difficultyColor[scenario.difficulty], fontWeight: 700, textTransform: "capitalize" }}>
-              {scenario.difficulty}
-            </span>
-            <span style={{ fontSize: 10, padding: "2px 8px", borderRadius: 20, background: "var(--surface2)", color: "var(--text-muted)", textTransform: "capitalize" }}>
-              {scenario.industry}
-            </span>
+      {/* Card body */}
+      <div style={{ padding: "16px 18px" }}>
+        {/* Badges row */}
+        <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 6 }}>
+          <span style={{ fontSize: 11, textTransform: "uppercase", letterSpacing: "0.07em", color: "var(--text-muted)", fontWeight: 700 }}>
+            {scenario.category}
+          </span>
+          <span style={{ fontSize: 10, padding: "2px 8px", borderRadius: 20, background: difficultyColor[scenario.difficulty] + "20", color: difficultyColor[scenario.difficulty], fontWeight: 700, textTransform: "capitalize" }}>
+            {scenario.difficulty}
+          </span>
+          <span style={{ fontSize: 10, padding: "2px 8px", borderRadius: 20, background: "var(--surface2)", color: "var(--text-muted)", textTransform: "capitalize" }}>
+            {scenario.industry}
+          </span>
+          <ChevronRight size={14} color="var(--text-muted)" style={{ marginLeft: "auto", flexShrink: 0 }} />
+        </div>
+
+        {/* Title */}
+        <div style={{ fontWeight: 700, fontSize: 15, color: "var(--text)", marginBottom: 2, letterSpacing: "-0.01em" }}>
+          {scenario.title}
+        </div>
+        {showTranslation && translation && (
+          <div style={{ fontSize: 12, color: "var(--text-muted)", marginBottom: 4, lineHeight: 1.4 }}>
+            {translation}
           </div>
-          <div style={{ fontWeight: 700, fontSize: 15, color: "var(--text)", marginBottom: 2, letterSpacing: "-0.01em" }}>
-            {scenario.title}
-          </div>
-          {showTranslation && translation && (
-            <div style={{ fontSize: 12, color: "var(--text-muted)", marginBottom: 2, lineHeight: 1.4 }}>
-              {translation}
-            </div>
-          )}
-          <div style={{ fontSize: 12, color: "var(--text-secondary)", marginBottom: 6 }}>
+        )}
+
+        {/* Persona + translate */}
+        <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 4 }}>
+          <span style={{ fontSize: 12, color: "var(--text-secondary)" }}>
             {scenario.personaName} · {scenario.personaRole}
-          </div>
+          </span>
           <button
             onClick={handleTranslate}
             style={{
-              fontSize: 11, padding: "3px 10px", borderRadius: 20,
+              fontSize: 11, padding: "2px 8px", borderRadius: 20,
               border: `1px solid ${showTranslation ? "var(--accent)" : "var(--border)"}`,
               background: showTranslation ? "var(--accent-bg)" : "transparent",
               color: showTranslation ? "var(--accent)" : "var(--text-muted)",
@@ -116,31 +123,58 @@ export default function ScenarioCard({ scenario, onDelete, isFavorite, onFavorit
             {translating ? tr.translating : showTranslation ? tr.hideTranslation : tr.translate}
           </button>
         </div>
+      </div>
 
-        {/* Right: buttons */}
-        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 6, flexShrink: 0 }}>
-          <button
-            onClick={handleFavorite}
-            style={{ background: "transparent", border: "none", cursor: "pointer", fontSize: 18, lineHeight: 1, padding: "4px", opacity: isFavorite ? 1 : 0.3, transition: "opacity 0.15s" }}
-            aria-label={isFavorite ? "Remove from favorites" : "Add to favorites"}
-          >
-            ⭐
-          </button>
-          {onDelete && (
+      {/* Footer action bar */}
+      <div
+        style={{
+          borderTop: "1px solid var(--border)",
+          display: "flex",
+          alignItems: "stretch",
+        }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <button
+          onClick={handleFavorite}
+          style={{
+            flex: 1, height: 44, border: "none", background: "transparent",
+            display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
+            cursor: "pointer", color: isFavorite ? "#FF9500" : "var(--text-muted)",
+            fontSize: 12, fontWeight: isFavorite ? 700 : 500,
+            transition: "all 0.15s",
+          }}
+        >
+          <Star
+            size={15}
+            strokeWidth={2}
+            fill={isFavorite ? "#FF9500" : "none"}
+            stroke={isFavorite ? "#FF9500" : "currentColor"}
+          />
+          {isFavorite ? (lang === "ja" ? "お気に入り済み" : "Favorited") : (lang === "ja" ? "お気に入り" : "Favorite")}
+        </button>
+
+        {onDelete && (
+          <>
+            <div style={{ width: 1, background: "var(--border)" }} />
             <button
-              onClick={(e) => { e.stopPropagation(); if (confirm("Delete this scenario?")) onDelete(scenario.id); }}
-              style={{ background: "transparent", border: "none", cursor: "pointer", color: "var(--text-muted)", padding: "4px", borderRadius: 8, fontSize: 16, lineHeight: 1 }}
+              onClick={(e) => {
+                e.stopPropagation();
+                if (confirm(lang === "ja" ? "このシナリオを削除しますか？" : "Delete this scenario?")) onDelete(scenario.id);
+              }}
+              style={{
+                width: 80, height: 44, border: "none", background: "transparent",
+                display: "flex", alignItems: "center", justifyContent: "center", gap: 5,
+                cursor: "pointer", color: "var(--text-muted)",
+                fontSize: 12, fontWeight: 500,
+                transition: "all 0.15s",
+              }}
               aria-label="Delete scenario"
             >
-              🗑
+              <Trash2 size={14} strokeWidth={2} />
+              {lang === "ja" ? "削除" : "Delete"}
             </button>
-          )}
-          <div style={{ width: 32, height: 32, borderRadius: "50%", background: "var(--surface2)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M9 18l6-6-6-6" />
-            </svg>
-          </div>
-        </div>
+          </>
+        )}
       </div>
     </div>
   );
