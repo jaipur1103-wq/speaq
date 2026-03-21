@@ -607,7 +607,6 @@ function FeedbackPanel({ feedback, scenarioTitle, savedIds, tr, onSaveExpression
 }) {
   const [showSuggested, setShowSuggested] = useState(false);
   const [showShadow, setShowShadow] = useState(false);
-  const [expandedExample, setExpandedExample] = useState<string | null>(null);
   const overall = feedback.overall;
   const scoreColor = cefrColor(overall);
 
@@ -659,20 +658,7 @@ function FeedbackPanel({ feedback, scenarioTitle, savedIds, tr, onSaveExpression
                 )}
                 <div style={{ fontSize: 14, color: "var(--text)", fontWeight: 600, marginBottom: 5 }}>→ {expr.natural}</div>
                 <div style={{ fontSize: 12, color: "var(--text-secondary)", lineHeight: 1.5, marginBottom: 8 }}>{expr.explanation}</div>
-                {expandedExample === expr.original && expr.example && (
-                  <div style={{ fontSize: 12, color: "var(--accent)", lineHeight: 1.6, marginBottom: 8, borderLeft: "2px solid var(--accent)", paddingLeft: 8, fontStyle: "italic" }}>
-                    &ldquo;{expr.example}&rdquo;
-                  </div>
-                )}
                 <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                  {expr.example && (
-                    <button
-                      onClick={() => setExpandedExample(expandedExample === expr.original ? null : expr.original)}
-                      style={{ fontSize: 12, padding: "4px 12px", borderRadius: 20, border: `1px solid ${expandedExample === expr.original ? "var(--accent)" : "var(--border)"}`, background: expandedExample === expr.original ? "var(--accent-bg)" : "transparent", color: expandedExample === expr.original ? "var(--accent)" : "var(--text-muted)", cursor: "pointer", fontWeight: 600 }}
-                    >
-                      {expandedExample === expr.original ? tr.hideExample : tr.showExample}
-                    </button>
-                  )}
                   <button
                     onClick={() => !saved && onSaveExpression(expr, scenarioTitle, key)}
                     disabled={saved}
