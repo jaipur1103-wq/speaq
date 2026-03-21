@@ -92,7 +92,8 @@ Return ONLY valid JSON:
 
     return NextResponse.json({ ...data, wordCount: totalWords });
   } catch (error) {
-    console.error("feedback error:", error);
-    return NextResponse.json({ error: "Failed to get feedback" }, { status: 500 });
+    const msg = error instanceof Error ? error.message : String(error);
+    console.error("feedback error:", msg);
+    return NextResponse.json({ error: "Failed to get feedback", detail: msg }, { status: 500 });
   }
 }

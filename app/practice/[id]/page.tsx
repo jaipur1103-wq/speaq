@@ -46,7 +46,7 @@ export default function PracticePage() {
   const [savedIds, setSavedIds] = useState<Set<string>>(new Set());
   const [showSummary, setShowSummary] = useState(false);
   const [scoreSaved, setScoreSaved] = useState(false);
-  const [feedbackError, setFeedbackError] = useState(false);
+  const [feedbackError, setFeedbackError] = useState<string | null>(null);
   const [tr, setTr] = useState<Tr>(i18n.en);
   const [lang, setLang] = useState<"en" | "ja">("en");
 
@@ -165,7 +165,7 @@ export default function PracticePage() {
   const callFeedbackApi = async (turns: PendingTurn[]) => {
     if (!scenario) return;
     setLoadingFinalFeedback(true);
-    setFeedbackError(false);
+    setFeedbackError(null);
     try {
       const res = await fetch("/api/feedback", {
         method: "POST",
@@ -176,10 +176,10 @@ export default function PracticePage() {
       if (fb.scores) {
         setFinalFeedback(fb as Feedback);
       } else {
-        setFeedbackError(true);
+        setFeedbackError(fb.detail ?? fb.error ?? "unknown error");
       }
-    } catch {
-      setFeedbackError(true);
+    } catch (e) {
+      setFeedbackError(e instanceof Error ? e.message : "network error");
     } finally {
       setLoadingFinalFeedback(false);
     }
@@ -249,7 +249,7 @@ export default function PracticePage() {
     setSavedIds(new Set());
     setScoreSaved(false);
     setShowSummary(false);
-    setFeedbackError(false);
+    setFeedbackError(null);
     setInputText("");
     setInterimText("");
     setRecordingSeconds(0);
@@ -329,9 +329,10 @@ export default function PracticePage() {
         )}
         {feedbackError && (
           <div style={{ background: "var(--surface)", borderRadius: 18, padding: "20px 18px", textAlign: "center", boxShadow: "var(--shadow-md)" }}>
-            <div style={{ fontSize: 13, color: "var(--text-secondary)", marginBottom: 12 }}>
-              {lang === "ja" ? "評価の取得に失敗しました。もう一度お試しください。" : "Failed to load feedback. Please try again."}
+            <div style={{ fontSize: 13, color: "var(--text-secondary)", marginBottom: 6 }}>
+              {lang === "ja" ? "評価の取得に失敗しました。" : "Failed to load feedback."}
             </div>
+            <div style={{ fontSize: 11, color: "var(--text-muted)", marginBottom: 12, wordBreak: "break-all" }}>{feedbackError}</div>
             <button
               onClick={() => callFeedbackApi(pendingTurns)}
               style={{ fontSize: 13, padding: "8px 20px", borderRadius: 20, background: "var(--accent)", color: "#fff", border: "none", cursor: "pointer", fontWeight: 700 }}
