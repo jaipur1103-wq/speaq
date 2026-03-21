@@ -2,14 +2,13 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import type { Feedback, Message, NaturalExpression, Scenario, TurnScore } from "@/types";
+import type { Feedback, Message, NaturalExpression, Scenario } from "@/types";
 import { saveExpression, getSettings, saveScoreRecord } from "@/lib/storage";
 import { i18n } from "@/lib/i18n";
 import type { Tr } from "@/lib/i18n";
 
-type ChatItem =
-  | { kind: "message"; data: Message }
-  | { kind: "feedback"; data: Feedback; turn: number; scenarioTitle: string };
+type ChatItem = { kind: "message"; data: Message };
+type PendingTurn = { userMessage: string; counterpartMessage: string };
 
 const difficultyColor: Record<string, string> = {
   beginner: "#34C759",
@@ -37,9 +36,11 @@ export default function PracticePage() {
   const [inputText, setInputText] = useState("");
   const [isRecording, setIsRecording] = useState(false);
   const [interimText, setInterimText] = useState("");
-  const [loadingFeedback, setLoadingFeedback] = useState(false);
   const [loadingReply, setLoadingReply] = useState(false);
-  const [turnScores, setTurnScores] = useState<TurnScore[]>([]);
+  const [loadingFinalFeedback, setLoadingFinalFeedback] = useState(false);
+  const [finalFeedback, setFinalFeedback] = useState<Feedback | null>(null);
+  const [pendingTurns, setPendingTurns] = useState<PendingTurn[]>([]);
+  const [sessionLength, setSessionLength] = useState(5);
   const [speechSupported, setSpeechSupported] = useState(true);
   const [turn, setTurn] = useState(1);
   const [savedIds, setSavedIds] = useState<Set<string>>(new Set());
@@ -66,11 +67,12 @@ export default function PracticePage() {
     const l = settings.language ?? "en";
     setLang(l);
     setTr(i18n[l]);
+    setSessionLength(settings.sessionLength ?? 5);
   }, [router]);
 
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [chatItems, loadingFeedback, loadingReply]);
+  }, [chatItems, loadingReply, loadingFinalFeedback, finalFeedback]);
 
   useEffect(() => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -134,70 +136,72 @@ export default function PracticePage() {
     setRecordingSeconds(0);
   };
 
+  const callFeedbackApi = async (turns: PendingTurn[]) => {
+    if (!scenario) return;
+    setLoadingFinalFeedback(true);
+    try {
+      const res = await fetch("/api/feedback", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ scenario, turns, language: lang }),
+      });
+      const fb: Feedback = await res.json();
+      setFinalFeedback(fb);
+    } catch { /* silent */ } finally {
+      setLoadingFinalFeedback(false);
+    }
+  };
+
   const handleSend = async () => {
     const text = (inputText + " " + interimText).trim();
     if (!text || !scenario) return;
     if (isRecording) { recognitionRef.current?.stop(); stopRecordingTimer(); setIsRecording(false); }
 
     const userMsg: Message = { role: "user", text, timestamp: Date.now() };
-    const currentTurn = turn;
+    const allMessages = chatItems.map((i) => i.data);
+    const lastCounterpart = [...allMessages].reverse().find((m) => m.role === "counterpart");
+    const newTurn: PendingTurn = { userMessage: text, counterpartMessage: lastCounterpart?.text ?? scenario.opener };
+    const newPendingTurns = [...pendingTurns, newTurn];
+
     setChatItems((prev) => [...prev, { kind: "message", data: userMsg }]);
     setInputText("");
     setInterimText("");
     setRecordingSeconds(0);
     setTurn((t) => t + 1);
+    setPendingTurns(newPendingTurns);
 
-    const allMessages = chatItems
-      .filter((i) => i.kind === "message")
-      .map((i) => (i as { kind: "message"; data: Message }).data);
+    const isLastTurn = newPendingTurns.length >= sessionLength;
 
-    const lastCounterpart = [...allMessages].reverse().find((m) => m.role === "counterpart");
-
-    setLoadingFeedback(true);
-    try {
-      const res = await fetch("/api/feedback", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          scenario,
-          counterpartMessage: lastCounterpart?.text ?? scenario.opener,
-          userResponse: text,
-          language: lang,
-        }),
-      });
-      const fb: Feedback = await res.json();
-      setTurnScores((prev) => [...prev, { turn: currentTurn, overall: fb.overall, scores: fb.scores }]);
-      setTimeout(() => {
-        setChatItems((prev) => [
-          ...prev,
-          { kind: "feedback", data: fb, turn: currentTurn, scenarioTitle: scenario.title },
-        ]);
-      }, 500);
-    } catch { /* silent */ } finally {
-      setLoadingFeedback(false);
+    if (isLastTurn) {
+      await callFeedbackApi(newPendingTurns);
+    } else {
+      setLoadingReply(true);
+      try {
+        const res = await fetch("/api/counterpart-reply", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            scenario,
+            conversationHistory: [...allMessages, userMsg],
+            userMessage: text,
+          }),
+        });
+        const { reply } = await res.json();
+        setTimeout(() => {
+          setChatItems((prev) => [
+            ...prev,
+            { kind: "message", data: { role: "counterpart", text: reply, timestamp: Date.now() } },
+          ]);
+        }, 1800);
+      } catch { /* silent */ } finally {
+        setLoadingReply(false);
+      }
     }
+  };
 
-    setLoadingReply(true);
-    try {
-      const res = await fetch("/api/counterpart-reply", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          scenario,
-          conversationHistory: [...allMessages, userMsg],
-          userMessage: text,
-        }),
-      });
-      const { reply } = await res.json();
-      setTimeout(() => {
-        setChatItems((prev) => [
-          ...prev,
-          { kind: "message", data: { role: "counterpart", text: reply, timestamp: Date.now() } },
-        ]);
-      }, 1800);
-    } catch { /* silent */ } finally {
-      setLoadingReply(false);
-    }
+  const handleFinishEarly = () => {
+    if (pendingTurns.length === 0 || loadingFinalFeedback) return;
+    callFeedbackApi(pendingTurns);
   };
 
   const handleSaveExpression = (expr: NaturalExpression, scenarioTitle: string, exprKey: string) => {
@@ -205,22 +209,15 @@ export default function PracticePage() {
     setSavedIds((prev) => new Set(prev).add(exprKey));
   };
 
-  const doSaveScore = (scores: TurnScore[], title: string) => {
-    if (scores.length === 0 || scoreSaved) return;
-    const overall = Math.round(scores.reduce((a, b) => a + b.overall, 0) / scores.length);
-    const avgScores = {
-      grammar: Math.round(scores.reduce((a, b) => a + b.scores.grammar, 0) / scores.length),
-      vocabulary: Math.round(scores.reduce((a, b) => a + b.scores.vocabulary, 0) / scores.length),
-      naturalness: Math.round(scores.reduce((a, b) => a + b.scores.naturalness, 0) / scores.length),
-      communication: Math.round(scores.reduce((a, b) => a + b.scores.communication, 0) / scores.length),
-    };
-    saveScoreRecord({ date: new Date().toISOString().slice(0, 10), scenarioTitle: title, overall, scores: avgScores, turnCount: scores.length });
+  const doSaveScore = (fb: Feedback, title: string) => {
+    if (scoreSaved) return;
+    saveScoreRecord({ date: new Date().toISOString().slice(0, 10), scenarioTitle: title, overall: fb.overall, scores: fb.scores, turnCount: pendingTurns.length });
     setScoreSaved(true);
   };
 
   const handleBack = () => {
-    if (turnScores.length > 0 && scenario) {
-      doSaveScore(turnScores, scenario.title);
+    if (finalFeedback && scenario) {
+      doSaveScore(finalFeedback, scenario.title);
       setShowSummary(true);
     } else {
       router.push("/");
@@ -232,7 +229,8 @@ export default function PracticePage() {
   }
 
   const hasInput = inputText.trim().length > 0;
-  const avgScore = turnScores.length ? Math.round(turnScores.reduce((a, b) => a + b.overall, 0) / turnScores.length) : null;
+  const completedTurns = pendingTurns.length;
+  const sessionDone = completedTurns >= sessionLength || finalFeedback !== null;
 
   return (
     <div style={{ maxWidth: 640, margin: "0 auto", display: "flex", flexDirection: "column", height: "100dvh", background: "var(--bg)" }}>
@@ -250,38 +248,19 @@ export default function PracticePage() {
             </div>
             <div style={{ fontWeight: 700, fontSize: 14, color: "var(--text)", lineHeight: 1.3, letterSpacing: "-0.01em" }}>{scenario.title}</div>
           </div>
-          {avgScore !== null && <ScoreBadge score={avgScore} label="avg" />}
+          {finalFeedback && <ScoreBadge score={finalFeedback.overall} />}
         </div>
       </div>
 
       {/* Briefing */}
       <BriefingArea scenario={scenario} tr={tr} />
 
-      {/* Score trend */}
-      {turnScores.length > 0 && (
-        <div style={{ padding: "6px 16px", background: "var(--surface2)", borderBottom: "1px solid var(--border)", display: "flex", alignItems: "center", gap: 8, overflowX: "auto" }}>
-          <span style={{ fontSize: 10, color: "var(--text-muted)", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", whiteSpace: "nowrap" }}>{tr.progress}</span>
-          {turnScores.map((ts) => (
-            <div key={ts.turn} style={{ display: "flex", alignItems: "center", gap: 3, whiteSpace: "nowrap" }}>
-              <span style={{ fontSize: 10, color: "var(--text-muted)" }}>T{ts.turn}</span>
-              <ScoreBadge score={ts.overall} small />
-            </div>
-          ))}
-        </div>
-      )}
 
       {/* Chat */}
       <div style={{ flex: 1, overflowY: "auto", padding: "16px", display: "flex", flexDirection: "column", gap: 12 }}>
-        {chatItems.map((item, i) =>
-          item.kind === "message" ? (
-            <ChatBubble key={i} msg={item.data} personaName={scenario.personaName} tr={tr} />
-          ) : (
-            <FeedbackPanel key={i} feedback={item.data} turn={item.turn} scenarioTitle={item.scenarioTitle} savedIds={savedIds} tr={tr} onSaveExpression={handleSaveExpression} />
-          )
-        )}
-        {loadingFeedback && (
-          <div style={{ fontSize: 12, color: "var(--text-muted)", textAlign: "center", padding: "4px 0" }}>{tr.analyzing}</div>
-        )}
+        {chatItems.map((item, i) => (
+          <ChatBubble key={i} msg={item.data} personaName={scenario.personaName} tr={tr} />
+        ))}
         {loadingReply && (
           <div style={{ display: "flex", gap: 10, alignItems: "flex-end" }}>
             <Avatar name={scenario.personaName} />
@@ -289,6 +268,14 @@ export default function PracticePage() {
               <TypingDots />
             </div>
           </div>
+        )}
+        {loadingFinalFeedback && (
+          <div style={{ fontSize: 13, color: "var(--text-muted)", textAlign: "center", padding: "20px 0", fontWeight: 500 }}>
+            {tr.analyzingSession}
+          </div>
+        )}
+        {finalFeedback && (
+          <FeedbackPanel feedback={finalFeedback} scenarioTitle={scenario.title} savedIds={savedIds} tr={tr} onSaveExpression={handleSaveExpression} />
         )}
         <div ref={chatEndRef} />
       </div>
@@ -299,8 +286,38 @@ export default function PracticePage() {
           <p style={{ fontSize: 12, color: "var(--orange)", marginBottom: 10, textAlign: "center" }}>{tr.speechNotSupported}</p>
         )}
 
+        {/* Turn progress */}
+        {!sessionDone && (
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 10, marginBottom: 12 }}>
+            <div style={{ display: "flex", gap: sessionLength <= 5 ? 6 : 4, alignItems: "center" }}>
+              {sessionLength <= 5
+                ? Array.from({ length: sessionLength }, (_, i) => (
+                    <div key={i} style={{ width: 8, height: 8, borderRadius: "50%", background: i < completedTurns ? "var(--accent)" : "var(--border)", transition: "background 0.3s" }} />
+                  ))
+                : (
+                    <div style={{ width: 120, height: 5, background: "var(--border)", borderRadius: 3, overflow: "hidden" }}>
+                      <div style={{ width: `${(completedTurns / sessionLength) * 100}%`, height: "100%", background: "var(--accent)", borderRadius: 3, transition: "width 0.3s" }} />
+                    </div>
+                  )
+              }
+            </div>
+            <span style={{ fontSize: 12, color: "var(--text-muted)", fontWeight: 600 }}>
+              {tr.turnProgress(completedTurns, sessionLength)}
+            </span>
+            {completedTurns > 0 && (
+              <button
+                onClick={handleFinishEarly}
+                disabled={loadingFinalFeedback}
+                style={{ fontSize: 11, padding: "3px 10px", borderRadius: 20, border: "1px solid var(--border)", background: "transparent", color: "var(--text-muted)", cursor: "pointer", fontWeight: 600 }}
+              >
+                {tr.finishEarly}
+              </button>
+            )}
+          </div>
+        )}
+
         {/* State: has input text → show preview + send/retake */}
-        {hasInput && !isRecording ? (
+        {sessionDone ? null : hasInput && !isRecording ? (
           <div>
             <div style={{ background: "var(--surface2)", borderRadius: 14, padding: "12px 16px", marginBottom: 12, fontSize: 14, color: "var(--text)", lineHeight: 1.6, minHeight: 48 }}>
               {inputText.trim()}
@@ -360,8 +377,8 @@ export default function PracticePage() {
       </div>
 
       {/* Session Summary Modal */}
-      {showSummary && scenario && (
-        <SessionSummary turnScores={turnScores} savedCount={savedIds.size} tr={tr} onContinue={() => setShowSummary(false)} onDone={() => router.push("/")} />
+      {showSummary && scenario && finalFeedback && (
+        <SessionSummary feedback={finalFeedback} turnCount={pendingTurns.length} savedCount={savedIds.size} tr={tr} onContinue={() => setShowSummary(false)} onDone={() => router.push("/")} />
       )}
     </div>
   );
@@ -503,8 +520,8 @@ function ChatBubble({ msg, personaName, tr }: { msg: Message; personaName: strin
 }
 
 // ── Feedback panel ─────────────────────────────────────────────────────────────
-function FeedbackPanel({ feedback, turn, scenarioTitle, savedIds, tr, onSaveExpression }: {
-  feedback: Feedback; turn: number; scenarioTitle: string; savedIds: Set<string>; tr: Tr;
+function FeedbackPanel({ feedback, scenarioTitle, savedIds, tr, onSaveExpression }: {
+  feedback: Feedback; scenarioTitle: string; savedIds: Set<string>; tr: Tr;
   onSaveExpression: (expr: NaturalExpression, scenarioTitle: string, key: string) => void;
 }) {
   const [showSuggested, setShowSuggested] = useState(false);
@@ -521,7 +538,7 @@ function FeedbackPanel({ feedback, turn, scenarioTitle, savedIds, tr, onSaveExpr
   return (
     <div className="animate-fade-slide-up" style={{ background: "var(--surface)", borderRadius: 18, padding: "16px 18px", boxShadow: "var(--shadow-md)" }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
-        <span style={{ fontWeight: 700, fontSize: 12, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.07em" }}>{tr.feedbackTitle(turn)}</span>
+        <span style={{ fontWeight: 700, fontSize: 12, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.07em" }}>{tr.sessionFeedbackTitle}</span>
         <span style={{ padding: "4px 12px", borderRadius: 20, background: scoreColor + "22", color: scoreColor, fontWeight: 700, fontSize: 15 }}>{overall}/100</span>
       </div>
       <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 12 }}>
@@ -555,7 +572,7 @@ function FeedbackPanel({ feedback, turn, scenarioTitle, savedIds, tr, onSaveExpr
         <div style={{ marginBottom: 12 }}>
           <SectionLabel>{tr.moreNatural}</SectionLabel>
           {feedback.naturalExpressions.map((expr, i) => {
-            const key = `${turn}-${i}`;
+            const key = `session-${i}`;
             const saved = savedIds.has(key);
             return (
               <div key={i} style={{ background: "var(--surface2)", borderRadius: 12, padding: "12px 14px", marginBottom: 8 }}>
@@ -683,17 +700,16 @@ function ShadowSection({ suggestedResponse, tr }: { suggestedResponse: string; t
 }
 
 // ── Session summary ────────────────────────────────────────────────────────────
-function SessionSummary({ turnScores, savedCount, tr, onContinue, onDone }: {
-  turnScores: TurnScore[]; savedCount: number; tr: Tr; onContinue: () => void; onDone: () => void;
+function SessionSummary({ feedback, turnCount, savedCount, tr, onContinue, onDone }: {
+  feedback: Feedback; turnCount: number; savedCount: number; tr: Tr; onContinue: () => void; onDone: () => void;
 }) {
-  const avg = Math.round(turnScores.reduce((a, b) => a + b.overall, 0) / turnScores.length);
-  const trend = turnScores.length >= 2 ? turnScores[turnScores.length - 1].overall - turnScores[0].overall : 0;
-  const axisKeys: (keyof TurnScore["scores"])[] = ["grammar", "vocabulary", "naturalness", "communication"];
-  const axisAvgs = axisKeys.map((key) => ({
-    key,
-    label: (tr as Record<string, unknown>)[key] as string ?? key,
-    value: Math.round(turnScores.reduce((a, b) => a + b.scores[key], 0) / turnScores.length),
-  }));
+  const overall = feedback.overall;
+  const color = overall >= 70 ? "var(--green)" : overall >= 40 ? "var(--orange)" : "var(--red)";
+  const axisEntries = Object.entries(feedback.scores) as [string, number][];
+  const axisLabel = (key: string) => {
+    const map: Record<string, string> = { grammar: tr.grammar, vocabulary: tr.vocabulary, naturalness: tr.naturalness, communication: tr.communication };
+    return map[key] ?? key;
+  };
 
   return (
     <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", display: "flex", alignItems: "flex-end", justifyContent: "center", zIndex: 100, backdropFilter: "blur(4px)" }}>
@@ -701,32 +717,13 @@ function SessionSummary({ turnScores, savedCount, tr, onContinue, onDone }: {
         <div style={{ textAlign: "center", marginBottom: 24 }}>
           <div style={{ fontSize: 36, marginBottom: 10 }}>🎉</div>
           <h2 style={{ fontSize: 22, fontWeight: 700, color: "var(--text)", margin: "0 0 4px", letterSpacing: "-0.02em" }}>{tr.sessionComplete}</h2>
-          <p style={{ fontSize: 13, color: "var(--text-muted)", margin: 0 }}>{tr.savedToHistory(turnScores.length)}</p>
+          <p style={{ fontSize: 13, color: "var(--text-muted)", margin: 0 }}>{tr.savedToHistory(turnCount)}</p>
         </div>
-        <div style={{ background: "var(--surface2)", borderRadius: 16, padding: "18px 20px", marginBottom: 16, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-          <div>
-            <div style={{ fontSize: 12, color: "var(--text-muted)", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 4 }}>{tr.overallAverage}</div>
-            <div style={{ fontSize: 32, fontWeight: 700, color: avg >= 70 ? "var(--green)" : avg >= 40 ? "var(--orange)" : "var(--red)", letterSpacing: "-0.02em" }}>{avg}/100</div>
-          </div>
-          {trend !== 0 && <div style={{ fontSize: 14, fontWeight: 700, color: trend > 0 ? "var(--green)" : "var(--red)" }}>{trend > 0 ? "↑" : "↓"} {Math.abs(trend)} pts</div>}
-        </div>
-        {turnScores.length > 1 && (
-          <div style={{ marginBottom: 16 }}>
-            <div style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--text-muted)", marginBottom: 8 }}>{tr.turnScores}</div>
-            <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
-              {turnScores.map((ts, i) => (
-                <div key={ts.turn} style={{ display: "flex", alignItems: "center", gap: 5 }}>
-                  {i > 0 && <span style={{ color: "var(--text-muted)", fontSize: 12 }}>→</span>}
-                  <ScoreBadge score={ts.overall} />
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-        <div style={{ marginBottom: 16 }}>
-          <div style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--text-muted)", marginBottom: 8 }}>{tr.axisAverages}</div>
+        <div style={{ background: "var(--surface2)", borderRadius: 16, padding: "18px 20px", marginBottom: 16 }}>
+          <div style={{ fontSize: 12, color: "var(--text-muted)", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 6 }}>{tr.overallAverage}</div>
+          <div style={{ fontSize: 36, fontWeight: 700, color, letterSpacing: "-0.02em", marginBottom: 14 }}>{overall}/100</div>
           <div style={{ display: "flex", flexDirection: "column", gap: 7 }}>
-            {axisAvgs.map(({ label, value }) => <ScoreRow key={label} label={label} value={value} />)}
+            {axisEntries.map(([key, val]) => <ScoreRow key={key} label={axisLabel(key)} value={val} />)}
           </div>
         </div>
         {savedCount > 0 && (

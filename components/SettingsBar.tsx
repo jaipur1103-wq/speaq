@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Settings } from "lucide-react";
-import { type AppSettings, type Difficulty, type Industry, type PersonaStyle, type Topic } from "@/types";
+import { type AppSettings, type Difficulty, type Industry, type PersonaStyle, type SessionLength, type Topic } from "@/types";
 import { i18n } from "@/lib/i18n";
 
 interface Props {
@@ -47,12 +47,20 @@ export default function SettingsBar({ settings, onChange }: Props) {
     { value: "tough", label: tr.personaTough },
   ];
 
+  const sessionLengths: { value: SessionLength; label: string }[] = [
+    { value: 3, label: "3" },
+    { value: 5, label: "5" },
+    { value: 10, label: "10" },
+  ];
+
   const topicLabel = topics.find((t) => t.value === settings.topic)?.label ?? settings.topic;
   const diffLabel = difficulties.find((d) => d.value === settings.difficulty)?.label ?? settings.difficulty;
   const personaLabel = personas.find((p) => p.value === settings.personaStyle)?.label ?? settings.personaStyle;
   const industryLabel = settings.topic === "business"
     ? industries.find((i) => i.value === settings.industry)?.label ?? settings.industry
     : null;
+  const sessionLabel = `${settings.sessionLength ?? 5}`;
+
 
   return (
     <div style={{
@@ -68,6 +76,7 @@ export default function SettingsBar({ settings, onChange }: Props) {
         <SummaryChip label={diffLabel} />
         {industryLabel && <SummaryChip label={industryLabel} />}
         <SummaryChip label={personaLabel} />
+        <SummaryChip label={`${sessionLabel} turns`} />
         <button
           onClick={() => setExpanded((e) => !e)}
           style={{
@@ -105,7 +114,21 @@ export default function SettingsBar({ settings, onChange }: Props) {
             </div>
           </div>
 
-          {/* Row 2: Difficulty / Industry / Counterpart */}
+          {/* Row 2: Session Length */}
+          <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+            <span style={{ fontSize: 10, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--text-muted)", fontWeight: 600, whiteSpace: "nowrap" }}>
+              {tr.sessionTurnsLabel}
+            </span>
+            <div style={{ display: "flex", gap: 4 }}>
+              {sessionLengths.map((s) => (
+                <Chip key={s.value} active={(settings.sessionLength ?? 5) === s.value} onClick={() => set("sessionLength", s.value)}>
+                  {s.label}
+                </Chip>
+              ))}
+            </div>
+          </div>
+
+          {/* Row 3: Difficulty / Industry / Counterpart */}
           <div style={{ display: "flex", flexWrap: "wrap", gap: 8, alignItems: "center" }}>
             <Group label={tr.difficulty}>
               {difficulties.map((d) => (

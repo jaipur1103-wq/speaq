@@ -6,7 +6,7 @@ export const i18n = {
     howToUse: "How to use",
     // settings
     difficulty: "Difficulty", topic: "Topic", industry: "Industry",
-    counterpart: "Counterpart",
+    counterpart: "Counterpart", sessionTurnsLabel: "Session",
     // difficulty
     beginner: "Beginner", intermediate: "Intermediate", advanced: "Advanced",
     // topics
@@ -39,6 +39,10 @@ export const i18n = {
     keyPhrasesHint: "Key Phrases",
     showExample: "Show example", hideExample: "Hide example",
     retake: "🔄 Retake", send: "Send",
+    finishEarly: "Finish & Evaluate",
+    analyzingSession: "Analyzing your session...",
+    sessionFeedbackTitle: "Session Feedback",
+    turnProgress: (current: number, total: number) => `${current} / ${total} turns`,
     feedbackTitle: (turn: number) => `Turn ${turn} Feedback`,
     whatWorked: "✓ What worked", tryNextTime: "→ Try next time",
     moreNatural: "💬 More natural",
@@ -93,7 +97,7 @@ export const i18n = {
     howToUse: "使い方",
     // settings
     difficulty: "難易度", topic: "トピック", industry: "業種",
-    counterpart: "相手",
+    counterpart: "相手", sessionTurnsLabel: "セッション",
     // difficulty
     beginner: "初級", intermediate: "中級", advanced: "上級",
     // topics
@@ -126,6 +130,10 @@ export const i18n = {
     keyPhrasesHint: "参考表現",
     showExample: "例文を見る", hideExample: "例文を隠す",
     retake: "🔄 再録音", send: "送信",
+    finishEarly: "終了して評価",
+    analyzingSession: "セッションを分析中...",
+    sessionFeedbackTitle: "セッションフィードバック",
+    turnProgress: (current: number, total: number) => `${current} / ${total} ターン`,
     feedbackTitle: (turn: number) => `ターン${turn} フィードバック`,
     whatWorked: "✓ 良かった点", tryNextTime: "→ 改善点",
     moreNatural: "💬 より自然な表現",

@@ -11,6 +11,7 @@ export type Industry =
   | "manufacturing";
 
 export type PersonaStyle = "friendly" | "neutral" | "tough";
+export type SessionLength = 3 | 5 | 10;
 
 export interface Scenario {
   id: string;
@@ -90,6 +91,7 @@ export interface AppSettings {
   industry: Industry;
   personaStyle: PersonaStyle;
   apiKey: string;
+  sessionLength: SessionLength;
 }
 
 export interface CustomScenario extends Scenario {

@@ -14,6 +14,7 @@ export const DEFAULT_SETTINGS: AppSettings = {
   industry: "general",
   personaStyle: "neutral",
   apiKey: "",
+  sessionLength: 5,
 };
 
 export function getSettings(): AppSettings {
