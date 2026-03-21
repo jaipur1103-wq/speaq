@@ -60,6 +60,7 @@ export default function PracticePage() {
   const lastSessionKey = useRef<string | null>(null);
   const replyTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const replyAbortRef = useRef<AbortController | null>(null);
+  const finalTextRef = useRef("");
 
   const initSession = useRef(() => {});
   initSession.current = () => {
@@ -114,16 +115,15 @@ export default function PracticePage() {
     rec.lang = "en-US";
     rec.interimResults = true;
     rec.continuous = true;
-    let finalText = "";
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     rec.onresult = (e: any) => {
       let interim = "";
       for (let i = e.resultIndex; i < e.results.length; i++) {
-        if (e.results[i].isFinal) finalText += e.results[i][0].transcript + " ";
+        if (e.results[i].isFinal) finalTextRef.current += e.results[i][0].transcript + " ";
         else interim = e.results[i][0].transcript;
       }
-      setInputText(finalText);
+      setInputText(finalTextRef.current);
       setInterimText(interim);
     };
     rec.onerror = () => { stopRecordingTimer(); setIsRecording(false); setInterimText(""); };
@@ -152,6 +152,7 @@ export default function PracticePage() {
       stopRecordingTimer();
       setIsRecording(false);
     } else {
+      finalTextRef.current = "";
       setInputText("");
       setInterimText("");
       recognitionRef.current.start();
@@ -161,6 +162,7 @@ export default function PracticePage() {
   };
 
   const handleRetake = () => {
+    finalTextRef.current = "";
     setInputText("");
     setInterimText("");
     setRecordingSeconds(0);
@@ -251,6 +253,7 @@ export default function PracticePage() {
     if (!scenario) return;
     if (replyTimerRef.current) { clearTimeout(replyTimerRef.current); replyTimerRef.current = null; }
     if (replyAbortRef.current) { replyAbortRef.current.abort(); replyAbortRef.current = null; }
+    finalTextRef.current = "";
     const newKey = Date.now().toString();
     sessionStorage.setItem("practice_session_key", newKey);
     lastSessionKey.current = newKey;
