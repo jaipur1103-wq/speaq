@@ -280,100 +280,114 @@ export default function PracticePage() {
         <div ref={chatEndRef} />
       </div>
 
-      {/* Input area — voice-first, large mic */}
-      <div style={{ padding: "16px 16px 28px", borderTop: "1px solid var(--border)", background: "var(--surface)", boxShadow: "0 -4px 20px rgba(0,0,0,0.06)" }}>
+      {/* Input area — fixed height for stable layout */}
+      <div style={{
+        borderTop: "1px solid var(--border)",
+        background: "var(--surface)",
+        boxShadow: "0 -4px 20px rgba(0,0,0,0.06)",
+        height: 164,
+        flexShrink: 0,
+        display: "flex",
+        flexDirection: "column",
+        paddingBottom: "env(safe-area-inset-bottom)",
+      }}>
         {!speechSupported && (
-          <p style={{ fontSize: 12, color: "var(--orange)", marginBottom: 10, textAlign: "center" }}>{tr.speechNotSupported}</p>
+          <p style={{ fontSize: 11, color: "var(--orange)", textAlign: "center", margin: "4px 16px 0", lineHeight: 1.3 }}>{tr.speechNotSupported}</p>
         )}
 
-        {/* Turn progress */}
-        {!sessionDone && (
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 10, marginBottom: 12 }}>
-            <div style={{ display: "flex", gap: sessionLength <= 5 ? 6 : 4, alignItems: "center" }}>
-              {sessionLength <= 5
-                ? Array.from({ length: sessionLength }, (_, i) => (
-                    <div key={i} style={{ width: 8, height: 8, borderRadius: "50%", background: i < completedTurns ? "var(--accent)" : "var(--border)", transition: "background 0.3s" }} />
-                  ))
-                : (
-                    <div style={{ width: 120, height: 5, background: "var(--border)", borderRadius: 3, overflow: "hidden" }}>
-                      <div style={{ width: `${(completedTurns / sessionLength) * 100}%`, height: "100%", background: "var(--accent)", borderRadius: 3, transition: "width 0.3s" }} />
-                    </div>
-                  )
-              }
-            </div>
-            <span style={{ fontSize: 12, color: "var(--text-muted)", fontWeight: 600 }}>
-              {tr.turnProgress(completedTurns, sessionLength)}
-            </span>
-            {completedTurns > 0 && (
-              <button
-                onClick={handleFinishEarly}
-                disabled={loadingFinalFeedback}
-                style={{ fontSize: 11, padding: "3px 10px", borderRadius: 20, border: "1px solid var(--border)", background: "transparent", color: "var(--text-muted)", cursor: "pointer", fontWeight: 600 }}
-              >
-                {tr.finishEarly}
-              </button>
-            )}
-          </div>
-        )}
+        {/* Turn progress — always reserves 36px even when hidden */}
+        <div style={{ height: 36, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", gap: 10, paddingInline: 16 }}>
+          {!sessionDone && (
+            <>
+              <div style={{ display: "flex", gap: sessionLength <= 5 ? 6 : 4, alignItems: "center" }}>
+                {sessionLength <= 5
+                  ? Array.from({ length: sessionLength }, (_, i) => (
+                      <div key={i} style={{ width: 7, height: 7, borderRadius: "50%", background: i < completedTurns ? "var(--accent)" : "var(--border)", transition: "background 0.3s" }} />
+                    ))
+                  : (
+                      <div style={{ width: 100, height: 4, background: "var(--border)", borderRadius: 3, overflow: "hidden" }}>
+                        <div style={{ width: `${(completedTurns / sessionLength) * 100}%`, height: "100%", background: "var(--accent)", borderRadius: 3, transition: "width 0.3s" }} />
+                      </div>
+                    )
+                }
+              </div>
+              <span style={{ fontSize: 11, color: "var(--text-muted)", fontWeight: 600, whiteSpace: "nowrap" }}>
+                {tr.turnProgress(completedTurns, sessionLength)}
+              </span>
+              {completedTurns > 0 && (
+                <button
+                  onClick={handleFinishEarly}
+                  disabled={loadingFinalFeedback}
+                  style={{ fontSize: 10, padding: "2px 8px", borderRadius: 20, border: "1px solid var(--border)", background: "transparent", color: "var(--text-muted)", cursor: "pointer", fontWeight: 600, whiteSpace: "nowrap" }}
+                >
+                  {tr.finishEarly}
+                </button>
+              )}
+            </>
+          )}
+        </div>
 
-        {/* State: has input text → show preview + send/retake */}
-        {sessionDone ? null : hasInput && !isRecording ? (
-          <div>
-            <div style={{ background: "var(--surface2)", borderRadius: 14, padding: "12px 16px", marginBottom: 12, fontSize: 14, color: "var(--text)", lineHeight: 1.6, minHeight: 48 }}>
-              {inputText.trim()}
+        {/* Content area — flex:1, centered */}
+        <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", paddingInline: 16, paddingBottom: 8 }}>
+          {sessionDone ? null : hasInput && !isRecording ? (
+            /* Has input: preview + send/retake */
+            <div style={{ width: "100%" }}>
+              <div style={{ background: "var(--surface2)", borderRadius: 12, padding: "8px 14px", marginBottom: 8, fontSize: 13, color: "var(--text)", lineHeight: 1.5, minHeight: 36, maxHeight: 52, overflow: "hidden" }}>
+                {inputText.trim()}
+              </div>
+              <div style={{ display: "flex", gap: 8 }}>
+                <button
+                  onClick={handleRetake}
+                  style={{ flex: 1, padding: "10px", borderRadius: 12, background: "var(--surface2)", color: "var(--text-secondary)", border: "1px solid var(--border)", fontWeight: 600, fontSize: 13, cursor: "pointer" }}
+                >
+                  {tr.retake}
+                </button>
+                <button
+                  onClick={handleSend}
+                  style={{ flex: 2, padding: "10px", borderRadius: 12, background: "var(--accent)", color: "#FFFFFF", border: "none", fontWeight: 700, fontSize: 14, cursor: "pointer", boxShadow: "0 4px 14px rgba(0,102,204,0.3)" }}
+                >
+                  {tr.send} →
+                </button>
+              </div>
             </div>
-            <div style={{ display: "flex", gap: 10 }}>
+          ) : (
+            /* Idle or recording: mic button */
+            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8 }}>
               <button
-                onClick={handleRetake}
-                style={{ flex: 1, padding: "13px", borderRadius: 14, background: "var(--surface2)", color: "var(--text-secondary)", border: "1px solid var(--border)", fontWeight: 600, fontSize: 14, cursor: "pointer" }}
+                onClick={toggleRecording}
+                className={isRecording ? "animate-pulse-ring" : ""}
+                style={{
+                  width: 74, height: 74, borderRadius: "50%",
+                  border: `3px solid ${isRecording ? "var(--red)" : "transparent"}`,
+                  background: isRecording ? "rgba(255,59,48,0.1)" : "var(--accent)",
+                  cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center",
+                  transition: "all 0.2s",
+                  boxShadow: isRecording ? "0 0 0 6px rgba(255,59,48,0.12)" : "0 6px 20px rgba(0,102,204,0.4)",
+                  flexShrink: 0,
+                }}
+                aria-label={isRecording ? tr.stopRecording : tr.startRecording}
               >
-                {tr.retake}
+                <MicIcon recording={isRecording} />
               </button>
-              <button
-                onClick={handleSend}
-                style={{ flex: 2, padding: "13px", borderRadius: 14, background: "var(--accent)", color: "#FFFFFF", border: "none", fontWeight: 700, fontSize: 15, cursor: "pointer", boxShadow: "0 4px 14px rgba(0,102,204,0.3)" }}
-              >
-                {tr.send} →
-              </button>
-            </div>
-          </div>
-        ) : (
-          /* State: idle or recording → show large mic */
-          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 10 }}>
-            <button
-              onClick={toggleRecording}
-              className={isRecording ? "animate-pulse-ring" : ""}
-              style={{
-                width: 88, height: 88, borderRadius: "50%",
-                border: `3px solid ${isRecording ? "var(--red)" : "transparent"}`,
-                background: isRecording ? "rgba(255,59,48,0.1)" : "var(--accent)",
-                cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center",
-                transition: "all 0.2s",
-                boxShadow: isRecording ? "0 0 0 6px rgba(255,59,48,0.12)" : "0 6px 20px rgba(0,102,204,0.4)",
-              }}
-              aria-label={isRecording ? tr.stopRecording : tr.startRecording}
-            >
-              <MicIcon recording={isRecording} />
-            </button>
-
-            {isRecording ? (
-              <div style={{ textAlign: "center" }}>
-                <div style={{ fontSize: 18, fontWeight: 700, color: "var(--red)", letterSpacing: "0.04em" }}>
-                  🔴 {fmtTime(recordingSeconds)}
-                </div>
-                {interimText && (
-                  <div style={{ fontSize: 13, color: "var(--text-muted)", marginTop: 6, maxWidth: 280, lineHeight: 1.5 }}>
-                    {interimText}
+              <div style={{ height: 18, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                {isRecording ? (
+                  <div style={{ fontSize: 14, fontWeight: 700, color: "var(--red)", letterSpacing: "0.04em" }}>
+                    🔴 {fmtTime(recordingSeconds)}
+                  </div>
+                ) : (
+                  <div style={{ fontSize: 12, color: "var(--text-muted)", fontWeight: 500 }}>
+                    {tr.tapToSpeak}
                   </div>
                 )}
               </div>
-            ) : (
-              <div style={{ fontSize: 13, color: "var(--text-muted)", fontWeight: 500 }}>
-                {tr.tapToSpeak}
-              </div>
-            )}
-          </div>
-        )}
+              {interimText && (
+                <div style={{ fontSize: 12, color: "var(--text-muted)", lineHeight: 1.4, textAlign: "center", width: "100%", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                  {interimText}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Session Summary Modal */}
