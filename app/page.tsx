@@ -112,19 +112,32 @@ export default function Home() {
       {/* Header */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
         <SpeaqLogo />
-        <button
-          onClick={() => setDark(!dark)}
-          style={{
-            width: 36, height: 36, borderRadius: "50%",
-            background: "var(--surface)", border: "none",
-            cursor: "pointer", fontSize: 16,
-            display: "flex", alignItems: "center", justifyContent: "center",
-            boxShadow: "var(--shadow-sm)",
-          }}
+        <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+          <button
+            onClick={() => router.push("/guide")}
+            style={{
+              padding: "6px 12px", borderRadius: 20,
+              background: "var(--surface)", border: "1px solid var(--border)",
+              color: "var(--text-secondary)", fontSize: 12, fontWeight: 600,
+              cursor: "pointer", boxShadow: "var(--shadow-sm)",
+            }}
+          >
+            How to use
+          </button>
+          <button
+            onClick={() => setDark(!dark)}
+            style={{
+              width: 36, height: 36, borderRadius: "50%",
+              background: "var(--surface)", border: "none",
+              cursor: "pointer", fontSize: 16,
+              display: "flex", alignItems: "center", justifyContent: "center",
+              boxShadow: "var(--shadow-sm)",
+            }}
           aria-label="Toggle dark mode"
-        >
-          {dark ? "☀️" : "🌙"}
-        </button>
+          >
+            {dark ? "☀️" : "🌙"}
+          </button>
+        </div>
       </div>
 
       {/* Nav tabs */}

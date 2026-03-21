@@ -207,6 +207,8 @@ function Chip({
         fontWeight: active ? 600 : 400,
         cursor: "pointer",
         transition: "all 0.15s",
+        whiteSpace: "nowrap",
+        flexShrink: 0,
       }}
     >
       {children}
