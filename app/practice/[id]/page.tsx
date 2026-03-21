@@ -58,9 +58,13 @@ export default function PracticePage() {
   const recognitionRef = useRef<any>(null);
   const chatEndRef = useRef<HTMLDivElement>(null);
   const lastSessionKey = useRef<string | null>(null);
+  const replyTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const replyAbortRef = useRef<AbortController | null>(null);
 
   const initSession = useRef(() => {});
   initSession.current = () => {
+    if (replyTimerRef.current) { clearTimeout(replyTimerRef.current); replyTimerRef.current = null; }
+    if (replyAbortRef.current) { replyAbortRef.current.abort(); replyAbortRef.current = null; }
     const raw = sessionStorage.getItem("current_scenario");
     const sessionKey = sessionStorage.getItem("practice_session_key") ?? "";
     if (!raw) { router.push("/"); return; }
@@ -209,6 +213,8 @@ export default function PracticePage() {
       await callFeedbackApi(newPendingTurns);
     } else {
       setLoadingReply(true);
+      const abort = new AbortController();
+      replyAbortRef.current = abort;
       try {
         const res = await fetch("/api/counterpart-reply", {
           method: "POST",
@@ -218,15 +224,19 @@ export default function PracticePage() {
             conversationHistory: [...allMessages, userMsg],
             userMessage: text,
           }),
+          signal: abort.signal,
         });
         const { reply } = await res.json();
-        setTimeout(() => {
+        const timerId = setTimeout(() => {
+          replyTimerRef.current = null;
           setChatItems((prev) => [
             ...prev,
             { kind: "message", data: { role: "counterpart", text: reply, timestamp: Date.now() } },
           ]);
         }, 1800);
-      } catch { /* silent */ } finally {
+        replyTimerRef.current = timerId;
+      } catch { /* silent — includes abort */ } finally {
+        replyAbortRef.current = null;
         setLoadingReply(false);
       }
     }
@@ -239,6 +249,8 @@ export default function PracticePage() {
 
   const resetSession = () => {
     if (!scenario) return;
+    if (replyTimerRef.current) { clearTimeout(replyTimerRef.current); replyTimerRef.current = null; }
+    if (replyAbortRef.current) { replyAbortRef.current.abort(); replyAbortRef.current = null; }
     const newKey = Date.now().toString();
     sessionStorage.setItem("practice_session_key", newKey);
     lastSessionKey.current = newKey;
