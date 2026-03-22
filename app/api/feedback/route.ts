@@ -52,9 +52,9 @@ IMPORTANT: This is TRANSCRIBED VOICE INPUT. There is no punctuation. Do NOT dedu
 - coherence: logical organization and use of connectors
 
 CRITICAL RULES:
-- "strengths": Exactly 2 items. Each MUST start with [AxisName Score] in brackets. Then QUOTE a specific phrase the user actually said that demonstrates the strength. Be concrete — do NOT write vague praise.${isJa ? " Write content in Japanese but keep [AxisName Score] in English." : ""}
-  Example: "[Accuracy 78]: You correctly used past tense in 'we had discussed this last week' — tense agreement was accurate throughout."
-- "improvements": Exactly 2 items. Each MUST start with [AxisName Score]. Use 「」to quote English phrases (never use double quotes inside JSON strings).${isJa ? " Add a brief Japanese explanation. Example: [Coherence 52]：「I want to make the budget more」→「I'd like to increase the budget because it's critical for Q3」理由を付けることで主張に説得力が出ます。" : " Example: [Coherence 52]: 「I want to make the budget more.」— better: 「I'd like to increase the budget because it's critical for Q3.」"}
+- "strengths": Exactly 2 items. Each MUST start with [AxisName CEFR] in brackets (e.g. [Accuracy B2]). Then QUOTE a specific phrase the user actually said that demonstrates the strength. Be concrete — do NOT write vague praise.${isJa ? " Write content in Japanese but keep [AxisName CEFR] in English." : ""}
+  Example: "[Accuracy B2]: 「we had discussed this last week」で過去完了を正確に使えていた。時制の一致が会話全体を通じて安定していました。"
+- "improvements": Exactly 2 items. Each MUST start with [AxisName CEFR] (e.g. [Coherence B1]). Focus ONLY on communication strategy — sentence structure, logical flow, response relevance, use of connectors. Do NOT suggest specific words or phrases (word-level corrections belong in naturalExpressions only). Write 2-3 sentences: (1) what communication issue was observed, (2) why it matters in this context, (3) what to try next time.${isJa ? " Write in Japanese but keep [AxisName CEFR] in English. Example: [Coherence B1]：主張の後に根拠を続けると説得力が増す。今回は結論と理由が切り離されており、相手に意図が伝わりにくい場面があった。次回は結論→理由→具体例の順を意識してみてください。" : " Example: [Coherence B1]: Linking claims to reasons strengthens persuasion. The proposal and its rationale were disconnected, making it hard to follow. Next time, try structuring as: point → reason → example."}
 - "naturalExpressions": Pick 2-4 of the most useful corrections from across ALL turns. Return [] if English was already natural.
 - "naturalExpressions[].reason": Classify WHY the original is less natural. Use exactly one of: grammar (grammatical error), collocation (unnatural word combination), literal (direct translation from Japanese), set-phrase (a natural set phrase exists), formality (wrong register for the context), nuance (subtle meaning mismatch).
 - "naturalExpressions[].explanation": 1-2 sentences on why the original is wrong. Angle by reason type — grammar: cite the exact rule broken (e.g. discuss は他動詞なので about 不要); collocation: name the wrong word pair and the natural pairing; literal: name the Japanese source phrase and explain why direct translation fails in English; set-phrase: explain why the fixed phrase is expected and what sounds off without it; formality: cite this specific scene and why the register is mismatched; nuance: contrast what original vs natural actually implies in meaning.${isJa ? " Write in Japanese." : ""} Do NOT mention the phrase pattern here.
@@ -68,8 +68,8 @@ Return ONLY valid JSON:
   "scores": { "accuracy": <number>, "range": <number>, "interaction": <number>, "coherence": <number> },
   "overall": <number>,
   "encouragement": "",
-  "strengths": ["<[AxisName Score]${isJa ? " 具体的な良かった点" : " specific strength with quoted phrase"}>", "<[AxisName Score]${isJa ? " 具体的な良かった点" : " specific strength"}>"],
-  "improvements": ["<[AxisName Score]${isJa ? " 引用→改善案" : " quoted phrase → better version"}>", "<[AxisName Score]${isJa ? " 引用→改善案" : " quoted phrase → better version"}>"],
+  "strengths": ["<[AxisName CEFR]${isJa ? " ユーザーの発言を引用して具体的に褒める" : " quote user phrase + specific praise"}>", "<[AxisName CEFR]${isJa ? " 具体的な良かった点" : " specific strength"}>"],
+  "improvements": ["<[AxisName CEFR]${isJa ? " コミュニケーション戦略の改善アドバイス（フレーズ修正なし）" : " communication strategy advice only (no word corrections)"}>", "<[AxisName CEFR]${isJa ? " コミュニケーション戦略の改善アドバイス" : " communication strategy advice"}>"],
   "foundPhrases": [],
   "suggestedResponse": "<natural English response for the last turn>",
   "naturalExpressions": [
