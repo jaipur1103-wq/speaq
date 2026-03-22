@@ -71,9 +71,11 @@ export default function ScenarioCard({ scenario, onDelete, isFavorite, onFavorit
           <span style={{ fontSize: 10, padding: "2px 8px", borderRadius: 20, background: difficultyColor[scenario.difficulty] + "20", color: difficultyColor[scenario.difficulty], fontWeight: 700, textTransform: "capitalize" }}>
             {scenario.difficulty}
           </span>
-          <span style={{ fontSize: 10, padding: "2px 8px", borderRadius: 20, background: "var(--surface2)", color: "var(--text-muted)", textTransform: "capitalize" }}>
-            {scenario.industry}
-          </span>
+          {scenario.industry && scenario.industry !== "general" && (
+            <span style={{ fontSize: 10, padding: "2px 8px", borderRadius: 20, background: "var(--surface2)", color: "var(--text-muted)", textTransform: "capitalize" }}>
+              {scenario.industry}
+            </span>
+          )}
           <ChevronRight size={14} color="var(--text-muted)" style={{ marginLeft: "auto", flexShrink: 0 }} />
         </div>
 
