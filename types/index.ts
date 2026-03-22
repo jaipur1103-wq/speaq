@@ -40,12 +40,16 @@ export interface ScoreBreakdown {
   coherence: number;
 }
 
+export type NaturalExpressionReason = "grammar" | "collocation" | "literal" | "set-phrase" | "formality" | "nuance";
+
 export interface NaturalExpression {
   original: string;
   natural: string;
   chunk: string;
   explanation: string;
   example: string;
+  reason: NaturalExpressionReason;
+  chunkDetail: string;
 }
 
 export interface Feedback {
@@ -72,6 +76,8 @@ export interface SavedExpression {
   savedAt: number;
   learned: boolean;
   quizCount: number;
+  reason?: NaturalExpressionReason;
+  chunkDetail?: string;
 }
 
 export interface TurnScore {

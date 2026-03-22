@@ -665,14 +665,21 @@ function FeedbackPanel({ feedback, scenarioTitle, savedIds, tr, onSaveExpression
             const saved = savedIds.has(key);
             return (
               <div key={i} style={{ background: "var(--surface2)", borderRadius: 12, padding: "12px 14px", marginBottom: 8 }}>
-                <div style={{ fontSize: 12, color: "var(--text-muted)", marginBottom: 6, textDecoration: "line-through" }}>{expr.original}</div>
+                {/* Reason badge + original */}
+                <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 6, flexWrap: "wrap" }}>
+                  {expr.reason && <ReasonBadge reason={expr.reason} />}
+                  <span style={{ fontSize: 12, color: "var(--text-muted)" }}>{expr.original}</span>
+                </div>
+                <div style={{ fontSize: 14, color: "var(--text)", fontWeight: 600, marginBottom: 6 }}>→ {expr.natural}</div>
                 {expr.chunk && (
                   <div style={{ fontSize: 13, fontWeight: 700, color: "var(--accent)", marginBottom: 4, letterSpacing: "-0.01em" }}>
                     🔑 {expr.chunk}
                   </div>
                 )}
-                <div style={{ fontSize: 14, color: "var(--text)", fontWeight: 600, marginBottom: 5 }}>→ {expr.natural}</div>
-                <div style={{ fontSize: 12, color: "var(--text-secondary)", lineHeight: 1.5, marginBottom: 8 }}>{expr.explanation}</div>
+                {expr.chunkDetail && (
+                  <div style={{ fontSize: 12, color: "var(--text-muted)", lineHeight: 1.5, marginBottom: 6, fontStyle: "italic" }}>{expr.chunkDetail}</div>
+                )}
+                <div style={{ fontSize: 12, color: "var(--text-secondary)", lineHeight: 1.6, marginBottom: 8 }}>{expr.explanation}</div>
                 <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
                   <button
                     onClick={() => !saved && onSaveExpression(expr, scenarioTitle, key)}
@@ -823,6 +830,28 @@ function SessionSummary({ feedback, turnCount, savedCount, tr, onContinue, onDon
 
 function SectionLabel({ children }: { children: React.ReactNode }) {
   return <div style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--text-muted)", marginBottom: 8 }}>{children}</div>;
+}
+
+const REASON_BADGE: Record<string, { label: string; bg: string; color: string }> = {
+  grammar:     { label: "🔧 文法",       bg: "rgba(255,149,0,0.15)",  color: "#FF9500" },
+  collocation: { label: "🔗 コロケーション", bg: "rgba(0,102,204,0.12)", color: "var(--accent)" },
+  literal:     { label: "🇯🇵 直訳",       bg: "rgba(255,59,48,0.12)",  color: "#FF3B30" },
+  "set-phrase":{ label: "💬 定型表現",    bg: "rgba(175,82,222,0.12)", color: "#AF52DE" },
+  formality:   { label: "🎯 フォーマリティ", bg: "rgba(0,199,190,0.12)",  color: "#00C7BE" },
+  nuance:      { label: "🌀 ニュアンス",   bg: "rgba(142,142,147,0.15)","color": "var(--text-secondary)" },
+};
+
+function ReasonBadge({ reason }: { reason: string }) {
+  const b = REASON_BADGE[reason];
+  if (!b) return null;
+  return (
+    <span style={{
+      fontSize: 11, fontWeight: 700, padding: "2px 8px", borderRadius: 20,
+      background: b.bg, color: b.color, flexShrink: 0,
+    }}>
+      {b.label}
+    </span>
+  );
 }
 
 function toCEFR(score: number): string {

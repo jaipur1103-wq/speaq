@@ -637,6 +637,15 @@ function CollectionView({
 
 // ─── Expression Card ──────────────────────────────────────────
 
+const REASON_BADGE: Record<string, { label: string; bg: string; color: string }> = {
+  grammar:     { label: "🔧 文法",       bg: "rgba(255,149,0,0.15)",  color: "#FF9500" },
+  collocation: { label: "🔗 コロケーション", bg: "rgba(0,102,204,0.12)", color: "#0066CC" },
+  literal:     { label: "🇯🇵 直訳",       bg: "rgba(255,59,48,0.12)",  color: "#FF3B30" },
+  "set-phrase":{ label: "💬 定型表現",    bg: "rgba(175,82,222,0.12)", color: "#AF52DE" },
+  formality:   { label: "🎯 フォーマリティ", bg: "rgba(0,199,190,0.12)",  color: "#00C7BE" },
+  nuance:      { label: "🌀 ニュアンス",   bg: "rgba(142,142,147,0.15)", color: "#8E8E93" },
+};
+
 function ExpressionCard({
   expr, tr, onDelete, compact = false,
 }: {
@@ -647,6 +656,7 @@ function ExpressionCard({
 }) {
   const date = new Date(expr.savedAt).toLocaleDateString("ja-JP", { month: "short", day: "numeric" });
   const chunkDisplay = expr.chunk || expr.natural;
+  const badge = expr.reason ? REASON_BADGE[expr.reason] : null;
 
   return (
     <div style={{
@@ -669,10 +679,29 @@ function ExpressionCard({
         </div>
       </div>
 
+      {/* Reason badge + original */}
+      {badge && (
+        <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 6, flexWrap: "wrap" }}>
+          <span style={{ fontSize: 11, fontWeight: 700, padding: "2px 8px", borderRadius: 20, background: badge.bg, color: badge.color, flexShrink: 0 }}>
+            {badge.label}
+          </span>
+          {expr.original && (
+            <span style={{ fontSize: 12, color: "var(--text-muted)" }}>{expr.original}</span>
+          )}
+        </div>
+      )}
+
       {/* Chunk */}
-      <div style={{ fontSize: 15, fontWeight: 700, color: "var(--accent)", marginBottom: 6, letterSpacing: "-0.01em" }}>
+      <div style={{ fontSize: 15, fontWeight: 700, color: "var(--accent)", marginBottom: 4, letterSpacing: "-0.01em" }}>
         🔑 {chunkDisplay}
       </div>
+
+      {/* Chunk detail */}
+      {expr.chunkDetail && (
+        <div style={{ fontSize: 12, color: "var(--text-muted)", lineHeight: 1.5, marginBottom: 6, fontStyle: "italic" }}>
+          {expr.chunkDetail}
+        </div>
+      )}
 
       {/* Example */}
       {expr.example && (
