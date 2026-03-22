@@ -1,5 +1,93 @@
 @AGENTS.md
 
+## ⚠️ 現在の実装状態（セッション開始時に必ず確認すること）
+
+### 型定義（`types/index.ts`）
+
+```typescript
+// Scenario: 日本語フィールドはすべてoptional
+interface Scenario {
+  titleJa?: string; briefJa?: string; openerJa?: string;  // 事前生成済み
+  // ...その他フィールド
+}
+
+// Message: チャットバブルの日本語訳
+interface Message {
+  role: "user" | "counterpart";
+  text: string;
+  textJa?: string;   // ← counterpart-reply APIが返すreplyJaを保存
+  timestamp: number;
+}
+
+// Feedback: スコア・CEFR廃止済み。improvements は文字列ではなくオブジェクト配列
+interface Feedback {
+  encouragement: string;
+  strengths: string[];
+  improvements: ImprovementItem[];  // ← { comment, suggestedResponse }
+  naturalExpressions: NaturalExpression[];
+  wordCount: number;
+}
+
+// ScoreRecord: フィードバック内容も保存
+interface ScoreRecord {
+  id: string; date: string; scenarioTitle: string; turnCount: number;
+  scenarioCategory?: string; difficulty?: Difficulty;
+  encouragement?: string; strengths?: string[];
+  improvements?: ImprovementItem[]; expressionCount?: number;
+}
+```
+
+### API設計（現在）
+
+| エンドポイント | 返却値 | 注意点 |
+|---|---|---|
+| `/api/generate-scenario` | `{ ...scenarioFields, titleJa, briefJa, openerJa, difficulty, industry, personaStyle }` | 2ステップ：英語生成→日本語翻訳を別呼び出し |
+| `/api/counterpart-reply` | `{ reply, replyJa }` | 2ステップ：返答生成→日本語翻訳を別呼び出し |
+| `/api/feedback` | `{ encouragement, strengths, improvements, naturalExpressions, wordCount }` | **scoresフィールドは存在しない** |
+| `/api/translate` | `{ translations: string[] }` | Groq使用。チャットバブルのフォールバックのみ |
+| `/api/punctuate` | `{ corrected: string }` | 音声入力後の句読点補正 |
+| `/api/transcribe` | `{ text: string }` | Groq Whisper |
+
+### 重要な実装ルール（過去のバグから学んだ）
+
+**1. フィードバック判定は `fb.encouragement` で行う（`fb.scores` は廃止）**
+```typescript
+// ✅ 正しい
+if (fb.encouragement) { setFinalFeedback(fb as Feedback); }
+// ❌ 間違い（scoresは存在しない）
+if (fb.scores) { setFinalFeedback(fb as Feedback); }
+```
+
+**2. スコア保存は useEffect で自動実行（ボタン押下に依存しない）**
+```typescript
+useEffect(() => {
+  if (finalFeedback && scenario && !scoreSaved) { doSaveScore(finalFeedback, scenario.title); }
+}, [finalFeedback]);
+```
+
+**3. ScenarioCard の titleJa は言語設定に関係なく常に表示**
+```typescript
+// ✅ 正しい（titleJaがあれば常に表示）
+{scenario.titleJa && <div>{scenario.titleJa}</div>}
+// ❌ 間違い（lang条件は不要）
+{lang === "ja" && scenario.titleJa && <div>{scenario.titleJa}</div>}
+```
+
+**4. 日本語翻訳は事前生成・保存済みのものを使う（translate APIは最終フォールバックのみ）**
+- シナリオ生成時: `titleJa / briefJa / openerJa` → localStorage保存済み
+- チャット返答時: `msg.textJa` → Message型に保存済み
+- BriefingArea: `scenario.briefJa` を即表示（APIゼロ）
+- ChatBubble: `msg.textJa` があれば即表示、なければ `/api/translate` にフォールバック
+
+**5. improvements は ImprovementItem[] 型（string[] ではない）**
+```typescript
+// improvements を表示するとき
+{imp.comment}  // ✅ 正しい
+{imp}          // ❌ 間違い（オブジェクトなので文字列として表示できない）
+```
+
+---
+
 ## プロンプト設計ルール（`/api/feedback`）
 
 - **LLMへの例示にダブルクォートを使わない**: プロンプト内で英語フレーズを引用するときは `「」` を使う。ダブルクォートはJSONの文字列区切りと衝突し、パースエラーになる
