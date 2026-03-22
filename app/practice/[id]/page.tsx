@@ -196,17 +196,23 @@ export default function PracticePage() {
     if (!text || !scenario) return;
     if (isRecording) { recognitionRef.current?.stop(); stopRecordingTimer(); setIsRecording(false); }
 
-    const userMsg: Message = { role: "user", text, timestamp: Date.now() };
+    // Snapshot conversation state before any updates
     const allMessages = chatItems.map((i) => i.data);
     const lastCounterpart = [...allMessages].reverse().find((m) => m.role === "counterpart");
-    const newTurn: PendingTurn = { userMessage: text, counterpartMessage: lastCounterpart?.text ?? scenario.opener };
-    const newPendingTurns = [...pendingTurns, newTurn];
 
+    // Show original text in chat immediately
+    const userMsg: Message = { role: "user", text, timestamp: Date.now() };
     setChatItems((prev) => [...prev, { kind: "message", data: userMsg }]);
     setInputText("");
     setInterimText("");
     setRecordingSeconds(0);
     setTurn((t) => t + 1);
+
+    // Silently add punctuation before passing to APIs
+    const correctedText = await punctuateText(text);
+
+    const newTurn: PendingTurn = { userMessage: correctedText, counterpartMessage: lastCounterpart?.text ?? scenario.opener };
+    const newPendingTurns = [...pendingTurns, newTurn];
     setPendingTurns(newPendingTurns);
 
     const isLastTurn = newPendingTurns.length >= sessionLength;
@@ -223,8 +229,8 @@ export default function PracticePage() {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             scenario,
-            conversationHistory: [...allMessages, userMsg],
-            userMessage: text,
+            conversationHistory: [...allMessages, { ...userMsg, text: correctedText }],
+            userMessage: correctedText,
           }),
           signal: abort.signal,
         });
@@ -912,6 +918,20 @@ function TypingDots() {
       <style>{`@keyframes bounce { 0%,80%,100% { transform: translateY(0); } 40% { transform: translateY(-5px); } }`}</style>
     </span>
   );
+}
+
+async function punctuateText(text: string): Promise<string> {
+  try {
+    const res = await fetch("/api/punctuate", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ text }),
+    });
+    const { corrected } = await res.json();
+    return corrected || text;
+  } catch {
+    return text;
+  }
 }
 
 function MicIcon({ recording }: { recording: boolean }) {
