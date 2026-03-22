@@ -678,7 +678,7 @@ function FeedbackPanel({ feedback, scenarioTitle, savedIds, tr, onSaveExpression
                 {/* ── Divider with chunk label ── */}
                 <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "0 14px", margin: "0" }}>
                   <div style={{ flex: 1, height: 1, background: "var(--border)" }} />
-                  <span style={{ fontSize: 10, fontWeight: 700, color: "var(--accent)", letterSpacing: "0.06em", textTransform: "uppercase", whiteSpace: "nowrap" }}>🔑 チャンク</span>
+                  <span style={{ fontSize: 10, fontWeight: 700, color: "var(--accent)", letterSpacing: "0.06em", textTransform: "uppercase", whiteSpace: "nowrap" }}>🔑 使えるフレーズ</span>
                   <div style={{ flex: 1, height: 1, background: "var(--border)" }} />
                 </div>
 
