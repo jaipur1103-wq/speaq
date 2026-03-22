@@ -46,6 +46,8 @@ CRITICAL RULES:
   ${isJa ? "Write in Japanese. Example: 「I was wondering if ~」という形を使えていました。ネイティブが依頼するときによく使う丁寧な構造で、相手への配慮が自然に伝わります。" : "Example: You used 「I was wondering if ~」— this is the standard native structure for polite requests, far more natural than 「Can you ~」in professional contexts."}
 
 - "improvements": 0-2 items. Variable — if the English is natural and correct, return []. Only flag genuine issues.
+  DO NOT FLAG: contraction vs. full form (「I've」vs「I have」), equivalent synonyms with no practical difference, valid stylistic choices, correct grammar with minor formality variation. These are not errors.
+  Only flag: definite grammar errors, wrong collocations, literal translations that fail, register mismatches that hurt communication.
   Each item is an object with two fields:
   - "comment": Quote the user's phrase using 「」, suggest a better version for difficulty=${scenario.difficulty} (beginner=A2 / intermediate=B1-B2 / advanced=C1-C2), explain the specific reason (grammar rule, wrong collocation, literal translation, register mismatch, nuance difference), and add one sentence about why it matters in THIS specific scenario context.
     FORBIDDEN: Never write "more natural", "sounds better", "more commonly used", "sounds awkward". Always name the exact rule or reason.
@@ -63,6 +65,9 @@ CRITICAL RULES:
 EXAMPLES of ideal naturalExpression quality:
 Collocation: { "original": "it has the big potential", "natural": "it has great potential", "reason": "collocation", "explanation": "「big」does not collocate with「potential」. Natural pairings: great / enormous / tremendous potential.", "chunk": "have great potential", "chunkDetail": "「great potential」is a fixed collocation. Use have/show great potential to say something is very promising.", "example": "This approach has great potential for cutting costs." }
 Grammar: { "original": "I look forward to see you", "natural": "I look forward to seeing you", "reason": "grammar", "explanation": "「look forward to」requires a gerund (-ing) because「to」here is a preposition, not an infinitive marker.", "chunk": "look forward to ~ing", "chunkDetail": "After「look forward to」, always use the -ing form. ~ing is the activity you are anticipating.", "example": "I look forward to hearing your thoughts." }
+
+EXAMPLE of when improvements should be []:
+User said: "I have received your report." — This is grammatically correct. 「I have」vs「I've」is a stylistic choice, not an error. There is no wrong collocation, no grammar mistake, no register problem. improvements: []
 
 Return ONLY valid JSON:
 {
