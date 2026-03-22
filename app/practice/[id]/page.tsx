@@ -35,7 +35,7 @@ export default function PracticePage() {
   const [chatItems, setChatItems] = useState<ChatItem[]>([]);
   const [inputText, setInputText] = useState("");
   const [isRecording, setIsRecording] = useState(false);
-  const [interimText, setInterimText] = useState("");
+  const [isTranscribing, setIsTranscribing] = useState(false);
   const [loadingReply, setLoadingReply] = useState(false);
   const [loadingFinalFeedback, setLoadingFinalFeedback] = useState(false);
   const [finalFeedback, setFinalFeedback] = useState<Feedback | null>(null);
@@ -54,13 +54,12 @@ export default function PracticePage() {
   const [recordingSeconds, setRecordingSeconds] = useState(0);
   const recordingTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const recognitionRef = useRef<any>(null);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const audioChunksRef = useRef<Blob[]>([]);
   const chatEndRef = useRef<HTMLDivElement>(null);
   const lastSessionKey = useRef<string | null>(null);
   const replyTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const replyAbortRef = useRef<AbortController | null>(null);
-  const finalTextRef = useRef("");
 
   const initSession = useRef(() => {});
   initSession.current = () => {
@@ -81,7 +80,6 @@ export default function PracticePage() {
     setScoreSaved(false);
     setShowSummary(false);
     setInputText("");
-    setInterimText("");
     setRecordingSeconds(0);
     setLoadingReply(false);
     setLoadingFinalFeedback(false);
@@ -106,29 +104,7 @@ export default function PracticePage() {
   }, [chatItems, loadingReply, loadingFinalFeedback, finalFeedback]);
 
   useEffect(() => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const w = window as any;
-    const SpeechAPI = w.SpeechRecognition || w.webkitSpeechRecognition;
-    if (!SpeechAPI) { setSpeechSupported(false); return; }
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const rec = new SpeechAPI() as any;
-    rec.lang = "en-US";
-    rec.interimResults = true;
-    rec.continuous = true;
-
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    rec.onresult = (e: any) => {
-      let interim = "";
-      for (let i = e.resultIndex; i < e.results.length; i++) {
-        if (e.results[i].isFinal) finalTextRef.current += e.results[i][0].transcript + " ";
-        else interim = e.results[i][0].transcript;
-      }
-      setInputText(finalTextRef.current);
-      setInterimText(interim);
-    };
-    rec.onerror = () => { stopRecordingTimer(); setIsRecording(false); setInterimText(""); };
-    rec.onend = () => { stopRecordingTimer(); setIsRecording(false); setInterimText(""); };
-    recognitionRef.current = rec;
+    if (!navigator.mediaDevices?.getUserMedia) setSpeechSupported(false);
   }, []);
 
   const startRecordingTimer = () => {
@@ -145,26 +121,52 @@ export default function PracticePage() {
     }
   };
 
-  const toggleRecording = () => {
-    if (!recognitionRef.current) return;
+  const toggleRecording = async () => {
     if (isRecording) {
-      recognitionRef.current.stop();
+      mediaRecorderRef.current?.stop();
       stopRecordingTimer();
       setIsRecording(false);
     } else {
-      finalTextRef.current = "";
-      setInputText("");
-      setInterimText("");
-      recognitionRef.current.start();
-      setIsRecording(true);
-      startRecordingTimer();
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        const mimeType = MediaRecorder.isTypeSupported("audio/webm") ? "audio/webm" : "audio/mp4";
+        const recorder = new MediaRecorder(stream, { mimeType });
+        audioChunksRef.current = [];
+
+        recorder.ondataavailable = (e) => {
+          if (e.data.size > 0) audioChunksRef.current.push(e.data);
+        };
+
+        recorder.onstop = async () => {
+          stream.getTracks().forEach((t) => t.stop());
+          const blob = new Blob(audioChunksRef.current, { type: mimeType });
+          const ext = mimeType.includes("webm") ? "webm" : "mp4";
+          const file = new File([blob], `recording.${ext}`, { type: mimeType });
+          setIsTranscribing(true);
+          try {
+            const fd = new FormData();
+            fd.append("audio", file);
+            const res = await fetch("/api/transcribe", { method: "POST", body: fd });
+            const data = await res.json();
+            setInputText(data.text?.trim() ?? "");
+          } catch { /* silent */ } finally {
+            setIsTranscribing(false);
+          }
+        };
+
+        mediaRecorderRef.current = recorder;
+        setInputText("");
+        recorder.start();
+        setIsRecording(true);
+        startRecordingTimer();
+      } catch {
+        setSpeechSupported(false);
+      }
     }
   };
 
   const handleRetake = () => {
-    finalTextRef.current = "";
     setInputText("");
-    setInterimText("");
     setRecordingSeconds(0);
   };
 
@@ -192,9 +194,9 @@ export default function PracticePage() {
   };
 
   const handleSend = async () => {
-    const text = (inputText + " " + interimText).trim();
+    const text = inputText.trim();
     if (!text || !scenario) return;
-    if (isRecording) { recognitionRef.current?.stop(); stopRecordingTimer(); setIsRecording(false); }
+    if (isRecording) { mediaRecorderRef.current?.stop(); stopRecordingTimer(); setIsRecording(false); }
 
     // Snapshot conversation state before any updates
     const allMessages = chatItems.map((i) => i.data);
@@ -204,7 +206,6 @@ export default function PracticePage() {
     const userMsg: Message = { role: "user", text, timestamp: Date.now() };
     setChatItems((prev) => [...prev, { kind: "message", data: userMsg }]);
     setInputText("");
-    setInterimText("");
     setRecordingSeconds(0);
     setTurn((t) => t + 1);
 
@@ -259,7 +260,6 @@ export default function PracticePage() {
     if (!scenario) return;
     if (replyTimerRef.current) { clearTimeout(replyTimerRef.current); replyTimerRef.current = null; }
     if (replyAbortRef.current) { replyAbortRef.current.abort(); replyAbortRef.current = null; }
-    finalTextRef.current = "";
     const newKey = Date.now().toString();
     sessionStorage.setItem("practice_session_key", newKey);
     lastSessionKey.current = newKey;
@@ -272,7 +272,6 @@ export default function PracticePage() {
     setShowSummary(false);
     setFeedbackError(null);
     setInputText("");
-    setInterimText("");
     setRecordingSeconds(0);
     setLoadingReply(false);
     setLoadingFinalFeedback(false);
@@ -417,7 +416,16 @@ export default function PracticePage() {
 
         {/* Content area — flex:1, centered */}
         <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", paddingInline: 16, paddingBottom: 8 }}>
-          {sessionDone ? null : hasInput && !isRecording ? (
+          {sessionDone ? null : isTranscribing ? (
+            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8 }}>
+              <div style={{ width: 74, height: 74, borderRadius: "50%", background: "var(--surface2)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                <div style={{ width: 28, height: 28, borderRadius: "50%", border: "3px solid var(--accent)", borderTopColor: "transparent", animation: "spin 0.8s linear infinite" }} />
+              </div>
+              <div style={{ fontSize: 12, color: "var(--text-muted)", fontWeight: 500 }}>
+                {lang === "ja" ? "文字起こし中..." : "Transcribing..."}
+              </div>
+            </div>
+          ) : hasInput && !isRecording ? (
             /* Has input: preview + send/retake */
             <div style={{ width: "100%" }}>
               <div style={{ background: "var(--surface2)", borderRadius: 12, padding: "8px 14px", marginBottom: 8, fontSize: 13, color: "var(--text)", lineHeight: 1.5, minHeight: 36, maxHeight: 52, overflow: "hidden" }}>
@@ -468,11 +476,6 @@ export default function PracticePage() {
                   </div>
                 )}
               </div>
-              {interimText && (
-                <div style={{ fontSize: 12, color: "var(--text-muted)", lineHeight: 1.4, textAlign: "center", width: "100%", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                  {interimText}
-                </div>
-              )}
             </div>
           )}
         </div>

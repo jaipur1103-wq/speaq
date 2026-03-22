@@ -63,6 +63,10 @@ body {
   50% { border-color: transparent; }
 }
 
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
 .animate-fade-slide-up {
   animation: fadeSlideUp 0.3s ease forwards;
 }
