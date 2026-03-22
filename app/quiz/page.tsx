@@ -412,12 +412,12 @@ function QuizCard({
                 <div style={{ fontSize: 15, fontWeight: 700, color: "var(--accent)" }}>🔑 {card.chunk}</div>
               </div>
             )}
-            {card.explanation && (
+            {(card.chunkDetail || card.explanation) && (
               <div style={{ paddingTop: 14, borderTop: "1px solid var(--border)" }}>
                 <div style={{ fontSize: 11, color: "var(--text-muted)", fontWeight: 700, letterSpacing: "0.05em", marginBottom: 6, textTransform: "uppercase" }}>
                   {tr.quizUsage}
                 </div>
-                <div style={{ fontSize: 13, color: "var(--text-secondary)", lineHeight: 1.6 }}>{card.explanation}</div>
+                <div style={{ fontSize: 13, color: "var(--text-secondary)", lineHeight: 1.6 }}>{card.chunkDetail || card.explanation}</div>
               </div>
             )}
           </div>
