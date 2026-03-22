@@ -117,6 +117,31 @@ const SCENARIO_TYPES: Record<Topic, Record<Difficulty, string[]>> = {
   },
 };
 
+const MODIFIERS = [
+  "there has been a mistake on their end",
+  "you are in a hurry and have limited time",
+  "it is your first time dealing with this situation",
+  "a previous attempt to resolve this already failed",
+  "there is an unexpected policy or rule blocking you",
+  "the staff member or counterpart is new and unsure",
+  "it is peak hour and things are unusually busy",
+  "you have already been waiting a long time",
+  "the situation turns out more complicated than expected",
+  "the counterpart is reluctant or unhelpful at first",
+  "you need to stay calm despite being frustrated",
+  "there is a misunderstanding due to different expectations",
+  "you need to negotiate for a better outcome",
+  "the system or process is down or broken",
+  "you are representing someone else, not just yourself",
+  "the counterpart gives you conflicting information",
+  "you realize mid-conversation you made a mistake",
+  "the stakes are higher than you initially thought",
+  "there is a cultural or language barrier to navigate",
+  "you need to be persuasive without being pushy",
+];
+
+function pick<T>(arr: T[]): T { return arr[Math.floor(Math.random() * arr.length)]; }
+
 function getDifficultyDesc(difficulty: Difficulty): string {
   if (difficulty === "beginner") {
     return (
@@ -151,7 +176,8 @@ export async function POST(req: NextRequest) {
       : `Theme: ${TOPICS[topic] ?? "everyday situations"}`;
 
     const types = SCENARIO_TYPES[topic]?.[difficulty] ?? [];
-    const scenarioType = types[Math.floor(Math.random() * types.length)];
+    const scenarioType = pick(types);
+    const modifier = pick(MODIFIERS);
 
     // Step 1: Generate English scenario
     const completion = await groq.chat.completions.create({
@@ -167,6 +193,7 @@ export async function POST(req: NextRequest) {
 
 ${themeContext}
 Scenario type: ${scenarioType}
+Twist: ${modifier}
 Difficulty: ${difficulty} — ${getDifficultyDesc(difficulty)}
 Counterpart persona: ${PERSONAS[personaStyle]}
 
