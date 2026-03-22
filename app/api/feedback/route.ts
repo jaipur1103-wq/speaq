@@ -54,17 +54,12 @@ IMPORTANT: This is TRANSCRIBED VOICE INPUT. There is no punctuation. Do NOT dedu
 CRITICAL RULES:
 - "strengths": Exactly 2 items. Each MUST start with [AxisName] (e.g. [Accuracy]). Then QUOTE a specific phrase the user actually said that demonstrates the strength. Be concrete — do NOT write vague praise.${isJa ? " Write content in Japanese but keep [AxisName] in English." : ""}
   Example: "[Accuracy]: 「we had discussed this last week」で過去完了を正確に使えていた。時制の一致が会話全体を通じて安定していました。"
-- "improvements": Exactly 2 items. Each MUST start with [AxisName] (e.g. [Coherence]). Focus ONLY on communication strategy — sentence structure, logical flow, response relevance, use of connectors. Do NOT suggest specific words or phrases (word-level corrections belong in naturalExpressions only). Write 2-3 sentences: (1) what communication issue was observed, (2) why it matters in this context, (3) what to try next time.${isJa ? " Write in Japanese but keep [AxisName] in English. Example: [Coherence]：主張の後に根拠を続けると説得力が増す。今回は結論と理由が切り離されており、相手に意図が伝わりにくい場面があった。次回は結論→理由→具体例の順を意識してみてください。" : " Example: [Coherence]: Linking claims to reasons strengthens persuasion. The proposal and its rationale were disconnected, making it hard to follow. Next time, try structuring as: point → reason → example."}
-- "naturalExpressions": Pick 2-4 phrase/vocabulary-level corrections. Return [] if English was already natural at the target level.
-  LEVEL FILTER — only include corrections where the improved expression matches this level:
-  beginner: A2 level expressions only. Skip anything above A2.
-  intermediate: B1-B2 level expressions only. Skip A1-level corrections.
-  advanced: C1-C2 level expressions only. Skip B2 and below.
-  Current difficulty: ${scenario.difficulty}
-- "naturalExpressions[].reason": Classify WHY the original is less natural. Use exactly one of: grammar (grammatical error), collocation (unnatural word combination), literal (direct translation from Japanese), set-phrase (a natural set phrase exists), formality (wrong register for the context), nuance (subtle meaning mismatch).
-- "naturalExpressions[].explanation": 1-2 sentences on why the original is wrong. Angle by reason type — grammar: cite the exact rule broken; collocation: name the wrong word pair and the natural pairing; literal: name the Japanese source phrase and why direct translation fails; set-phrase: explain why the fixed phrase is expected; formality: cite this scene and why the register is wrong; nuance: contrast what original vs natural implies.${isJa ? " Write in Japanese." : ""} Do NOT mention the phrase pattern here.
-- "naturalExpressions[].chunk": Extract the core reusable pattern DIRECTLY from the natural field above. Replace variable parts with "~". Keep 3-8 words. NEVER write a full sentence. NEVER use the user's actual words. NEVER invent a pattern unrelated to natural. E.g. natural = "I'd like to explore some alternatives" → chunk = "I'd like to explore ~".
-- "naturalExpressions[].chunkDetail": 1-2 sentences on HOW to use this chunk: what "~" stands for, when to use it, one practical tip.${isJa ? " Write in Japanese." : ""} Saved to notebook — make it useful standalone.
+- "improvements": Exactly 2 items. Start with [AxisName]. Quote the user's actual phrase using 「」, then suggest a better version appropriate for difficulty=${scenario.difficulty} (beginner=A2 / intermediate=B1-B2 / advanced=C1-C2). Add 1-2 sentences on why the improvement helps communication.${isJa ? " Write in Japanese but keep [AxisName] in English. Example: [Range]：「we have many problems」より「we've been running into quite a few issues」の方が語彙の幅が広がります。問題に継続的に遭遇している状況を具体的に伝えられます。" : " Example: [Range]: 「we have many problems」→ 「we've been running into quite a few issues」shows stronger vocabulary range and conveys ongoing difficulty more precisely."}
+- "naturalExpressions": Pick 2-4 corrections. Base them on the same phrases identified in improvements where possible. LEVEL FILTER — beginner: A2 expressions only; intermediate: B1-B2 only; advanced: C1-C2 only. Current difficulty: ${scenario.difficulty}
+- "naturalExpressions[].reason": grammar / collocation / literal / set-phrase / formality / nuance
+- "naturalExpressions[].explanation": 1-2 sentences why original is wrong, angled by reason — grammar: cite the exact rule; collocation: name wrong pair and right pair; literal: name Japanese source phrase and why it fails; set-phrase: why fixed phrase is expected; formality: scene + register mismatch; nuance: contrast what original vs natural implies.${isJa ? " Write in Japanese." : ""}
+- "naturalExpressions[].chunk": A specific English expression with real learning value extracted DIRECTLY from natural. Can be any type: collocation, phrasal verb, idiom, set phrase, discourse marker. Replace variable content with ~. Minimum 3 meaningful fixed words. GOOD: 「run into ~ issues」「It might be worth ~ing」「quite a few ~」「Having said that, ~」BAD (forbidden): 「It's ~」「from ~ to ~」「I ~ ~」「the ~ of ~」— grammar structure only, zero learning value.
+- "naturalExpressions[].chunkDetail": 1-2 sentences: what ~ stands for, when to use it, one practical tip.${isJa ? " Write in Japanese." : ""}
 - "naturalExpressions[].example": One short English example sentence using the chunk.
 - "suggestedResponse": A better version of the user's LAST turn response in English.
 
@@ -74,7 +69,7 @@ Return ONLY valid JSON:
   "overall": <number>,
   "encouragement": "",
   "strengths": ["<[AxisName]${isJa ? " ユーザーの発言を引用して具体的に褒める" : " quote user phrase + specific praise"}>", "<[AxisName]${isJa ? " 具体的な良かった点" : " specific strength"}>"],
-  "improvements": ["<[AxisName]${isJa ? " コミュニケーション戦略の改善アドバイス（フレーズ修正なし）" : " communication strategy advice only (no word corrections)"}>", "<[AxisName]${isJa ? " コミュニケーション戦略の改善アドバイス" : " communication strategy advice"}>"],
+  "improvements": ["<[AxisName]${isJa ? " 「ユーザーの発言」→ 改善案 + なぜ良いか" : " 「user phrase」→ better version + why"}>", "<[AxisName]${isJa ? " 「ユーザーの発言」→ 改善案 + なぜ良いか" : " 「user phrase」→ better version + why"}>"],
   "foundPhrases": [],
   "suggestedResponse": "<natural English response for the last turn>",
   "naturalExpressions": [

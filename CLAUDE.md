@@ -47,16 +47,13 @@
 ### フィードバック構成
 
 - `strengths`: 必ず2件。`[AxisName]` で始め（スコア・CEFRなし）、ユーザーの実際のセリフを引用して具体的に褒める
-- `improvements`: 必ず2件。`[AxisName]` で始め（スコア・CEFRなし）。**コミュニケーション戦略のみ**（文構造・論理展開・応答の流れ）。フレーズ・語彙レベルの修正は書かない。2〜3文：①何の問題か ②このシーンでなぜ重要か ③次回何を意識するか。**JA設定時は日本語で書くこと**
-- `naturalExpressions`: 2〜4件。フレーズ・語彙レベルの修正のみ。問題がなければ `[]`
-  - **難易度別レベルフィルター（提案する表現・chunkのレベル）**：
-    - beginner → A2レベルの修正・chunkを優先。それ以外はスキップ
-    - intermediate → B1〜B2レベルの修正・chunkを優先。A1レベルはスキップ
-    - advanced → C1〜C2レベルの修正・chunkを優先。B2以下はスキップ
-  - `reason`: 6種類のバッジ分類（grammar/collocation/literal/set-phrase/formality/nuance）
-  - `explanation`: なぜ元の表現が不自然か（1〜2文）。バッジ種別に応じた角度で説明。JA設定時は日本語
-  - `chunk`: `natural` から直接抽出した3〜8語のパターン。可変部分を `~` に置換。フルセンテンス禁止・ユーザーの実際の発言をそのまま入れない・naturalと無関係なパターンを作らない
-  - `chunkDetail`: chunkの使い方アドバイス（1〜2文）。〜に何が入るか・いつ使うか。JA設定時は日本語
+- `improvements`: 必ず2件。`[AxisName]` で始め（スコア・CEFRなし）。ユーザーの実際の発言を「」で引用し、難易度に合ったより良い表現を提示（beginner=A2 / intermediate=B1-B2 / advanced=C1-C2）。なぜ良いか1〜2文で説明。**JA設定時は日本語で書くこと**
+- `naturalExpressions`: 2〜4件。improvements で取り上げた表現をベースに選ぶ。問題がなければ `[]`
+  - **難易度別レベルフィルター**：beginner=A2のみ / intermediate=B1-B2のみ / advanced=C1-C2のみ
+  - `reason`: grammar / collocation / literal / set-phrase / formality / nuance
+  - `explanation`: なぜ元の表現が不自然か（1〜2文）。reason種別に応じた角度で説明。JA設定時は日本語
+  - `chunk`: `natural` から直接抽出した学習価値のある英語表現。コロケーション・句動詞・イディオム・定型句・談話標識など型は問わない。可変部分を `~` に置換。意味のある固定語が3語以上必須。**NG（禁止）**: `It's ~` `from ~ to ~` `I ~ ~`（文法構造のみで学習価値なし）。**OK例**: `run into ~ issues` `It might be worth ~ing` `Having said that, ~`
+  - `chunkDetail`: 〜に何が入るか・いつ使うか・実践アドバイス（1〜2文）。JA設定時は日本語
   - `example`: chunkを使った短い英文例
 - `suggestedResponse`: 最後のターンの模範回答（英語）
 - `overall`: 4軸の平均値
