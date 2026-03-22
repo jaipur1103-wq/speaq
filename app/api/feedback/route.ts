@@ -56,7 +56,7 @@ CRITICAL RULES:
 - "naturalExpressions[].reason": grammar / collocation / literal / set-phrase / formality / nuance
 - "naturalExpressions[].explanation": 1-2 sentences. FORBIDDEN: "more natural", "sounds better", "more commonly used". Required angle — grammar: cite exact rule; collocation: name wrong pair and correct pairs; literal: name Japanese source and why it fails; set-phrase: what fixed expression is expected; formality: name register and mismatch; nuance: contrast what original vs natural implies.${isJa ? " Write in Japanese." : ""}
 - "naturalExpressions[].natural": Minimal fix only. For collocation: swap only the problematic word. For grammar: fix only the error. Do NOT restructure the whole sentence.
-- "naturalExpressions[].chunk": Extracted DIRECTLY from natural. Collocation / phrasal verb / idiom / set phrase / discourse marker. Replace variable content with ~. Min 3 meaningful fixed words. GOOD: 「run into ~ issues」「It might be worth ~ing」「Having said that, ~」BAD: 「It's ~」「from ~ to ~」「I ~ ~」
+- "naturalExpressions[].chunk": Extracted DIRECTLY from natural. Collocation / phrasal verb / idiom / set phrase / discourse marker. Replace variable content with ~. Keep 3-8 words. NEVER write a full sentence. NEVER use a single verb + ~ only (BAD: 「seem ~」「look ~」「feel ~」「think ~」). GOOD: 「run into ~ issues」「It might be worth ~ing」「Having said that, ~」BAD: 「It's ~」「from ~ to ~」「I ~ ~」「seem ~」
 - "naturalExpressions[].chunkDetail": What ~ stands for, when to use it, one practical tip.${isJa ? " Write in Japanese." : ""}
 - "naturalExpressions[].example": One short English sentence using the chunk.
 
