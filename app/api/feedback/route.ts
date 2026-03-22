@@ -57,9 +57,9 @@ CRITICAL RULES:
 - "improvements": Exactly 2 items. Each MUST start with [AxisName Score]. Use 「」to quote English phrases (never use double quotes inside JSON strings).${isJa ? " Add a brief Japanese explanation. Example: [Coherence 52]：「I want to make the budget more」→「I'd like to increase the budget because it's critical for Q3」理由を付けることで主張に説得力が出ます。" : " Example: [Coherence 52]: 「I want to make the budget more.」— better: 「I'd like to increase the budget because it's critical for Q3.」"}
 - "naturalExpressions": Pick 2-4 of the most useful corrections from across ALL turns. Return [] if English was already natural.
 - "naturalExpressions[].reason": Classify WHY the original is less natural. Use exactly one of: grammar (grammatical error), collocation (unnatural word combination), literal (direct translation from Japanese), set-phrase (a natural set phrase exists), formality (wrong register for the context), nuance (subtle meaning mismatch).
-- "naturalExpressions[].explanation": 2-3 sentences. (1) What is wrong with the original. (2) Why the natural version is better. (3) When to use it in this type of scene.${isJa ? " Write in Japanese." : ""} Do NOT use generic phrases like "more natural".
+- "naturalExpressions[].explanation": 1-2 sentences ONLY about why the original is unnatural or incorrect. Be specific — cite the exact problem (wrong word, wrong form, etc).${isJa ? " Write in Japanese." : ""} Do NOT mention the chunk here.
 - "naturalExpressions[].chunk": Extract the core reusable pattern DIRECTLY from the natural expression above. Replace variable parts with "~". E.g. if natural is "I'd like to explore some alternatives", chunk = "I'd like to explore ~". Do NOT invent a pattern unrelated to the natural expression. Keep short (3-6 words + ~).
-- "naturalExpressions[].chunkDetail": 1-2 sentences explaining the chunk pattern: what "~" stands for, how to extend it, and one practical tip for using it.${isJa ? " Write in Japanese." : ""}
+- "naturalExpressions[].chunkDetail": 1-2 sentences of advice on HOW to use this chunk: what "~" stands for, when to use it, and one practical tip.${isJa ? " Write in Japanese." : ""} This is saved to the learner's notebook — make it useful standalone.
 - "naturalExpressions[].example": One short English example sentence using the chunk.
 - "suggestedResponse": A better version of the user's LAST turn response in English.
 
@@ -78,8 +78,8 @@ Return ONLY valid JSON:
       "natural": "<more natural English>",
       "reason": "<grammar|collocation|literal|set-phrase|formality|nuance>",
       "chunk": "<core pattern e.g. I'd strongly recommend ~>",
-      "explanation": "<${isJa ? "日本語で2〜3文：何が問題か・なぜ自然版が良いか・いつ使うか" : "2-3 sentences: what's wrong, why natural version is better, when to use"}>",
-      "chunkDetail": "<${isJa ? "日本語で1〜2文：~に何が入るか・使い方のコツ" : "1-2 sentences: what ~ stands for, usage tip"}>",
+      "explanation": "<${isJa ? "日本語で1〜2文：なぜ元の表現が不自然か（問題点のみ）" : "1-2 sentences: why the original is unnatural (problem only)"}>",
+      "chunkDetail": "<${isJa ? "日本語で1〜2文：チャンクの使い方・~に何が入るか・実践アドバイス" : "1-2 sentences: how to use the chunk, what ~ stands for, practical tip"}>",
       "example": "<short English example using the chunk>"
     }
   ]

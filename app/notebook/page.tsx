@@ -667,6 +667,7 @@ function ExpressionCard({
       boxShadow: compact ? "none" : "var(--shadow-sm)",
       opacity: expr.learned ? 0.85 : 1,
     }}>
+      {/* Header: scenario + date + learned badge */}
       <div style={{ fontSize: 11, color: "var(--text-muted)", marginBottom: 8, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
         <span>{expr.scenarioTitle}</span>
         <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
@@ -679,15 +680,12 @@ function ExpressionCard({
         </div>
       </div>
 
-      {/* Reason badge + original */}
+      {/* Reason badge */}
       {badge && (
-        <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 6, flexWrap: "wrap" }}>
-          <span style={{ fontSize: 11, fontWeight: 700, padding: "2px 8px", borderRadius: 20, background: badge.bg, color: badge.color, flexShrink: 0 }}>
+        <div style={{ marginBottom: 6 }}>
+          <span style={{ fontSize: 11, fontWeight: 700, padding: "2px 8px", borderRadius: 20, background: badge.bg, color: badge.color }}>
             {badge.label}
           </span>
-          {expr.original && (
-            <span style={{ fontSize: 12, color: "var(--text-muted)" }}>{expr.original}</span>
-          )}
         </div>
       )}
 
@@ -698,7 +696,7 @@ function ExpressionCard({
 
       {/* Chunk detail */}
       {expr.chunkDetail && (
-        <div style={{ fontSize: 12, color: "var(--text-muted)", lineHeight: 1.5, marginBottom: 6, fontStyle: "italic" }}>
+        <div style={{ fontSize: 12, color: "var(--text-secondary)", lineHeight: 1.5, marginBottom: 6 }}>
           {expr.chunkDetail}
         </div>
       )}
@@ -707,17 +705,12 @@ function ExpressionCard({
       {expr.example && (
         <div style={{
           fontSize: 13, color: "var(--text)", lineHeight: 1.6,
-          fontStyle: "italic", marginBottom: 6,
+          fontStyle: "italic", marginBottom: 10,
           padding: "8px 12px", background: compact ? "var(--surface)" : "var(--surface2)", borderRadius: 8,
         }}>
           &ldquo;{expr.example}&rdquo;
         </div>
       )}
-
-      {/* Explanation */}
-      <div style={{ fontSize: 12, color: "var(--text-secondary)", lineHeight: 1.6, marginBottom: 12 }}>
-        {expr.explanation}
-      </div>
 
       <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
         {expr.quizCount > 0 && (

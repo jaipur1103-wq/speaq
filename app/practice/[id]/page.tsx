@@ -664,27 +664,41 @@ function FeedbackPanel({ feedback, scenarioTitle, savedIds, tr, onSaveExpression
             const key = `session-${i}`;
             const saved = savedIds.has(key);
             return (
-              <div key={i} style={{ background: "var(--surface2)", borderRadius: 12, padding: "12px 14px", marginBottom: 8 }}>
-                {/* Reason badge + original */}
-                <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 6, flexWrap: "wrap" }}>
-                  {expr.reason && <ReasonBadge reason={expr.reason} />}
-                  <span style={{ fontSize: 12, color: "var(--text-muted)" }}>{expr.original}</span>
-                </div>
-                <div style={{ fontSize: 14, color: "var(--text)", fontWeight: 600, marginBottom: 6 }}>→ {expr.natural}</div>
-                {expr.chunk && (
-                  <div style={{ fontSize: 13, fontWeight: 700, color: "var(--accent)", marginBottom: 4, letterSpacing: "-0.01em" }}>
-                    🔑 {expr.chunk}
+              <div key={i} style={{ background: "var(--surface2)", borderRadius: 12, overflow: "hidden", marginBottom: 8 }}>
+                {/* ── Top: session feedback ── */}
+                <div style={{ padding: "12px 14px" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 5, flexWrap: "wrap" }}>
+                    {expr.reason && <ReasonBadge reason={expr.reason} />}
+                    <span style={{ fontSize: 12, color: "var(--text-muted)" }}>{expr.original}</span>
                   </div>
-                )}
-                {expr.chunkDetail && (
-                  <div style={{ fontSize: 12, color: "var(--text-muted)", lineHeight: 1.5, marginBottom: 6, fontStyle: "italic" }}>{expr.chunkDetail}</div>
-                )}
-                <div style={{ fontSize: 12, color: "var(--text-secondary)", lineHeight: 1.6, marginBottom: 8 }}>{expr.explanation}</div>
-                <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                  <div style={{ fontSize: 14, color: "var(--text)", fontWeight: 600, marginBottom: 5 }}>→ {expr.natural}</div>
+                  <div style={{ fontSize: 12, color: "var(--text-secondary)", lineHeight: 1.5 }}>{expr.explanation}</div>
+                </div>
+
+                {/* ── Divider with chunk label ── */}
+                <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "0 14px", margin: "0" }}>
+                  <div style={{ flex: 1, height: 1, background: "var(--border)" }} />
+                  <span style={{ fontSize: 10, fontWeight: 700, color: "var(--accent)", letterSpacing: "0.06em", textTransform: "uppercase", whiteSpace: "nowrap" }}>🔑 チャンク</span>
+                  <div style={{ flex: 1, height: 1, background: "var(--border)" }} />
+                </div>
+
+                {/* ── Bottom: chunk learning ── */}
+                <div style={{ padding: "10px 14px 12px", background: "var(--accent-bg)" }}>
+                  {expr.chunk && (
+                    <div style={{ fontSize: 14, fontWeight: 700, color: "var(--accent)", marginBottom: 4, letterSpacing: "-0.01em" }}>
+                      {expr.chunk}
+                    </div>
+                  )}
+                  {expr.chunkDetail && (
+                    <div style={{ fontSize: 12, color: "var(--text-secondary)", lineHeight: 1.5, marginBottom: 6 }}>{expr.chunkDetail}</div>
+                  )}
+                  {expr.example && (
+                    <div style={{ fontSize: 12, color: "var(--text-muted)", fontStyle: "italic", marginBottom: 8 }}>&ldquo;{expr.example}&rdquo;</div>
+                  )}
                   <button
                     onClick={() => !saved && onSaveExpression(expr, scenarioTitle, key)}
                     disabled={saved}
-                    style={{ fontSize: 12, padding: "4px 12px", borderRadius: 20, border: `1.5px solid ${saved ? "var(--green)" : "var(--border)"}`, background: saved ? "rgba(52,199,89,0.12)" : "transparent", color: saved ? "var(--green)" : "var(--text-muted)", cursor: saved ? "default" : "pointer", fontWeight: 700 }}
+                    style={{ fontSize: 12, padding: "4px 12px", borderRadius: 20, border: `1.5px solid ${saved ? "var(--green)" : "var(--accent)"}`, background: saved ? "rgba(52,199,89,0.12)" : "transparent", color: saved ? "var(--green)" : "var(--accent)", cursor: saved ? "default" : "pointer", fontWeight: 700 }}
                   >
                     {saved ? tr.savedToNotebook : tr.saveToNotebook}
                   </button>
