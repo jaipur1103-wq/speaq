@@ -46,11 +46,17 @@
 
 ### フィードバック構成
 
-- `strengths`: 必ず2件。`[AxisName Score]` で始め、ユーザーの実際のセリフを引用して具体的に褒める
-- `improvements`: 必ず2件。`[AxisName Score]` で始め、実際のセリフ→改善案の形式。**JA設定時は説明文を日本語で書くこと**（英語フレーズの引用部分は英語のまま可）
-- `naturalExpressions`: 2〜4件。英語として不自然だった表現を修正提案。問題がなければ `[]`
-  - `chunk`: `natural` から直接抽出したキーパターン。`~` で可変部分を表す（例: naturalが "I'd like to explore some alternatives" なら chunk = "I'd like to explore ~"）
-  - `explanation`: いつ・どう使うかの具体的な説明（JA設定時は日本語）。「より自然」等の抽象的な表現禁止
+- `strengths`: 必ず2件。`[AxisName]` で始め（スコア・CEFRなし）、ユーザーの実際のセリフを引用して具体的に褒める
+- `improvements`: 必ず2件。`[AxisName]` で始め（スコア・CEFRなし）。**コミュニケーション戦略のみ**（文構造・論理展開・応答の流れ）。フレーズ・語彙レベルの修正は書かない。2〜3文：①何の問題か ②このシーンでなぜ重要か ③次回何を意識するか。**JA設定時は日本語で書くこと**
+- `naturalExpressions`: 2〜4件。フレーズ・語彙レベルの修正のみ。問題がなければ `[]`
+  - **難易度別レベルフィルター（提案する表現・chunkのレベル）**：
+    - beginner → A2レベルの修正・chunkを優先。それ以外はスキップ
+    - intermediate → B1〜B2レベルの修正・chunkを優先。A1レベルはスキップ
+    - advanced → C1〜C2レベルの修正・chunkを優先。B2以下はスキップ
+  - `reason`: 6種類のバッジ分類（grammar/collocation/literal/set-phrase/formality/nuance）
+  - `explanation`: なぜ元の表現が不自然か（1〜2文）。バッジ種別に応じた角度で説明。JA設定時は日本語
+  - `chunk`: `natural` から直接抽出した3〜8語のパターン。可変部分を `~` に置換。フルセンテンス禁止・ユーザーの実際の発言をそのまま入れない・naturalと無関係なパターンを作らない
+  - `chunkDetail`: chunkの使い方アドバイス（1〜2文）。〜に何が入るか・いつ使うか。JA設定時は日本語
   - `example`: chunkを使った短い英文例
 - `suggestedResponse`: 最後のターンの模範回答（英語）
 - `overall`: 4軸の平均値
