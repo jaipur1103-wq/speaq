@@ -379,7 +379,7 @@ export default function PracticePage() {
           </div>
         )}
         {finalFeedback && (
-          <FeedbackPanel feedback={finalFeedback} scenarioTitle={scenario.title} savedIds={savedIds} tr={tr} onSaveExpression={handleSaveExpression} />
+          <FeedbackPanel feedback={finalFeedback} scenarioTitle={scenario.title} turns={pendingTurns} savedIds={savedIds} tr={tr} onSaveExpression={handleSaveExpression} />
         )}
         <div ref={chatEndRef} />
       </div>
@@ -630,8 +630,16 @@ function ChatBubble({ msg, personaName, tr }: { msg: Message; personaName: strin
 }
 
 // ── Feedback panel ─────────────────────────────────────────────────────────────
-function FeedbackPanel({ feedback, scenarioTitle, savedIds, tr, onSaveExpression }: {
-  feedback: Feedback; scenarioTitle: string; savedIds: Set<string>; tr: Tr;
+function findSourceTurn(comment: string, turns: PendingTurn[]): string | null {
+  const match = comment.match(/「([^」]+)」/);
+  if (!match) return null;
+  const quoted = match[1];
+  const found = turns.find((t) => t.userMessage.includes(quoted));
+  return found?.userMessage ?? null;
+}
+
+function FeedbackPanel({ feedback, scenarioTitle, turns, savedIds, tr, onSaveExpression }: {
+  feedback: Feedback; scenarioTitle: string; turns: PendingTurn[]; savedIds: Set<string>; tr: Tr;
   onSaveExpression: (expr: NaturalExpression, scenarioTitle: string, key: string) => void;
 }) {
   const [showSuggestedSet, setShowSuggestedSet] = useState<Set<number>>(new Set());
@@ -666,8 +674,15 @@ function FeedbackPanel({ feedback, scenarioTitle, savedIds, tr, onSaveExpression
       {feedback.improvements.length > 0 && (
         <div style={{ marginBottom: 12 }}>
           <SectionLabel>{tr.tryNextTime}</SectionLabel>
-          {feedback.improvements.map((item, i) => (
+          {feedback.improvements.map((item, i) => {
+            const sourceTurn = findSourceTurn(item.comment, turns);
+            return (
             <div key={i} style={{ marginBottom: 10, paddingLeft: 12, borderLeft: "2.5px solid var(--orange)" }}>
+              {sourceTurn && (
+                <div style={{ fontSize: 12, color: "var(--text-muted)", background: "var(--surface2)", borderRadius: 8, padding: "6px 10px", marginBottom: 6, fontStyle: "italic" }}>
+                  &ldquo;{sourceTurn}&rdquo;
+                </div>
+              )}
               <div style={{ fontSize: 13, color: "var(--text-secondary)", lineHeight: 1.6, marginBottom: 6 }}>{item.comment}</div>
               {item.suggestedResponse && (
                 <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
@@ -688,7 +703,8 @@ function FeedbackPanel({ feedback, scenarioTitle, savedIds, tr, onSaveExpression
                 <ShadowSection suggestedResponse={item.suggestedResponse} tr={tr} />
               )}
             </div>
-          ))}
+            );
+          })}
         </div>
       )}
       {feedback.naturalExpressions?.length > 0 && (
