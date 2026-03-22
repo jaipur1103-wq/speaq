@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Moon, Sun } from "lucide-react";
 import ScenarioCard from "@/components/ScenarioCard";
 import SettingsBar from "@/components/SettingsBar";
 import SpeaqLogo from "@/components/SpeaqLogo";
@@ -21,7 +20,6 @@ export default function Home() {
   const [favoriteIds, setFavoriteIds] = useState<string[]>([]);
   const [generating, setGenerating] = useState(false);
   const [error, setError] = useState("");
-  const [dark, setDark] = useState(false);
 
   const tr = i18n[settings.language ?? "en"];
 
@@ -33,13 +31,7 @@ export default function Home() {
 
   useEffect(() => {
     reload();
-    const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-    setDark(prefersDark);
   }, []);
-
-  useEffect(() => {
-    document.documentElement.classList.toggle("dark", dark);
-  }, [dark]);
 
   const handleSettingsChange = (s: AppSettings) => {
     setSettings(s);
@@ -98,32 +90,17 @@ export default function Home() {
       {/* Header */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
         <SpeaqLogo />
-        <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-          <button
-            onClick={toggleLang}
-            style={{
-              padding: "6px 10px", borderRadius: 20,
-              background: "var(--surface)", border: "1px solid var(--border)",
-              color: "var(--accent)", fontSize: 12, fontWeight: 700,
-              cursor: "pointer", boxShadow: "var(--shadow-sm)",
-            }}
-          >
-            {(settings.language ?? "en") === "en" ? "JA" : "EN"}
-          </button>
-          <button
-            onClick={() => setDark(!dark)}
-            style={{
-              width: 36, height: 36, borderRadius: "50%",
-              background: "var(--surface)", border: "none",
-              cursor: "pointer",
-              display: "flex", alignItems: "center", justifyContent: "center",
-              boxShadow: "var(--shadow-sm)", color: "var(--text-secondary)",
-            }}
-            aria-label="Toggle dark mode"
-          >
-            {dark ? <Sun size={16} /> : <Moon size={16} />}
-          </button>
-        </div>
+        <button
+          onClick={toggleLang}
+          style={{
+            padding: "6px 10px", borderRadius: 20,
+            background: "var(--surface)", border: "1px solid var(--border)",
+            color: "var(--accent)", fontSize: 12, fontWeight: 700,
+            cursor: "pointer", boxShadow: "var(--shadow-sm)",
+          }}
+        >
+          {(settings.language ?? "en") === "en" ? "JA" : "EN"}
+        </button>
       </div>
 
       <div style={{ marginBottom: 20 }}>
