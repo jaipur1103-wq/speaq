@@ -59,6 +59,7 @@ export interface Feedback {
   improvements: ImprovementItem[];
   wordCount: number;
   naturalExpressions: NaturalExpression[];
+  insightMode?: boolean;
 }
 
 export interface SavedExpression {

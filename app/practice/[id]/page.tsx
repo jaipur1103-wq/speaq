@@ -709,7 +709,7 @@ function FeedbackPanel({ feedback, scenarioTitle, turns, savedIds, tr, onSaveExp
       )}
       {feedback.naturalExpressions?.length > 0 && (
         <div style={{ marginBottom: 12 }}>
-          <SectionLabel>{tr.moreNatural}</SectionLabel>
+          <SectionLabel>{feedback.insightMode ? tr.insightExpressions : tr.moreNatural}</SectionLabel>
           {feedback.naturalExpressions.map((expr, i) => {
             const key = `session-${i}`;
             const saved = savedIds.has(key);
