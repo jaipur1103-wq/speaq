@@ -11,7 +11,7 @@ export async function POST(req: NextRequest) {
     const isJa = language === "ja";
 
     const systemContent = isJa
-      ? "You are an English speaking coach. The learner's language is Japanese. You MUST write strengths, improvements, and naturalExpressions[].explanation in Japanese. All other fields (original, natural, chunk, example, suggestedResponse) remain in English. Always return valid JSON only, no markdown, no backticks."
+      ? "You are an English speaking coach. The learner's language is Japanese. You MUST write encouragement, strengths, improvements[].comment, and naturalExpressions[].explanation and naturalExpressions[].chunkDetail in Japanese. All other fields (original, natural, chunk, example, suggestedResponse) remain in English. Always return valid JSON only, no markdown, no backticks."
       : "You are an English speaking coach. Always return valid JSON only, no markdown, no backticks.";
 
     const turnsText = turns.map((t, i) =>
@@ -20,19 +20,13 @@ export async function POST(req: NextRequest) {
 
     const totalWords = turns.reduce((sum, t) => sum + t.userMessage.trim().split(/\s+/).filter(Boolean).length, 0);
 
-    const cefrGuide = scenario.difficulty === "beginner"
-      ? `CEFR target: A2. Score 80-100 if the user communicates at A2 level (familiar phrases, simple sentences, basic topics). A2 does NOT require perfect grammar — reward clear intent and basic communication. Score below 60 only if communication broke down entirely.`
-      : scenario.difficulty === "intermediate"
-      ? `CEFR target: B1-B2. Score 75-90 for B2 (handles unfamiliar topics, some fluency, good range). Score 60-74 for B1 (manages familiar situations, simple connected sentences). Score below 60 if mostly broken phrases.`
-      : `CEFR target: C1-C2. Score 85-100 for near-native fluency, complex language, precision. Score 70-84 for C1-level competence. Score below 70 if clearly below C level.`;
-
     const completion = await groq.chat.completions.create({
       model: "llama-3.3-70b-versatile",
       messages: [
         { role: "system", content: systemContent },
         {
           role: "user",
-          content: `${isJa ? "⚠️ MANDATORY: Write strengths[], improvements[], and naturalExpressions[].explanation IN JAPANESE. Do NOT use English for these fields.\n\n" : ""}Analyze this English conversation session (${turns.length} turn${turns.length > 1 ? "s" : ""}).
+          content: `${isJa ? "⚠️ MANDATORY: Write encouragement, strengths[], improvements[].comment, naturalExpressions[].explanation, naturalExpressions[].chunkDetail IN JAPANESE.\n\n" : ""}Analyze this English conversation session (${turns.length} turn${turns.length > 1 ? "s" : ""}).
 
 Scenario: ${scenario.title}
 Situation: ${scenario.brief}
@@ -40,53 +34,55 @@ Difficulty: ${scenario.difficulty}
 Counterpart: ${scenario.personaName} (${scenario.personaRole})
 ${turnsText}
 
-${cefrGuide}
-
-Score the OVERALL session on 4 axes (0-100). CEFR scale: 90-100=C2, 75-89=C1, 55-74=B2, 35-54=B1, 15-34=A2, 0-14=A1.
-IMPORTANT: This is TRANSCRIBED VOICE INPUT. There is no punctuation. Do NOT deduct points for missing punctuation. Do NOT mention punctuation anywhere in the feedback.
-- accuracy: grammatical accuracy (tenses, articles, prepositions, sentence structure only — never punctuation)
-- range: range and variety of vocabulary and grammatical structures
-- interaction: relevance and substance of responses; score below 35 if under 10 words, off-topic, or ignores the question
-- coherence: logical organization and use of connectors
+IMPORTANT: This is TRANSCRIBED VOICE INPUT — no punctuation exists. Do NOT mention punctuation anywhere.
 
 CRITICAL RULES:
-- "strengths": Exactly 2 items. Each MUST start with [AxisName] (e.g. [Accuracy]). Then QUOTE a specific phrase the user actually said that demonstrates the strength. Be concrete — do NOT write vague praise.${isJa ? " Write content in Japanese but keep [AxisName] in English." : ""}
-  Example: "[Accuracy]: 「we had discussed this last week」で過去完了を正確に使えていた。時制の一致が会話全体を通じて安定していました。"
-- "improvements": Exactly 2 items. Start with [AxisName]. Quote the user's actual phrase using 「」, then suggest a better version appropriate for difficulty=${scenario.difficulty} (beginner=A2 / intermediate=B1-B2 / advanced=C1-C2). Add 1-2 sentences on why the improvement helps — state the SPECIFIC reason (grammar rule violated, wrong collocation, register mismatch, nuance difference). FORBIDDEN: Never use vague phrases like "more natural", "sounds better", "more commonly used", "is more appropriate", "sounds awkward". Always name the exact rule or reason.${isJa ? " Write in Japanese but keep [AxisName] in English. Example: [Range]：「we have many problems」より「we've been running into quite a few issues」の方が表現力があります。run into は問題に継続的に遭遇するコロケーションで、quite a few は単なる many より深刻さを伝えます。" : " Example: [Range]: 「we have many problems」→ 「we've been running into quite a few issues」— run into collocates naturally with problems/issues, and quite a few signals ongoing severity more precisely than many."}
-- "naturalExpressions": Pick 2-4 corrections. Base them on the same phrases identified in improvements where possible. LEVEL FILTER — beginner: A2 expressions only; intermediate: B1-B2 only; advanced: C1-C2 only. Current difficulty: ${scenario.difficulty}
-- "naturalExpressions[].reason": grammar / collocation / literal / set-phrase / formality / nuance
-- "naturalExpressions[].explanation": 1-2 sentences why original is unnatural. FORBIDDEN: Never write "more natural", "sounds better", "more commonly used", "sounds awkward", "is more appropriate" — always state the SPECIFIC rule or reason. Required angle by reason type — grammar: cite exact rule (e.g. "look forward to requires gerund because to is a preposition here"); collocation: name wrong pair and correct pairs (e.g. "big does not collocate with potential; great/enormous/huge are the natural pairings"); literal: name source Japanese phrase and explain why it fails in English; set-phrase: explain what fixed expression is expected and why original breaks it; formality: name the register (casual/formal/written) and explain the mismatch; nuance: contrast the implication of original vs natural (e.g. "I disagree states opposition bluntly; I see it differently frames it as a perspective difference, which keeps dialogue open").${isJa ? " Write in Japanese." : ""}
-- "naturalExpressions[].chunk": A specific English expression with real learning value extracted DIRECTLY from natural. Can be any type: collocation, phrasal verb, idiom, set phrase, discourse marker. Replace variable content with ~. Minimum 3 meaningful fixed words. GOOD: 「run into ~ issues」「It might be worth ~ing」「quite a few ~」「Having said that, ~」BAD (forbidden): 「It's ~」「from ~ to ~」「I ~ ~」「the ~ of ~」— grammar structure only, zero learning value.
-- "naturalExpressions[].chunkDetail": 1-2 sentences: what ~ stands for, when to use it, one practical tip.${isJa ? " Write in Japanese." : ""}
-- "naturalExpressions[].example": One short English example sentence using the chunk.
-- "naturalExpressions[].natural": Apply the MINIMAL fix for the identified issue. For collocation: swap only the problematic word. For grammar: fix only the grammatical error. Do NOT restructure the whole sentence unnecessarily.
-- "suggestedResponse": A better version of the user's LAST turn response in English.
 
-EXAMPLES of ideal naturalExpression quality (follow this standard exactly):
+- "encouragement": One sentence. Honest overall impression of the session.${isJa ? " Write in Japanese." : ""}
+
+- "strengths": 1-3 items. Variable — only include genuine strengths worth noting. No axis labels.
+  Each item: quote the user's actual phrase using 「」, then explain the specific linguistic feature that makes it effective.
+  FORBIDDEN: vague praise like "good job", "well done", "natural English". Always name the specific feature.
+  ${isJa ? "Write in Japanese. Example: 「I was wondering if ~」という形を使えていました。ネイティブが依頼するときによく使う丁寧な構造で、相手への配慮が自然に伝わります。" : "Example: You used 「I was wondering if ~」— this is the standard native structure for polite requests, far more natural than 「Can you ~」in professional contexts."}
+
+- "improvements": 0-2 items. Variable — if the English is natural and correct, return []. Only flag genuine issues.
+  Each item is an object with two fields:
+  - "comment": Quote the user's phrase using 「」, suggest a better version for difficulty=${scenario.difficulty} (beginner=A2 / intermediate=B1-B2 / advanced=C1-C2), explain the specific reason (grammar rule, wrong collocation, literal translation, register mismatch, nuance difference), and add one sentence about why it matters in THIS specific scenario context.
+    FORBIDDEN: Never write "more natural", "sounds better", "more commonly used", "sounds awkward". Always name the exact rule or reason.
+    ${isJa ? "Write in Japanese. Example: 「we have many problems」は伝わりますが、「we've been running into quite a few issues」の方が表現力があります。run into は問題に継続的に遭遇するコロケーションで、quite a few は深刻さを伝えます。交渉の場では問題の重さが相手に伝わりやすくなります。" : "Example: 「we have many problems」→ 「we've been running into quite a few issues」— run into collocates naturally with problems/issues, and quite a few signals ongoing severity. In this negotiation context, conveying the weight of the issue matters."}
+  - "suggestedResponse": A full, natural English response for the TURN where this issue occurred. This is the complete better version of what the user said in that turn.
+
+- "naturalExpressions": Pick 2-4 corrections. Base them on improvements where possible. LEVEL FILTER — beginner: A2 only; intermediate: B1-B2 only; advanced: C1-C2 only.
+- "naturalExpressions[].reason": grammar / collocation / literal / set-phrase / formality / nuance
+- "naturalExpressions[].explanation": 1-2 sentences. FORBIDDEN: "more natural", "sounds better", "more commonly used". Required angle — grammar: cite exact rule; collocation: name wrong pair and correct pairs; literal: name Japanese source and why it fails; set-phrase: what fixed expression is expected; formality: name register and mismatch; nuance: contrast what original vs natural implies.${isJa ? " Write in Japanese." : ""}
+- "naturalExpressions[].natural": Minimal fix only. For collocation: swap only the problematic word. For grammar: fix only the error. Do NOT restructure the whole sentence.
+- "naturalExpressions[].chunk": Extracted DIRECTLY from natural. Collocation / phrasal verb / idiom / set phrase / discourse marker. Replace variable content with ~. Min 3 meaningful fixed words. GOOD: 「run into ~ issues」「It might be worth ~ing」「Having said that, ~」BAD: 「It's ~」「from ~ to ~」「I ~ ~」
+- "naturalExpressions[].chunkDetail": What ~ stands for, when to use it, one practical tip.${isJa ? " Write in Japanese." : ""}
+- "naturalExpressions[].example": One short English sentence using the chunk.
+
+EXAMPLES of ideal naturalExpression quality:
 Collocation: { "original": "it has the big potential", "natural": "it has great potential", "reason": "collocation", "explanation": "「big」does not collocate with「potential」. Natural pairings: great / enormous / tremendous potential.", "chunk": "have great potential", "chunkDetail": "「great potential」is a fixed collocation. Use have/show great potential to say something is very promising.", "example": "This approach has great potential for cutting costs." }
-Grammar: { "original": "I look forward to see you", "natural": "I look forward to seeing you", "reason": "grammar", "explanation": "「look forward to」requires a gerund (-ing), not an infinitive. The「to」here is a preposition, so it must be followed by a noun or gerund.", "chunk": "look forward to ~ing", "chunkDetail": "After「look forward to」, always use the -ing form.「~ing」is the activity you are anticipating.", "example": "I look forward to hearing your thoughts." }
-Formality: { "original": "Thank you for your cooperation", "natural": "Thanks for working with me on this", "reason": "formality", "explanation": "「Thank you for your cooperation」is a written/formal register phrase used in emails and official documents. In spoken conversation it sounds overly stiff and can come across as sarcastic. Spoken thanks should be concrete and conversational.", "chunk": "Thanks for working with ~ on this", "chunkDetail": "Use this phrase to thank someone verbally for collaboration on a specific topic. Replace ~ with a person or team.", "example": "Thanks for working with the team on this — it made a real difference." }
-Nuance: { "original": "I disagree with your idea", "natural": "I see it a bit differently", "reason": "nuance", "explanation": "「I disagree」states opposition as a fact, which can sound confrontational and close down dialogue. 「I see it differently」frames the difference as a matter of perspective, signalling openness to discussion rather than rejection.", "chunk": "I see it differently", "chunkDetail": "Use this phrase to introduce a contrasting opinion without sounding combative. Often followed by a comma and your own view.", "example": "I see it a bit differently — I think we have more time than we think." }
-Set-phrase: { "original": "I want to say my opinion", "natural": "I'd like to share my thoughts", "reason": "set-phrase", "explanation": "「Say my opinion」is not a fixed phrase in English. The standard set expression is「share your thoughts/views」or「express your opinion」. 「Say」collocates with specific content (say something), not with opinion as a noun.", "chunk": "I'd like to share my thoughts on ~", "chunkDetail": "A polite, natural way to signal you are about to give your view. Use in meetings, discussions, or presentations.", "example": "I'd like to share my thoughts on the proposed timeline." }
-Literal: { "original": "My tension is high today", "natural": "I'm a bit nervous today", "reason": "literal", "explanation": "This is a direct translation of Japanese「緊張している」(tension ga takai). In English「tension」means friction or stress between people/situations, not personal nervousness. The correct word for 緊張 is nervous / anxious / on edge.", "chunk": "I'm a bit nervous about ~", "chunkDetail": "Use this to express personal nervousness before an event or situation. Replace ~ with the cause.", "example": "I'm a bit nervous about the presentation tomorrow." }
+Grammar: { "original": "I look forward to see you", "natural": "I look forward to seeing you", "reason": "grammar", "explanation": "「look forward to」requires a gerund (-ing) because「to」here is a preposition, not an infinitive marker.", "chunk": "look forward to ~ing", "chunkDetail": "After「look forward to」, always use the -ing form. ~ing is the activity you are anticipating.", "example": "I look forward to hearing your thoughts." }
 
 Return ONLY valid JSON:
 {
-  "scores": { "accuracy": <number>, "range": <number>, "interaction": <number>, "coherence": <number> },
-  "overall": <number>,
-  "encouragement": "",
-  "strengths": ["<[AxisName]${isJa ? " ユーザーの発言を引用して具体的に褒める" : " quote user phrase + specific praise"}>", "<[AxisName]${isJa ? " 具体的な良かった点" : " specific strength"}>"],
-  "improvements": ["<[AxisName]${isJa ? " 「ユーザーの発言」→ 改善案 + なぜ良いか" : " 「user phrase」→ better version + why"}>", "<[AxisName]${isJa ? " 「ユーザーの発言」→ 改善案 + なぜ良いか" : " 「user phrase」→ better version + why"}>"],
-  "suggestedResponse": "<natural English response for the last turn>",
+  "encouragement": "<${isJa ? "日本語で1文：セッション全体への正直な印象" : "one honest sentence about the session"}>",
+  "strengths": ["<${isJa ? "「ユーザーの発言」＋ なぜ良いか（言語的な理由）" : "「user phrase」+ specific linguistic feature that makes it effective"}>"],
+  "improvements": [
+    {
+      "comment": "<${isJa ? "「ユーザーの発言」→ 改善案 + 具体的な理由 + この場面でなぜ重要か" : "「user phrase」→ better version + specific reason + why it matters in this context"}>",
+      "suggestedResponse": "<full natural English response for that turn>"
+    }
+  ],
   "naturalExpressions": [
     {
-      "original": "<user's phrase from any turn>",
-      "natural": "<more natural English>",
+      "original": "<user's phrase>",
+      "natural": "<minimal fix>",
       "reason": "<grammar|collocation|literal|set-phrase|formality|nuance>",
-      "chunk": "<core pattern e.g. I'd strongly recommend ~>",
-      "explanation": "<${isJa ? "日本語で1〜2文：なぜ元の表現が不自然か（問題点のみ）" : "1-2 sentences: why the original is unnatural (problem only)"}>",
-      "chunkDetail": "<${isJa ? "日本語で1〜2文：チャンクの使い方・~に何が入るか・実践アドバイス" : "1-2 sentences: how to use the chunk, what ~ stands for, practical tip"}>",
-      "example": "<short English example using the chunk>"
+      "explanation": "<${isJa ? "日本語：具体的な問題点のみ（禁止: more natural / sounds better）" : "specific rule or reason only — no vague phrases"}>",
+      "chunk": "<core pattern>",
+      "chunkDetail": "<${isJa ? "日本語：使い方・~に何が入るか・実践アドバイス" : "usage, what ~ stands for, practical tip"}>",
+      "example": "<short English sentence using the chunk>"
     }
   ]
 }`,
@@ -97,7 +93,6 @@ Return ONLY valid JSON:
     });
 
     const text = completion.choices[0].message.content?.trim() ?? "";
-    // Strip markdown fences, then extract the first complete JSON object
     const stripped = text.replace(/^```json?\n?/m, "").replace(/\n?```$/m, "").trim();
     const jsonMatch = stripped.match(/\{[\s\S]*\}/);
     if (!jsonMatch) throw new Error("No JSON object found in response");

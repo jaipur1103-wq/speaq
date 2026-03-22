@@ -36,14 +36,12 @@ export interface Message {
   timestamp: number;
 }
 
-export interface ScoreBreakdown {
-  accuracy: number;
-  range: number;
-  interaction: number;
-  coherence: number;
-}
-
 export type NaturalExpressionReason = "grammar" | "collocation" | "literal" | "set-phrase" | "formality" | "nuance";
+
+export interface ImprovementItem {
+  comment: string;
+  suggestedResponse: string;
+}
 
 export interface NaturalExpression {
   original: string;
@@ -56,13 +54,10 @@ export interface NaturalExpression {
 }
 
 export interface Feedback {
-  scores: ScoreBreakdown;
-  overall: number;
   encouragement: string;
   strengths: string[];
-  improvements: string[];
+  improvements: ImprovementItem[];
   wordCount: number;
-  suggestedResponse: string;
   naturalExpressions: NaturalExpression[];
 }
 
@@ -82,18 +77,10 @@ export interface SavedExpression {
   chunkDetail?: string;
 }
 
-export interface TurnScore {
-  turn: number;
-  overall: number;
-  scores: ScoreBreakdown;
-}
-
 export interface ScoreRecord {
   id: string;
   date: string;
   scenarioTitle: string;
-  overall: number;
-  scores: ScoreBreakdown;
   turnCount: number;
 }
 

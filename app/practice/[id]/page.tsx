@@ -284,7 +284,7 @@ export default function PracticePage() {
 
   const doSaveScore = (fb: Feedback, title: string) => {
     if (scoreSaved) return;
-    saveScoreRecord({ date: new Date().toISOString().slice(0, 10), scenarioTitle: title, overall: fb.overall, scores: fb.scores, turnCount: pendingTurns.length });
+    saveScoreRecord({ date: new Date().toISOString().slice(0, 10), scenarioTitle: title, turnCount: pendingTurns.length });
     setScoreSaved(true);
   };
 
@@ -321,7 +321,6 @@ export default function PracticePage() {
             </div>
             <div style={{ fontWeight: 700, fontSize: 14, color: "var(--text)", lineHeight: 1.3, letterSpacing: "-0.01em" }}>{scenario.title}</div>
           </div>
-          {finalFeedback && <ScoreBadge score={finalFeedback.overall} />}
         </div>
       </div>
 
@@ -617,40 +616,60 @@ function FeedbackPanel({ feedback, scenarioTitle, savedIds, tr, onSaveExpression
   feedback: Feedback; scenarioTitle: string; savedIds: Set<string>; tr: Tr;
   onSaveExpression: (expr: NaturalExpression, scenarioTitle: string, key: string) => void;
 }) {
-  const [showSuggested, setShowSuggested] = useState(false);
-  const [showShadow, setShowShadow] = useState(false);
-  const overall = feedback.overall;
-  const scoreColor = cefrColor(overall);
+  const [showSuggestedSet, setShowSuggestedSet] = useState<Set<number>>(new Set());
+  const [showShadowIdx, setShowShadowIdx] = useState<number | null>(null);
 
-  const axisLabel = (key: string) => {
-    const map: Record<string, string> = { accuracy: tr.accuracy, range: tr.range, interaction: tr.interaction, coherence: tr.coherence };
-    return map[key] ?? key;
+  const toggleSuggested = (i: number) => {
+    setShowSuggestedSet((prev) => {
+      const next = new Set(prev);
+      next.has(i) ? next.delete(i) : next.add(i);
+      return next;
+    });
   };
 
   return (
     <div className="animate-fade-slide-up" style={{ background: "var(--surface)", borderRadius: 18, padding: "16px 18px", boxShadow: "var(--shadow-md)" }}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
+      <div style={{ marginBottom: 14 }}>
         <span style={{ fontWeight: 700, fontSize: 12, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.07em" }}>{tr.sessionFeedbackTitle}</span>
-        <span style={{ padding: "4px 12px", borderRadius: 20, background: scoreColor + "22", color: scoreColor, fontWeight: 700, fontSize: 15 }}>{toCEFR(overall)}</span>
       </div>
-      <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 12 }}>
-        {(Object.entries(feedback.scores) as [string, number][]).map(([key, val]) => (
-          <ScoreRow key={key} label={axisLabel(key)} value={val} />
-        ))}
-      </div>
+      {feedback.encouragement && (
+        <div style={{ fontSize: 13, color: "var(--text-secondary)", lineHeight: 1.6, marginBottom: 14, paddingLeft: 12, borderLeft: "2.5px solid var(--accent)" }}>
+          {feedback.encouragement}
+        </div>
+      )}
       {feedback.strengths.length > 0 && (
         <div style={{ marginBottom: 12 }}>
           <SectionLabel>{tr.whatWorked}</SectionLabel>
           {feedback.strengths.map((s, i) => (
-            <div key={i} style={{ fontSize: 13, color: "var(--text-secondary)", paddingLeft: 12, lineHeight: 1.6, borderLeft: "2.5px solid var(--green)", marginBottom: 4 }}>{s}</div>
+            <div key={i} style={{ fontSize: 13, color: "var(--text-secondary)", paddingLeft: 12, lineHeight: 1.6, borderLeft: "2.5px solid var(--green)", marginBottom: 6 }}>{s}</div>
           ))}
         </div>
       )}
       {feedback.improvements.length > 0 && (
         <div style={{ marginBottom: 12 }}>
           <SectionLabel>{tr.tryNextTime}</SectionLabel>
-          {feedback.improvements.map((s, i) => (
-            <div key={i} style={{ fontSize: 13, color: "var(--text-secondary)", paddingLeft: 12, lineHeight: 1.6, borderLeft: "2.5px solid var(--orange)", marginBottom: 4 }}>{s}</div>
+          {feedback.improvements.map((item, i) => (
+            <div key={i} style={{ marginBottom: 10, paddingLeft: 12, borderLeft: "2.5px solid var(--orange)" }}>
+              <div style={{ fontSize: 13, color: "var(--text-secondary)", lineHeight: 1.6, marginBottom: 6 }}>{item.comment}</div>
+              {item.suggestedResponse && (
+                <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                  <button onClick={() => toggleSuggested(i)} style={{ fontSize: 12, color: "var(--text-muted)", background: "transparent", border: "none", cursor: "pointer", padding: 0, textDecoration: "underline" }}>
+                    {showSuggestedSet.has(i) ? tr.hideModelResponse : tr.showModelResponse}
+                  </button>
+                  <button onClick={() => { toggleSuggested(i); setShowShadowIdx(showShadowIdx === i ? null : i); if (!showSuggestedSet.has(i)) setShowSuggestedSet((prev) => new Set(prev).add(i)); }} style={{ fontSize: 12, padding: "3px 12px", borderRadius: 20, border: "1px solid var(--border)", background: showShadowIdx === i ? "var(--accent-bg)" : "transparent", color: showShadowIdx === i ? "var(--accent)" : "var(--text-secondary)", cursor: "pointer", fontWeight: 600 }}>
+                    {tr.shadowThis}
+                  </button>
+                </div>
+              )}
+              {showSuggestedSet.has(i) && item.suggestedResponse && (
+                <div style={{ marginTop: 8, padding: "10px 12px", background: "var(--surface2)", borderRadius: 10, fontSize: 13, color: "var(--text-secondary)", fontStyle: "italic", lineHeight: 1.6 }}>
+                  &ldquo;{item.suggestedResponse}&rdquo;
+                </div>
+              )}
+              {showShadowIdx === i && item.suggestedResponse && (
+                <ShadowSection suggestedResponse={item.suggestedResponse} tr={tr} />
+              )}
+            </div>
           ))}
         </div>
       )}
@@ -703,24 +722,6 @@ function FeedbackPanel({ feedback, scenarioTitle, savedIds, tr, onSaveExpression
               </div>
             );
           })}
-        </div>
-      )}
-      {feedback.suggestedResponse && (
-        <div>
-          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-            <button onClick={() => setShowSuggested(!showSuggested)} style={{ fontSize: 12, color: "var(--text-muted)", background: "transparent", border: "none", cursor: "pointer", padding: 0, textDecoration: "underline" }}>
-              {showSuggested ? tr.hideModelResponse : tr.showModelResponse}
-            </button>
-            <button onClick={() => { setShowSuggested(true); setShowShadow(true); }} style={{ fontSize: 12, padding: "3px 12px", borderRadius: 20, border: "1px solid var(--border)", background: showShadow ? "var(--accent-bg)" : "transparent", color: showShadow ? "var(--accent)" : "var(--text-secondary)", cursor: "pointer", fontWeight: 600 }}>
-              {tr.shadowThis}
-            </button>
-          </div>
-          {showSuggested && (
-            <div style={{ marginTop: 10, padding: "12px 14px", background: "var(--surface2)", borderRadius: 12, fontSize: 13, color: "var(--text-secondary)", fontStyle: "italic", lineHeight: 1.6 }}>
-              &ldquo;{feedback.suggestedResponse}&rdquo;
-            </div>
-          )}
-          {showShadow && <ShadowSection suggestedResponse={feedback.suggestedResponse} tr={tr} />}
         </div>
       )}
     </div>
@@ -795,14 +796,6 @@ function ShadowSection({ suggestedResponse, tr }: { suggestedResponse: string; t
 function SessionSummary({ feedback, turnCount, savedCount, tr, onContinue, onDone }: {
   feedback: Feedback; turnCount: number; savedCount: number; tr: Tr; onContinue: () => void; onDone: () => void;
 }) {
-  const overall = feedback.overall;
-  const color = cefrColor(overall);
-  const axisEntries = Object.entries(feedback.scores) as [string, number][];
-  const axisLabel = (key: string) => {
-    const map: Record<string, string> = { accuracy: tr.accuracy, range: tr.range, interaction: tr.interaction, coherence: tr.coherence };
-    return map[key] ?? key;
-  };
-
   return (
     <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", display: "flex", alignItems: "flex-end", justifyContent: "center", zIndex: 100, backdropFilter: "blur(4px)" }}>
       <div className="animate-fade-slide-up" style={{ background: "var(--surface)", borderRadius: "24px 24px 0 0", padding: "28px 24px 40px", width: "100%", maxWidth: 640, boxShadow: "0 -8px 40px rgba(0,0,0,0.2)" }}>
@@ -811,13 +804,11 @@ function SessionSummary({ feedback, turnCount, savedCount, tr, onContinue, onDon
           <h2 style={{ fontSize: 22, fontWeight: 700, color: "var(--text)", margin: "0 0 4px", letterSpacing: "-0.02em" }}>{tr.sessionComplete}</h2>
           <p style={{ fontSize: 13, color: "var(--text-muted)", margin: 0 }}>{tr.savedToHistory(turnCount)}</p>
         </div>
-        <div style={{ background: "var(--surface2)", borderRadius: 16, padding: "18px 20px", marginBottom: 16 }}>
-          <div style={{ fontSize: 12, color: "var(--text-muted)", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 6 }}>{tr.overallAverage}</div>
-          <div style={{ fontSize: 36, fontWeight: 700, color, letterSpacing: "-0.02em", marginBottom: 14 }}>{toCEFR(overall)}</div>
-          <div style={{ display: "flex", flexDirection: "column", gap: 7 }}>
-            {axisEntries.map(([key, val]) => <ScoreRow key={key} label={axisLabel(key)} value={val} />)}
+        {feedback.encouragement && (
+          <div style={{ background: "var(--surface2)", borderRadius: 16, padding: "16px 20px", marginBottom: 16, fontSize: 14, color: "var(--text-secondary)", lineHeight: 1.6, textAlign: "center" }}>
+            {feedback.encouragement}
           </div>
-        </div>
+        )}
         {savedCount > 0 && (
           <div style={{ background: "var(--accent-bg)", borderRadius: 12, padding: "12px 16px", marginBottom: 20 }}>
             <span style={{ fontSize: 13, color: "var(--accent)", fontWeight: 600 }}>{tr.expressionsSaved(savedCount)}</span>
@@ -858,40 +849,6 @@ function ReasonBadge({ reason }: { reason: string }) {
   );
 }
 
-function toCEFR(score: number): string {
-  if (score >= 90) return "C2";
-  if (score >= 75) return "C1";
-  if (score >= 55) return "B2";
-  if (score >= 35) return "B1";
-  if (score >= 15) return "A2";
-  return "A1";
-}
-
-function cefrColor(score: number): string {
-  return score >= 75 ? "var(--green)" : score >= 35 ? "var(--orange)" : "var(--red)";
-}
-
-function ScoreRow({ label, value }: { label: string; value: number }) {
-  const color = cefrColor(value);
-  return (
-    <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-      <span style={{ fontSize: 12, color: "var(--text-secondary)", width: 120 }}>{label}</span>
-      <div style={{ flex: 1, height: 5, background: "var(--surface2)", borderRadius: 3, overflow: "hidden" }}>
-        <div style={{ width: `${value}%`, height: "100%", background: color, borderRadius: 3, transition: "width 0.6s ease" }} />
-      </div>
-      <span style={{ fontSize: 12, fontWeight: 700, color, width: 28, textAlign: "right" }}>{toCEFR(value)}</span>
-    </div>
-  );
-}
-
-function ScoreBadge({ score, label, small }: { score: number; label?: string; small?: boolean }) {
-  const color = cefrColor(score);
-  return (
-    <span style={{ padding: small ? "2px 7px" : "3px 11px", borderRadius: 20, background: color + "22", color, fontWeight: 700, fontSize: small ? 11 : 13 }}>
-      {toCEFR(score)}{label ? ` ${label}` : ""}
-    </span>
-  );
-}
 
 function TypingDots() {
   return (
