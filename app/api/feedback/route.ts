@@ -7,7 +7,7 @@ type Turn = { userMessage: string; counterpartMessage: string };
 
 export async function POST(req: NextRequest) {
   try {
-    const { scenario, turns, language }: { scenario: { title: string; brief: string; difficulty: string; personaName: string; personaRole: string; keyPhrases: string[] }; turns: Turn[]; language: string } = await req.json();
+    const { scenario, turns, language }: { scenario: { title: string; brief: string; difficulty: string; personaName: string; personaRole: string }; turns: Turn[]; language: string } = await req.json();
     const isJa = language === "ja";
 
     const systemContent = isJa
@@ -38,8 +38,6 @@ Scenario: ${scenario.title}
 Situation: ${scenario.brief}
 Difficulty: ${scenario.difficulty}
 Counterpart: ${scenario.personaName} (${scenario.personaRole})
-Key vocabulary: ${scenario.keyPhrases.join(", ")}
-
 ${turnsText}
 
 ${cefrGuide}
@@ -75,7 +73,6 @@ Return ONLY valid JSON:
   "encouragement": "",
   "strengths": ["<[AxisName]${isJa ? " ユーザーの発言を引用して具体的に褒める" : " quote user phrase + specific praise"}>", "<[AxisName]${isJa ? " 具体的な良かった点" : " specific strength"}>"],
   "improvements": ["<[AxisName]${isJa ? " 「ユーザーの発言」→ 改善案 + なぜ良いか" : " 「user phrase」→ better version + why"}>", "<[AxisName]${isJa ? " 「ユーザーの発言」→ 改善案 + なぜ良いか" : " 「user phrase」→ better version + why"}>"],
-  "foundPhrases": [],
   "suggestedResponse": "<natural English response for the last turn>",
   "naturalExpressions": [
     {

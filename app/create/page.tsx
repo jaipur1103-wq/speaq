@@ -41,7 +41,6 @@ export default function CreatePage() {
         title: data.title,
         brief: data.brief,
         opener: data.opener,
-        keyPhrases: data.keyPhrases ?? [],
         difficulty: data.difficulty,
         industry: data.industry ?? "general",
         personaStyle: data.personaStyle ?? "neutral",

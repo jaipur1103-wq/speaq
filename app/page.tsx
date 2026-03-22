@@ -67,7 +67,7 @@ export default function Home() {
       const scenario: Scenario = {
         id: "gen_" + Date.now(),
         category: data.category, title: data.title, brief: data.brief,
-        opener: data.opener, keyPhrases: data.keyPhrases,
+        opener: data.opener,
         difficulty: data.difficulty, industry: data.industry,
         personaStyle: data.personaStyle, personaName: data.personaName,
         personaRole: data.personaRole,

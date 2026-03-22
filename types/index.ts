@@ -19,7 +19,6 @@ export interface Scenario {
   title: string;
   brief: string;
   opener: string;
-  keyPhrases: string[];
   difficulty: Difficulty;
   industry: Industry;
   personaStyle: PersonaStyle;
@@ -58,7 +57,6 @@ export interface Feedback {
   encouragement: string;
   strengths: string[];
   improvements: string[];
-  foundPhrases: string[];
   wordCount: number;
   suggestedResponse: string;
   naturalExpressions: NaturalExpression[];

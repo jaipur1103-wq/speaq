@@ -526,19 +526,6 @@ function BriefingArea({ scenario, tr }: { scenario: Scenario; tr: Tr }) {
         </button>
       </div>
 
-      {/* Key phrases with label */}
-      {scenario.keyPhrases.length > 0 && (
-        <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
-          <span style={{ fontSize: 10, fontWeight: 700, color: "var(--accent)", opacity: 0.7, textTransform: "uppercase", letterSpacing: "0.06em", whiteSpace: "nowrap" }}>
-            {tr.keyPhrasesHint}
-          </span>
-          {scenario.keyPhrases.map((p) => (
-            <span key={p} style={{ fontSize: 11, padding: "3px 10px", borderRadius: 20, background: "var(--accent)", color: "#FFFFFF", fontWeight: 700 }}>
-              {p}
-            </span>
-          ))}
-        </div>
-      )}
     </div>
   );
 }
@@ -715,13 +702,6 @@ function FeedbackPanel({ feedback, scenarioTitle, savedIds, tr, onSaveExpression
               </div>
             );
           })}
-        </div>
-      )}
-      {feedback.foundPhrases?.length > 0 && (
-        <div style={{ display: "flex", flexWrap: "wrap", gap: 5, marginBottom: 12 }}>
-          {feedback.foundPhrases.map((p, i) => (
-            <span key={i} style={{ fontSize: 11, padding: "3px 10px", borderRadius: 20, background: "var(--accent-bg)", color: "var(--accent)", fontWeight: 700 }}>{p}</span>
-          ))}
         </div>
       )}
       {feedback.suggestedResponse && (

@@ -97,7 +97,6 @@ Return ONLY valid JSON with this exact structure:
   "title": "<concise action-oriented title, max 8 words>",
   "brief": "<2 sentences: situation context + what the user needs to achieve>",
   "opener": "<what the counterpart says first, 1-2 sentences, natural spoken English>",
-  "keyPhrases": ["<phrase1>", "<phrase2>", "<phrase3>", "<phrase4>", "<phrase5>"],
   "personaName": "<realistic first name>",
   "personaRole": "<job title or role, e.g. CFO, Hotel Receptionist, Classmate>"
 }
@@ -105,7 +104,6 @@ Return ONLY valid JSON with this exact structure:
 Requirements:
 - Make it a specific, realistic scenario (include numbers, context, stakes)
 - Opener should feel natural, not scripted
-- Key phrases should be vocabulary relevant to the scenario
 - Vary the scenario type`,
         },
       ],
