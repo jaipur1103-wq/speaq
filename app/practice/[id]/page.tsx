@@ -103,6 +103,14 @@ export default function PracticePage() {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [chatItems, loadingReply, loadingFinalFeedback, finalFeedback]);
 
+  // Auto-save score as soon as feedback is available
+  useEffect(() => {
+    if (finalFeedback && scenario && !scoreSaved) {
+      doSaveScore(finalFeedback, scenario.title);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [finalFeedback]);
+
   useEffect(() => {
     if (!navigator.mediaDevices?.getUserMedia) setSpeechSupported(false);
   }, []);
