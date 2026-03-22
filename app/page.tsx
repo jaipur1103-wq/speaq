@@ -145,6 +145,18 @@ export default function Home() {
         <p style={{ color: "var(--red)", fontSize: 13, marginBottom: 12 }}>{error}</p>
       )}
 
+      {/* Scenario list header */}
+      <div style={{ display: "flex", alignItems: "baseline", gap: 8, marginBottom: 14 }}>
+        <span style={{ fontSize: 18, fontWeight: 800, color: "var(--text)", letterSpacing: "-0.02em" }}>
+          {lang === "ja" ? "シナリオ" : "Scenarios"}
+        </span>
+        {allScenarios.length > 0 && (
+          <span style={{ fontSize: 13, fontWeight: 600, color: "var(--text-muted)" }}>
+            {allScenarios.length}
+          </span>
+        )}
+      </div>
+
       {/* Scenario list */}
       {allScenarios.length === 0 ? (
         <div style={{
