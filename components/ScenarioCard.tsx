@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Star, Trash2, ChevronRight } from "lucide-react";
 import type { Language, Scenario } from "@/types";
@@ -27,6 +27,27 @@ export default function ScenarioCard({ scenario, onDelete, isFavorite, onFavorit
   const [translation, setTranslation] = useState<string | null>(null);
   const [showTranslation, setShowTranslation] = useState(false);
   const [translating, setTranslating] = useState(false);
+
+  // Auto-translate title in Japanese mode
+  useEffect(() => {
+    if (lang !== "ja") return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch("/api/translate", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ texts: [scenario.title] }),
+        });
+        const data = await res.json();
+        if (!cancelled && data.translations?.[0]) {
+          setTranslation(data.translations[0]);
+          setShowTranslation(true);
+        }
+      } catch { /* silent */ }
+    })();
+    return () => { cancelled = true; };
+  }, [lang, scenario.title]);
 
   const handleStart = () => {
     sessionStorage.setItem("current_scenario", JSON.stringify(scenario));

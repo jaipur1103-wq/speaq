@@ -117,7 +117,7 @@ export default function SettingsBar({ settings, onChange, open, onOpenChange }: 
         </div>
 
         {/* Settings content */}
-        <div style={{ padding: "0 20px 28px", display: "flex", flexDirection: "column", gap: 20, overflowY: "auto", maxHeight: "60vh" }}>
+        <div style={{ padding: "0 20px 0", display: "flex", flexDirection: "column", gap: 20, overflowY: "auto", maxHeight: "60vh" }}>
 
           <SheetRow label={tr.topic}>
             <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
@@ -171,6 +171,25 @@ export default function SettingsBar({ settings, onChange, open, onOpenChange }: 
             </SheetRow>
           )}
 
+        </div>
+
+        {/* Done button */}
+        <div style={{ padding: "16px 20px 28px" }}>
+          <button
+            onClick={() => setOpen(false)}
+            style={{
+              width: "100%", padding: "14px",
+              borderRadius: 14,
+              background: "linear-gradient(135deg, #007AFF 0%, #5856D6 100%)",
+              color: "#fff", border: "none",
+              fontWeight: 700, fontSize: 15,
+              cursor: "pointer",
+              boxShadow: "0 4px 14px rgba(0,102,204,0.3)",
+              letterSpacing: "-0.01em",
+            }}
+          >
+            {settings.language === "ja" ? "完了" : "Done"}
+          </button>
         </div>
       </div>
     </>
