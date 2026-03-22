@@ -47,7 +47,35 @@ export async function POST(req: NextRequest) {
     });
 
     const reply = completion.choices[0].message.content?.trim() ?? "";
-    return NextResponse.json({ reply });
+
+    // Step 2: Translate reply to Japanese
+    const transCompletion = await groq.chat.completions.create({
+      model: "llama-3.3-70b-versatile",
+      messages: [
+        {
+          role: "system",
+          content: "You are a Japanese translator. Always return valid JSON only, no markdown, no backticks.",
+        },
+        {
+          role: "user",
+          content: `Translate this English text to natural Japanese. Return ONLY this JSON:
+{"replyJa":"<Japanese>"}
+
+text: ${reply}`,
+        },
+      ],
+      temperature: 0.1,
+      max_tokens: 300,
+    });
+
+    const transText = transCompletion.choices[0].message.content?.trim() ?? "";
+    const transCleaned = transText.replace(/^```json?\n?/, "").replace(/\n?```$/, "").trim();
+    let replyJa = "";
+    try {
+      replyJa = JSON.parse(transCleaned).replyJa ?? "";
+    } catch { /* silent */ }
+
+    return NextResponse.json({ reply, replyJa });
   } catch (error) {
     console.error("counterpart-reply error:", error);
     return NextResponse.json({ error: "Failed to generate reply" }, { status: 500 });

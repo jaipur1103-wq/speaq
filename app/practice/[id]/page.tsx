@@ -72,7 +72,7 @@ export default function PracticePage() {
     lastSessionKey.current = sessionKey;
     const s: Scenario = JSON.parse(raw);
     setScenario(s);
-    setChatItems([{ kind: "message", data: { role: "counterpart", text: s.opener, timestamp: Date.now() } }]);
+    setChatItems([{ kind: "message", data: { role: "counterpart", text: s.opener, textJa: s.openerJa, timestamp: Date.now() } }]);
     setPendingTurns([]);
     setFinalFeedback(null);
     setTurn(1);
@@ -235,12 +235,12 @@ export default function PracticePage() {
           }),
           signal: abort.signal,
         });
-        const { reply } = await res.json();
+        const { reply, replyJa } = await res.json();
         const timerId = setTimeout(() => {
           replyTimerRef.current = null;
           setChatItems((prev) => [
             ...prev,
-            { kind: "message", data: { role: "counterpart", text: reply, timestamp: Date.now() } },
+            { kind: "message", data: { role: "counterpart", text: reply, textJa: replyJa, timestamp: Date.now() } },
           ]);
         }, 1800);
         replyTimerRef.current = timerId;
@@ -263,7 +263,7 @@ export default function PracticePage() {
     const newKey = Date.now().toString();
     sessionStorage.setItem("practice_session_key", newKey);
     lastSessionKey.current = newKey;
-    setChatItems([{ kind: "message", data: { role: "counterpart", text: scenario.opener, timestamp: Date.now() } }]);
+    setChatItems([{ kind: "message", data: { role: "counterpart", text: scenario.opener, textJa: scenario.openerJa, timestamp: Date.now() } }]);
     setPendingTurns([]);
     setFinalFeedback(null);
     setTurn(1);
@@ -547,6 +547,8 @@ function ChatBubble({ msg, personaName, tr }: { msg: Message; personaName: strin
     e.stopPropagation();
     if (showTrans) { setShowTrans(false); return; }
     if (translation) { setShowTrans(true); return; }
+    // Use pre-generated translation if available
+    if (msg.textJa) { setTranslation(msg.textJa); setShowTrans(true); return; }
     setTranslating(true);
     try {
       const res = await fetch("/api/translate", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ texts: [msg.text] }) });

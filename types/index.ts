@@ -32,6 +32,7 @@ export interface Scenario {
 export interface Message {
   role: "user" | "counterpart";
   text: string;
+  textJa?: string;
   timestamp: number;
 }
 
