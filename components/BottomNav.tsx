@@ -1,7 +1,7 @@
 "use client";
 
 import { usePathname, useRouter } from "next/navigation";
-import { Mic, BookOpen, BarChart2, HelpCircle } from "lucide-react";
+import { Mic, BookOpen, Brain, BarChart2, HelpCircle } from "lucide-react";
 import { getSettings } from "@/lib/storage";
 import { i18n } from "@/lib/i18n";
 import { useState, useEffect } from "react";
@@ -29,6 +29,7 @@ export default function BottomNav() {
   const tabs = [
     { path: "/", label: tr.navPractice, Icon: Mic },
     { path: "/notebook", label: tr.navNotebook, Icon: BookOpen },
+    { path: "/quiz", label: tr.navQuiz, Icon: Brain },
     { path: "/history", label: tr.navHistory, Icon: BarChart2 },
     { path: "/guide", label: tr.navGuide, Icon: HelpCircle },
   ];

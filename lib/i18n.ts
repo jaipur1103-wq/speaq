@@ -1,7 +1,7 @@
 export const i18n = {
   en: {
     // nav
-    navPractice: "Practice", navNotebook: "Notebook", navHistory: "History", navGuide: "Guide",
+    navPractice: "Practice", navNotebook: "Notebook", navQuiz: "Test", navHistory: "History", navGuide: "Guide",
     // header
     howToUse: "How to use",
     // settings
@@ -70,7 +70,7 @@ export const i18n = {
     noExpressionsDesc: "During practice, tap + Save to Notebook on any feedback to save expressions here.",
     quizComplete: "Quiz Complete!",
     quizScore: (c: number, t: number) => `${c} / ${t} used`,
-    quizAgain: "🔄 Quiz Again", backToList: "← Back to list",
+    quizAgain: "🔄 Quiz Again", backToList: "← Back",
     notebookNote: "Keep quizzing to build up your total.",
     quizSpeakPrompt: "Say it in English",
     quizShowAnswer: "Check Answer",
@@ -82,6 +82,18 @@ export const i18n = {
     quizUsage: "When to use",
     learnedBadge: (n: number, t: number) => `${n} / ${t} learned`,
     collectionEmpty: "No expressions saved in this category yet.",
+    // quiz page
+    quizPageTitle: "Test",
+    masteryRate: "Mastery",
+    quizModeToday: "Today's Study",
+    quizModeTodayDesc: (n: number) => `${n} unmastered expressions`,
+    quizModeAll: "Full Review",
+    quizModeAllDesc: (n: number) => `All ${n} expressions`,
+    quizModeWeak: "Weak Points",
+    quizModeWeakDesc: (n: number) => `${n} never recalled`,
+    startQuizBtn: "Start",
+    noExpressionsForMode: "No expressions for this mode",
+    masteredThisSession: "Mastered this session",
     // history
     sessions: "Sessions", avgScore: "Avg Score", best: "Best",
     noHistory: "No history yet",
@@ -109,7 +121,7 @@ export const i18n = {
   },
   ja: {
     // nav
-    navPractice: "練習", navNotebook: "ノート", navHistory: "履歴", navGuide: "使い方",
+    navPractice: "練習", navNotebook: "ノート", navQuiz: "テスト", navHistory: "履歴", navGuide: "使い方",
     // header
     howToUse: "使い方",
     // settings
@@ -176,9 +188,9 @@ export const i18n = {
     deleteBtn: "削除", markLearned: "習得済みにする", markUnlearned: "学習中に戻す",
     noExpressions: "保存された表現はありません",
     noExpressionsDesc: "練習中にフィードバックの「ノートに保存」をタップすると表示されます。",
-    quizComplete: "クイズ完了！",
+    quizComplete: "テスト完了！",
     quizScore: (c: number, t: number) => `${c} / ${t} 使えた`,
-    quizAgain: "🔄 もう一度クイズ", backToList: "← リストに戻る",
+    quizAgain: "🔄 もう一度", backToList: "← 戻る",
     notebookNote: "繰り返してどんどん累計を増やそう。",
     quizSpeakPrompt: "英語で言ってみましょう",
     quizShowAnswer: "答えを確認する",
@@ -190,6 +202,18 @@ export const i18n = {
     quizUsage: "使いどころ",
     learnedBadge: (n: number, t: number) => `${n} / ${t} 習得`,
     collectionEmpty: "このカテゴリにはまだ表現がありません。",
+    // quiz page
+    quizPageTitle: "テスト",
+    masteryRate: "習得率",
+    quizModeToday: "今日の学習",
+    quizModeTodayDesc: (n: number) => `学習中: ${n}件`,
+    quizModeAll: "全部テスト",
+    quizModeAllDesc: (n: number) => `全${n}件から出題`,
+    quizModeWeak: "苦手克服",
+    quizModeWeakDesc: (n: number) => `未定着: ${n}件`,
+    startQuizBtn: "スタート",
+    noExpressionsForMode: "このモードに該当する表現がありません",
+    masteredThisSession: "今回習得した表現",
     // history
     sessions: "回数", avgScore: "平均スコア", best: "最高",
     noHistory: "履歴がありません",
