@@ -51,15 +51,29 @@
 - `naturalExpressions`: 2〜4件。improvements で取り上げた表現をベースに選ぶ。問題がなければ `[]`
   - **難易度別レベルフィルター**：beginner=A2のみ / intermediate=B1-B2のみ / advanced=C1-C2のみ
   - `reason`: grammar / collocation / literal / set-phrase / formality / nuance
+  - `natural`: **最小限の修正のみ**。問題のある単語・箇所だけ直す。文全体を構造ごと変えてはいけない
+    - collocation → 問題の単語だけ自然なコロケーションに差し替える（例: "big potential" → "great potential"）
+    - grammar → 文法エラーの箇所だけ修正する
   - `explanation`: なぜ元の表現が不自然か（1〜2文）。reason種別に応じた角度で説明。JA設定時は日本語
-  - `chunk`: `natural` から直接抽出した学習価値のある英語表現。コロケーション・句動詞・イディオム・定型句・談話標識など型は問わない。可変部分を `~` に置換。意味のある固定語が3語以上必須。**NG（禁止）**: `It's ~` `from ~ to ~` `I ~ ~`（文法構造のみで学習価値なし）。**OK例**: `run into ~ issues` `It might be worth ~ing` `Having said that, ~`
+    - grammar: 具体的な文法ルールを明示（例: "look forward to は gerund が続く"）
+    - collocation: 間違いペアと正しいペアを名指しで指摘（例: "big は potential とコロケーションしない。great / enormous / tremendous が正しい"）
+    - literal: 日本語の元フレーズとなぜ英語で失敗するかを説明
+    - set-phrase: なぜ固定表現が期待されるかを説明
+    - formality: シーンとレジスターのミスマッチを説明
+    - nuance: original と natural が意味・含意でどう違うかを対比
+  - `chunk`: `natural` から直接抽出した学習価値のある英語表現。コロケーション・句動詞・イディオム・定型句・談話標識など型は問わない。可変部分を `~` に置換。意味のある固定語が3語以上必須。**NG（禁止）**: `It's ~` `from ~ to ~` `I ~ ~` `the ~ of ~`（文法構造のみで学習価値なし）。**OK例**: `have great potential` `run into ~ issues` `It might be worth ~ing` `Having said that, ~`
   - `chunkDetail`: 〜に何が入るか・いつ使うか・実践アドバイス（1〜2文）。JA設定時は日本語
   - `example`: chunkを使った短い英文例
 - `suggestedResponse`: 最後のターンの模範回答（英語）
 - `overall`: 4軸の平均値
 
+### プロンプト品質改善方針（few-shot）
+- LLMへの抽象ルールだけでは品質が安定しないため、プロンプト内に **理想的な出力のfew-shot例を2件** 埋め込んでいる
+- 現在の例: collocation（"big potential" → "great potential"）・grammar（"look forward to see" → "look forward to seeing"）
+- 新たな不具合パターンが見つかったら、その修正例をfew-shotに追加することで汎用的に改善する方針
+
 ### 句読点ルール（重要）
-- 音声入力（Web Speech API）のため、ユーザーの発話に句読点は存在しない
+- 音声入力（Groq Whisper API）のため、ユーザーの発話に句読点は存在しない
 - accuracyスコアで句読点の欠如を減点してはいけない
 - フィードバック文中で句読点に言及してはいけない
 
@@ -69,9 +83,15 @@
 - **intermediate**: CEFR B1〜B2目標
 - **advanced**: CEFR C1〜C2目標。C1未満なら70点以下
 
+## 音声認識（録音・書き起こし）
+
+- **Groq Whisper API を使用**（`whisper-large-v3-turbo`）。Web Speech APIは廃止済み
+- `/api/transcribe` エンドポイント：MediaRecorder で録音 → Blob → File → FormData → Groq transcription
+- MIMEタイプ：`audio/webm`（対応ブラウザ）、非対応の場合は `audio/mp4`（iOS Safari等）にフォールバック
+- 書き起こし中はスピナーを表示（`isTranscribing` state）
+
 ## Git ルール
 
-- 実装完了後は必ず `requirements.md` を最新状態に更新してから `git push` すること
 - コミットメッセージは変更内容を英語で簡潔に書く
 - `.env.local` はコミットしない（.gitignoreで除外済み）
 - GitHub: https://github.com/jaipur1103-wq/speaq
