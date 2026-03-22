@@ -61,7 +61,12 @@ CRITICAL RULES:
 - "naturalExpressions[].chunk": A specific English expression with real learning value extracted DIRECTLY from natural. Can be any type: collocation, phrasal verb, idiom, set phrase, discourse marker. Replace variable content with ~. Minimum 3 meaningful fixed words. GOOD: 「run into ~ issues」「It might be worth ~ing」「quite a few ~」「Having said that, ~」BAD (forbidden): 「It's ~」「from ~ to ~」「I ~ ~」「the ~ of ~」— grammar structure only, zero learning value.
 - "naturalExpressions[].chunkDetail": 1-2 sentences: what ~ stands for, when to use it, one practical tip.${isJa ? " Write in Japanese." : ""}
 - "naturalExpressions[].example": One short English example sentence using the chunk.
+- "naturalExpressions[].natural": Apply the MINIMAL fix for the identified issue. For collocation: swap only the problematic word. For grammar: fix only the grammatical error. Do NOT restructure the whole sentence unnecessarily.
 - "suggestedResponse": A better version of the user's LAST turn response in English.
+
+EXAMPLES of ideal naturalExpression quality (follow this standard exactly):
+Collocation: { "original": "it has the big potential", "natural": "it has great potential", "reason": "collocation", "explanation": "「big」does not collocate with「potential」. Natural pairings: great / enormous / tremendous potential.", "chunk": "have great potential", "chunkDetail": "「great potential」is a fixed collocation. Use have/show great potential to say something is very promising.", "example": "This approach has great potential for cutting costs." }
+Grammar: { "original": "I look forward to see you", "natural": "I look forward to seeing you", "reason": "grammar", "explanation": "「look forward to」requires a gerund (-ing), not an infinitive. The「to」here is a preposition.", "chunk": "look forward to ~ing", "chunkDetail": "After「look forward to」, always use the -ing form.「~ing」is the activity you are anticipating.", "example": "I look forward to hearing your thoughts." }
 
 Return ONLY valid JSON:
 {
