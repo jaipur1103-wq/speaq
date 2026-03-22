@@ -284,7 +284,17 @@ export default function PracticePage() {
 
   const doSaveScore = (fb: Feedback, title: string) => {
     if (scoreSaved) return;
-    saveScoreRecord({ date: new Date().toISOString().slice(0, 10), scenarioTitle: title, turnCount: pendingTurns.length });
+    saveScoreRecord({
+      date: new Date().toISOString().slice(0, 10),
+      scenarioTitle: title,
+      scenarioCategory: scenario?.category,
+      difficulty: scenario?.difficulty,
+      turnCount: pendingTurns.length,
+      encouragement: fb.encouragement,
+      strengths: fb.strengths,
+      improvements: fb.improvements,
+      expressionCount: fb.naturalExpressions?.length ?? 0,
+    });
     setScoreSaved(true);
   };
 

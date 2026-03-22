@@ -81,7 +81,13 @@ export interface ScoreRecord {
   id: string;
   date: string;
   scenarioTitle: string;
+  scenarioCategory?: string;
+  difficulty?: Difficulty;
   turnCount: number;
+  encouragement?: string;
+  strengths?: string[];
+  improvements?: ImprovementItem[];
+  expressionCount?: number;
 }
 
 export interface AppSettings {
