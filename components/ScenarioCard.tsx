@@ -1,11 +1,10 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Star, Trash2, ChevronRight } from "lucide-react";
 import type { Language, Scenario } from "@/types";
 import { toggleFavorite } from "@/lib/storage";
-import { i18n } from "@/lib/i18n";
 
 interface Props {
   scenario: Scenario;
@@ -23,31 +22,6 @@ const difficultyColor: Record<string, string> = {
 
 export default function ScenarioCard({ scenario, onDelete, isFavorite, onFavoriteChange, lang = "en" }: Props) {
   const router = useRouter();
-  const tr = i18n[lang];
-  const [translation, setTranslation] = useState<string | null>(null);
-  const [showTranslation, setShowTranslation] = useState(false);
-  const [translating, setTranslating] = useState(false);
-
-  // Auto-translate title in Japanese mode
-  useEffect(() => {
-    if (lang !== "ja") return;
-    let cancelled = false;
-    (async () => {
-      try {
-        const res = await fetch("/api/translate", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ texts: [scenario.title] }),
-        });
-        const data = await res.json();
-        if (!cancelled && data.translations?.[0]) {
-          setTranslation(data.translations[0]);
-          setShowTranslation(true);
-        }
-      } catch { /* silent */ }
-    })();
-    return () => { cancelled = true; };
-  }, [lang, scenario.title]);
 
   const handleStart = () => {
     sessionStorage.setItem("current_scenario", JSON.stringify(scenario));
@@ -59,25 +33,6 @@ export default function ScenarioCard({ scenario, onDelete, isFavorite, onFavorit
     e.stopPropagation();
     toggleFavorite(scenario.id);
     onFavoriteChange?.();
-  };
-
-  const handleTranslate = async (e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (showTranslation) { setShowTranslation(false); return; }
-    if (translation) { setShowTranslation(true); return; }
-    setTranslating(true);
-    try {
-      const res = await fetch("/api/translate", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ texts: [scenario.title] }),
-      });
-      const data = await res.json();
-      setTranslation(data.translations?.[0] ?? null);
-      setShowTranslation(true);
-    } catch { /* silent */ } finally {
-      setTranslating(false);
-    }
   };
 
   return (
@@ -126,29 +81,17 @@ export default function ScenarioCard({ scenario, onDelete, isFavorite, onFavorit
         <div style={{ fontWeight: 700, fontSize: 15, color: "var(--text)", marginBottom: 2, letterSpacing: "-0.01em" }}>
           {scenario.title}
         </div>
-        {showTranslation && translation && (
-          <div style={{ fontSize: 12, color: "var(--text-muted)", marginBottom: 4, lineHeight: 1.4 }}>
-            {translation}
+        {lang === "ja" && scenario.titleJa && (
+          <div style={{ fontSize: 13, color: "var(--text-secondary)", marginBottom: 4, lineHeight: 1.4 }}>
+            {scenario.titleJa}
           </div>
         )}
 
-        {/* Persona + translate */}
-        <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 4 }}>
+        {/* Persona */}
+        <div style={{ marginTop: 4 }}>
           <span style={{ fontSize: 12, color: "var(--text-secondary)" }}>
             {scenario.personaName} · {scenario.personaRole}
           </span>
-          <button
-            onClick={handleTranslate}
-            style={{
-              fontSize: 11, padding: "2px 8px", borderRadius: 20,
-              border: `1px solid ${showTranslation ? "var(--accent)" : "var(--border)"}`,
-              background: showTranslation ? "var(--accent-bg)" : "transparent",
-              color: showTranslation ? "var(--accent)" : "var(--text-muted)",
-              cursor: "pointer", fontWeight: 600,
-            }}
-          >
-            {translating ? tr.translating : showTranslation ? tr.hideTranslation : tr.translate}
-          </button>
         </div>
       </div>
 

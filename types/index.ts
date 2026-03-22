@@ -17,8 +17,11 @@ export interface Scenario {
   id: string;
   category: string;
   title: string;
+  titleJa?: string;
   brief: string;
+  briefJa?: string;
   opener: string;
+  openerJa?: string;
   difficulty: Difficulty;
   industry: Industry;
   personaStyle: PersonaStyle;

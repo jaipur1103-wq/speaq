@@ -66,8 +66,10 @@ export default function Home() {
       const data = await res.json();
       const scenario: Scenario = {
         id: "gen_" + Date.now(),
-        category: data.category, title: data.title, brief: data.brief,
-        opener: data.opener,
+        category: data.category,
+        title: data.title, titleJa: data.titleJa,
+        brief: data.brief, briefJa: data.briefJa,
+        opener: data.opener, openerJa: data.openerJa,
         difficulty: data.difficulty, industry: data.industry,
         personaStyle: data.personaStyle, personaName: data.personaName,
         personaRole: data.personaRole,

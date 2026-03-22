@@ -95,8 +95,11 @@ Return ONLY valid JSON with this exact structure:
 {
   "category": "<choose best fit: for business: Negotiation/Sales/1-on-1/Cross-team/Presentation/Client Meeting/Performance Review/Crisis Management/Partnership/Hiring; for non-business: Travel/Restaurant/Shopping/Hotel/Social/Study/Daily Life>",
   "title": "<concise action-oriented title, max 8 words>",
+  "titleJa": "<natural Japanese title — NOT a literal translation, capture the essence concisely>",
   "brief": "<2 sentences: situation context + what the user needs to achieve>",
+  "briefJa": "<natural Japanese translation of brief>",
   "opener": "<what the counterpart says first, 1-2 sentences, natural spoken English>",
+  "openerJa": "<natural Japanese translation of opener>",
   "personaName": "<realistic first name>",
   "personaRole": "<job title or role, e.g. CFO, Hotel Receptionist, Classmate>"
 }
@@ -104,11 +107,12 @@ Return ONLY valid JSON with this exact structure:
 Requirements:
 - Make it a specific, realistic scenario (include numbers, context, stakes)
 - Opener should feel natural, not scripted
-- Vary the scenario type`,
+- Vary the scenario type
+- titleJa, briefJa, openerJa must be natural Japanese, not literal translations`,
         },
       ],
       temperature: 0.9,
-      max_tokens: 600,
+      max_tokens: 900,
     });
 
     const text = completion.choices[0].message.content?.trim() ?? "";

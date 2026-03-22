@@ -489,43 +489,29 @@ export default function PracticePage() {
   );
 }
 
-// ── Briefing area with translate support ──────────────────────────────────────
+// ── Briefing area ──────────────────────────────────────────────────────────────
 function BriefingArea({ scenario, tr }: { scenario: Scenario; tr: Tr }) {
-  const [briefTrans, setBriefTrans] = useState<string | null>(null);
-  const [showBriefTrans, setShowBriefTrans] = useState(false);
-  const [briefTranslating, setBriefTranslating] = useState(false);
-
-  const translateBrief = async () => {
-    if (showBriefTrans) { setShowBriefTrans(false); return; }
-    if (briefTrans) { setShowBriefTrans(true); return; }
-    setBriefTranslating(true);
-    try {
-      const res = await fetch("/api/translate", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ texts: [scenario.brief] }) });
-      const d = await res.json();
-      setBriefTrans(d.translations?.[0] ?? null);
-      setShowBriefTrans(true);
-    } catch { /* silent */ } finally { setBriefTranslating(false); }
-  };
+  const [showTrans, setShowTrans] = useState(false);
+  const hasTrans = !!scenario.briefJa;
 
   return (
-    <div style={{ padding: "12px 16px", background: "var(--accent-bg)", borderBottom: "1px solid var(--border)" }}>
-      <p style={{ color: "var(--accent)", fontSize: 13, margin: "0 0 4px", lineHeight: 1.6, fontWeight: 500 }}>
+    <div style={{ padding: "14px 16px", background: "var(--accent-bg)", borderBottom: "1px solid var(--border)" }}>
+      <p style={{ color: "var(--accent)", fontSize: 15, margin: "0 0 6px", lineHeight: 1.65, fontWeight: 500 }}>
         {scenario.brief}
       </p>
-      {showBriefTrans && briefTrans && (
-        <p style={{ color: "var(--accent)", fontSize: 12, margin: "0 0 8px", lineHeight: 1.6, opacity: 0.8, borderLeft: "2px solid var(--accent)", paddingLeft: 8 }}>
-          {briefTrans}
+      {showTrans && scenario.briefJa && (
+        <p style={{ color: "var(--accent)", fontSize: 14, margin: "0 0 8px", lineHeight: 1.65, opacity: 0.85, borderLeft: "2px solid var(--accent)", paddingLeft: 10 }}>
+          {scenario.briefJa}
         </p>
       )}
-      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8, flexWrap: "wrap" }}>
+      {hasTrans && (
         <button
-          onClick={translateBrief}
-          style={{ fontSize: 11, padding: "2px 8px", borderRadius: 20, border: `1px solid ${showBriefTrans ? "var(--accent)" : "rgba(0,102,204,0.3)"}`, background: showBriefTrans ? "rgba(0,102,204,0.15)" : "transparent", color: "var(--accent)", cursor: "pointer", fontWeight: 600 }}
+          onClick={() => setShowTrans((v) => !v)}
+          style={{ fontSize: 12, padding: "3px 10px", borderRadius: 20, border: `1px solid ${showTrans ? "var(--accent)" : "rgba(0,102,204,0.3)"}`, background: showTrans ? "rgba(0,102,204,0.15)" : "transparent", color: "var(--accent)", cursor: "pointer", fontWeight: 600, marginBottom: 8 }}
         >
-          {briefTranslating ? tr.translating : showBriefTrans ? tr.hideTranslation : tr.translate}
+          {showTrans ? tr.hideTranslation : tr.translate}
         </button>
-      </div>
-
+      )}
     </div>
   );
 }
@@ -578,31 +564,44 @@ function ChatBubble({ msg, personaName, tr }: { msg: Message; personaName: strin
           <span style={{ fontSize: 12, color: "var(--text-muted)", fontWeight: 600 }}>{personaName}</span>
         </div>
       )}
-      <div style={{ display: "flex", alignItems: "flex-end", gap: 6, flexDirection: isUser ? "row-reverse" : "row", maxWidth: "90%" }}>
-        <div style={{ minWidth: 0 }}>
-          <div style={{
-            marginLeft: isUser ? 0 : 38,
-            padding: "12px 16px",
-            borderRadius: isUser ? "18px 18px 4px 18px" : "18px 18px 18px 4px",
-            background: isUser ? "var(--accent)" : "var(--surface)",
-            color: isUser ? "#FFFFFF" : "var(--text)",
-            fontSize: 14, lineHeight: 1.6, boxShadow: "var(--shadow-sm)",
-          }}>
-            {msg.text}
-          </div>
-          {showTrans && translation && (
-            <div style={{ marginLeft: isUser ? 0 : 38, marginTop: 4, padding: "8px 14px", borderRadius: 10, background: "var(--surface2)", fontSize: 12, color: "var(--text-secondary)", lineHeight: 1.5 }}>
-              {translation}
-            </div>
-          )}
+      <div style={{ maxWidth: "90%", marginLeft: !isUser ? 38 : 0 }}>
+        <div style={{
+          padding: "12px 16px",
+          borderRadius: isUser ? "18px 18px 4px 18px" : "18px 18px 18px 4px",
+          background: isUser ? "var(--accent)" : "var(--surface)",
+          color: isUser ? "#FFFFFF" : "var(--text)",
+          fontSize: 16, lineHeight: 1.6, boxShadow: "var(--shadow-sm)",
+        }}>
+          {msg.text}
         </div>
+        {showTrans && translation && (
+          <div style={{ marginTop: 4, padding: "8px 14px", borderRadius: 10, background: "var(--surface2)", fontSize: 13, color: "var(--text-secondary)", lineHeight: 1.5 }}>
+            {translation}
+          </div>
+        )}
         {!isUser && (
-          <div style={{ display: "flex", flexDirection: "column", gap: 4, marginLeft: 38, flexShrink: 0 }}>
-            <button onClick={handleSpeak} style={{ width: 28, height: 28, borderRadius: "50%", background: speaking ? "var(--accent-bg)" : "var(--surface2)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, transition: "all 0.15s" }} title={speaking ? tr.stop : tr.readAloud}>
-              {speaking ? "⏸" : "🔊"}
+          <div style={{ display: "flex", gap: 6, marginTop: 6 }}>
+            <button onClick={handleSpeak} style={{
+              height: 28, padding: "0 10px", borderRadius: 20,
+              background: speaking ? "var(--accent-bg)" : "var(--surface2)",
+              border: "none", cursor: "pointer",
+              display: "flex", alignItems: "center", gap: 4,
+              fontSize: 12, color: speaking ? "var(--accent)" : "var(--text-muted)",
+              fontWeight: 500, transition: "all 0.15s",
+            }}>
+              <span style={{ fontSize: 13 }}>{speaking ? "⏸" : "🔊"}</span>
+              {speaking ? tr.stop : tr.readAloud}
             </button>
-            <button onClick={handleTranslate} style={{ width: 28, height: 28, borderRadius: "50%", background: showTrans ? "var(--accent-bg)" : "var(--surface2)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, transition: "all 0.15s" }} title={showTrans ? tr.hideTranslation : tr.translate}>
-              {translating ? "⏳" : "🌐"}
+            <button onClick={handleTranslate} style={{
+              height: 28, padding: "0 10px", borderRadius: 20,
+              background: showTrans ? "var(--accent-bg)" : "var(--surface2)",
+              border: "none", cursor: "pointer",
+              display: "flex", alignItems: "center", gap: 4,
+              fontSize: 12, color: showTrans ? "var(--accent)" : "var(--text-muted)",
+              fontWeight: 500, transition: "all 0.15s",
+            }}>
+              <span style={{ fontSize: 13 }}>{translating ? "⏳" : "🌐"}</span>
+              {showTrans ? tr.hideTranslation : tr.translate}
             </button>
           </div>
         )}
