@@ -81,7 +81,7 @@ export default function ScenarioCard({ scenario, onDelete, isFavorite, onFavorit
         <div style={{ fontWeight: 700, fontSize: 15, color: "var(--text)", marginBottom: 2, letterSpacing: "-0.01em" }}>
           {scenario.title}
         </div>
-        {lang === "ja" && scenario.titleJa && (
+        {scenario.titleJa && (
           <div style={{ fontSize: 13, color: "var(--text-secondary)", marginBottom: 4, lineHeight: 1.4 }}>
             {scenario.titleJa}
           </div>
