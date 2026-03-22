@@ -181,7 +181,7 @@ export default function PracticePage() {
         body: JSON.stringify({ scenario, turns, language: lang }),
       });
       const fb = await res.json();
-      if (fb.scores) {
+      if (fb.encouragement) {
         setFinalFeedback(fb as Feedback);
       } else {
         setFeedbackError(fb.detail ?? fb.error ?? "unknown error");
