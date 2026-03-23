@@ -130,7 +130,7 @@ export default function HistoryPage() {
 function HistoryCard({ record, isJa }: { record: ScoreRecord; isJa: boolean }) {
   const [expanded, setExpanded] = useState(false);
 
-  const hasDetail = !!(record.encouragement || (record.strengths && record.strengths.length > 0) || (record.improvements && record.improvements.length > 0));
+  const hasDetail = !!((record.strengths && record.strengths.length > 0) || (record.improvements && record.improvements.length > 0));
   const diffColor = record.difficulty ? difficultyColor[record.difficulty] : "var(--text-muted)";
   const diffLabel = record.difficulty ? (difficultyLabel[isJa ? "ja" : "en"][record.difficulty] ?? record.difficulty) : null;
 
@@ -181,31 +181,11 @@ function HistoryCard({ record, isJa }: { record: ScoreRecord; isJa: boolean }) {
           )}
         </div>
 
-        {/* Encouragement preview (collapsed) */}
-        {record.encouragement && !expanded && (
-          <div style={{
-            marginTop: 10, padding: "8px 12px",
-            background: "var(--accent-bg)", borderRadius: 10,
-            fontSize: 13, color: "var(--accent)", lineHeight: 1.5, fontStyle: "italic",
-          }}>
-            {record.encouragement}
-          </div>
-        )}
       </div>
 
       {/* Expanded detail */}
       {expanded && hasDetail && (
         <div style={{ borderTop: "1px solid var(--border)", padding: "14px 16px" }}>
-          {record.encouragement && (
-            <div style={{
-              padding: "10px 12px", background: "var(--accent-bg)",
-              borderRadius: 10, fontSize: 13, color: "var(--accent)",
-              lineHeight: 1.6, fontStyle: "italic", marginBottom: 12,
-            }}>
-              {record.encouragement}
-            </div>
-          )}
-
           {record.strengths && record.strengths.length > 0 && (
             <div style={{ marginBottom: 12 }}>
               <div style={{ fontSize: 11, fontWeight: 700, color: "#34C759", textTransform: "uppercase", letterSpacing: "0.07em", marginBottom: 6 }}>

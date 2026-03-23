@@ -36,13 +36,19 @@ export default function QuizPage() {
     saveSettings({ ...getSettings(), language: newLang });
   };
 
-  const toLearnCount = expressions.filter((e) => !e.learned).length;
+  const todayStr = new Date().toISOString().slice(0, 10);
+  const toLearnCount = expressions.filter((e) => !e.learned && new Date(e.savedAt).toISOString().slice(0, 10) === todayStr).length;
   const learnedCount = expressions.filter((e) => e.learned).length;
   const weakCount = expressions.filter((e) => e.quizCount === 0).length;
   const masteryPct = expressions.length > 0 ? Math.round((learnedCount / expressions.length) * 100) : 0;
 
   const getQueueForMode = (m: QuizMode): SavedExpression[] => {
-    if (m === "today") return expressions.filter((e) => !e.learned).sort(() => Math.random() - 0.5);
+    if (m === "today") {
+      const todayStr = new Date().toISOString().slice(0, 10);
+      return expressions
+        .filter((e) => !e.learned && new Date(e.savedAt).toISOString().slice(0, 10) === todayStr)
+        .sort(() => Math.random() - 0.5);
+    }
     if (m === "all") return [...expressions].sort(() => Math.random() - 0.5);
     // weak: quizCount === 0 first, then rest unlearned
     const neverRecalled = expressions.filter((e) => e.quizCount === 0).sort(() => Math.random() - 0.5);
