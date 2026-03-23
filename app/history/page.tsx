@@ -130,7 +130,7 @@ export default function HistoryPage() {
 function HistoryCard({ record, isJa }: { record: ScoreRecord; isJa: boolean }) {
   const [expanded, setExpanded] = useState(false);
 
-  const hasDetail = !!((record.strengths && record.strengths.length > 0) || (record.improvements && record.improvements.length > 0));
+  const hasDetail = !!(record.conversationSummary || (record.strengths && record.strengths.length > 0) || (record.improvements && record.improvements.length > 0));
   const diffColor = record.difficulty ? difficultyColor[record.difficulty] : "var(--text-muted)";
   const diffLabel = record.difficulty ? (difficultyLabel[isJa ? "ja" : "en"][record.difficulty] ?? record.difficulty) : null;
 
@@ -186,6 +186,11 @@ function HistoryCard({ record, isJa }: { record: ScoreRecord; isJa: boolean }) {
       {/* Expanded detail */}
       {expanded && hasDetail && (
         <div style={{ borderTop: "1px solid var(--border)", padding: "14px 16px" }}>
+          {record.conversationSummary && (
+            <div style={{ fontSize: 13, color: "var(--text-secondary)", lineHeight: 1.6, marginBottom: 12 }}>
+              {record.conversationSummary}
+            </div>
+          )}
           {record.strengths && record.strengths.length > 0 && (
             <div style={{ marginBottom: 12 }}>
               <div style={{ fontSize: 11, fontWeight: 700, color: "#34C759", textTransform: "uppercase", letterSpacing: "0.07em", marginBottom: 6 }}>

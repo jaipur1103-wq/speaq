@@ -298,6 +298,7 @@ export default function PracticePage() {
       scenarioCategory: scenario?.category,
       difficulty: scenario?.difficulty,
       turnCount: pendingTurns.length,
+      conversationSummary: fb.conversationSummary,
       encouragement: fb.encouragement,
       strengths: fb.strengths,
       improvements: fb.improvements,

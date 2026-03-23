@@ -53,6 +53,8 @@ IMPORTANT: This is TRANSCRIBED VOICE INPUT — no punctuation exists. Do NOT men
 
 CRITICAL RULES:
 
+- "conversationSummary": 1-2 sentences. What topics and key points were discussed in this conversation. Focus on the content, not the English quality.${isJa ? " Write in Japanese." : ""}
+
 - "encouragement": One sentence. Honest overall impression of the session.${isJa ? " Write in Japanese." : ""}
 
 - "strengths": 1-3 items. Only include genuine strengths. Quote the user's phrase using 「」, name the specific linguistic feature.
@@ -85,6 +87,7 @@ Grammar improvement: { "errorEvidence": "look forward to requires gerund [-ing] 
 
 Return ONLY valid JSON:
 {
+  "conversationSummary": "<${isJa ? "日本語1〜2文：何について話したか" : "1-2 sentences: what was discussed"}>",
   "encouragement": "<${isJa ? "日本語で1文" : "one honest sentence"}>",
   "strengths": ["<${isJa ? "「発言」＋言語的特徴" : "「phrase」+ specific feature"}>"],
   "improvements": [

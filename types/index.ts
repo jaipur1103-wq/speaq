@@ -54,6 +54,7 @@ export interface NaturalExpression {
 }
 
 export interface Feedback {
+  conversationSummary?: string;
   encouragement: string;
   strengths: string[];
   improvements: ImprovementItem[];
@@ -85,6 +86,7 @@ export interface ScoreRecord {
   scenarioCategory?: string;
   difficulty?: Difficulty;
   turnCount: number;
+  conversationSummary?: string;
   encouragement?: string;
   strengths?: string[];
   improvements?: ImprovementItem[];
