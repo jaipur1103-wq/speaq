@@ -9,7 +9,7 @@ import SpeaqLogo from "@/components/SpeaqLogo";
 import {
   getSettings, saveSettings, getSavedScenarios, saveGeneratedScenario,
   deleteSavedScenario, getCustomScenarios, deleteCustomScenario, getFavoriteIds,
-  initDemoScenario,
+  initDemoScenario, getStreak, getSavedExpressions,
 } from "@/lib/storage";
 import { i18n } from "@/lib/i18n";
 import type { AppSettings, Language, Scenario } from "@/types";
@@ -24,6 +24,8 @@ export default function Home() {
   const [error, setError] = useState("");
   const [sheetOpen, setSheetOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [streak, setStreak] = useState(0);
+  const [reviewCount, setReviewCount] = useState(0);
 
   const lang = settings.language ?? "en";
   const tr = i18n[lang];
@@ -34,7 +36,12 @@ export default function Home() {
     setFavoriteIds(getFavoriteIds());
   };
 
-  useEffect(() => { initDemoScenario(); reload(); }, []);
+  useEffect(() => {
+    initDemoScenario();
+    reload();
+    setStreak(getStreak());
+    setReviewCount(getSavedExpressions().filter((e) => !e.learned).length);
+  }, []);
 
   const handleSettingsChange = (s: AppSettings) => {
     setSettings(s);
@@ -114,20 +121,57 @@ export default function Home() {
     <main style={{ maxWidth: 640, width: "100%", margin: "0 auto", padding: "24px 16px 100px", minHeight: "100vh" }}>
 
       {/* Header */}
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24 }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: streak > 0 || reviewCount > 0 ? 12 : 24 }}>
         <SpeaqLogo />
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          {streak > 0 && (
+            <div style={{
+              display: "flex", alignItems: "center", gap: 4,
+              padding: "5px 10px", borderRadius: 20,
+              background: "rgba(255,149,0,0.12)", border: "1px solid rgba(255,149,0,0.3)",
+            }}>
+              <span style={{ fontSize: 14 }}>🔥</span>
+              <span style={{ fontSize: 12, fontWeight: 700, color: "#FF9500" }}>{streak}</span>
+            </div>
+          )}
+          <button
+            onClick={toggleLang}
+            style={{
+              padding: "6px 12px", borderRadius: 20,
+              background: "var(--surface)", border: "1px solid var(--border)",
+              color: "var(--accent)", fontSize: 12, fontWeight: 700,
+              cursor: "pointer", boxShadow: "var(--shadow-sm)",
+            }}
+          >
+            {lang === "en" ? "JA" : "EN"}
+          </button>
+        </div>
+      </div>
+
+      {/* 復習バナー */}
+      {reviewCount > 0 && (
         <button
-          onClick={toggleLang}
+          onClick={() => router.push("/quiz")}
           style={{
-            padding: "6px 12px", borderRadius: 20,
-            background: "var(--surface)", border: "1px solid var(--border)",
-            color: "var(--accent)", fontSize: 12, fontWeight: 700,
-            cursor: "pointer", boxShadow: "var(--shadow-sm)",
+            width: "100%", padding: "12px 16px", marginBottom: 20,
+            background: "linear-gradient(135deg, #5856D6 0%, #AF52DE 100%)",
+            border: "none", borderRadius: 14,
+            display: "flex", alignItems: "center", gap: 10,
+            cursor: "pointer", boxShadow: "0 4px 14px rgba(88,86,214,0.25)",
+            textAlign: "left",
           }}
         >
-          {lang === "en" ? "JA" : "EN"}
+          <span style={{ fontSize: 20 }}>🧠</span>
+          <div>
+            <div style={{ fontSize: 13, fontWeight: 700, color: "#fff" }}>
+              {lang === "ja" ? `学習中の表現が ${reviewCount}件あります` : `${reviewCount} expression(s) to review`}
+            </div>
+            <div style={{ fontSize: 11, color: "rgba(255,255,255,0.75)", marginTop: 1 }}>
+              {lang === "ja" ? "クイズで復習する →" : "Start quiz →"}
+            </div>
+          </div>
         </button>
-      </div>
+      )}
 
       {/* Generating toast */}
       {generating && (

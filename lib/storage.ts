@@ -179,6 +179,27 @@ export function saveScoreRecord(record: Omit<ScoreRecord, "id">): void {
   localStorage.setItem(SCORE_HISTORY_KEY, JSON.stringify(updated));
 }
 
+// Streak
+export function getStreak(): number {
+  const history = getScoreHistory();
+  if (history.length === 0) return 0;
+  const uniqueDates = [...new Set(history.map((r) => r.date))].sort().reverse();
+  const today = new Date().toISOString().slice(0, 10);
+  const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
+  if (uniqueDates[0] !== today && uniqueDates[0] !== yesterday) return 0;
+  let streak = 0;
+  let cursor = new Date(uniqueDates[0]);
+  for (const date of uniqueDates) {
+    if (date === cursor.toISOString().slice(0, 10)) {
+      streak++;
+      cursor = new Date(cursor.getTime() - 86400000);
+    } else {
+      break;
+    }
+  }
+  return streak;
+}
+
 // Favorites
 export function getFavoriteIds(): string[] {
   if (typeof window === "undefined") return [];

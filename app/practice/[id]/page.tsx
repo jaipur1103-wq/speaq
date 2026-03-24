@@ -45,6 +45,7 @@ export default function PracticePage() {
   const [turn, setTurn] = useState(1);
   const [savedIds, setSavedIds] = useState<Set<string>>(new Set());
   const [showSummary, setShowSummary] = useState(false);
+  const [showHint, setShowHint] = useState(false);
   const [scoreSaved, setScoreSaved] = useState(false);
   const [feedbackError, setFeedbackError] = useState<string | null>(null);
   const [tr, setTr] = useState<Tr>(i18n.en);
@@ -465,6 +466,21 @@ export default function PracticePage() {
           ) : (
             /* Idle or recording: mic button */
             <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8 }}>
+              {/* Hint */}
+              {showHint && scenario && (
+                <div style={{
+                  width: "100%", padding: "12px 14px", marginBottom: 4,
+                  background: "var(--surface2)", borderRadius: 12,
+                  borderLeft: "3px solid var(--accent)",
+                }}>
+                  <div style={{ fontSize: 11, fontWeight: 700, color: "var(--accent)", marginBottom: 4, textTransform: "uppercase", letterSpacing: "0.06em" }}>
+                    {lang === "ja" ? "ヒント" : "Hint"}
+                  </div>
+                  <div style={{ fontSize: 13, color: "var(--text-secondary)", lineHeight: 1.6 }}>
+                    {lang === "ja" && scenario.briefJa ? scenario.briefJa : scenario.brief}
+                  </div>
+                </div>
+              )}
               <button
                 onClick={toggleRecording}
                 className={isRecording ? "animate-pulse-ring" : ""}
@@ -492,6 +508,20 @@ export default function PracticePage() {
                   </div>
                 )}
               </div>
+              {!isRecording && (
+                <button
+                  onClick={() => setShowHint((v) => !v)}
+                  style={{
+                    marginTop: 4, padding: "5px 14px", borderRadius: 20,
+                    background: showHint ? "var(--accent-bg)" : "transparent",
+                    border: `1px solid ${showHint ? "var(--accent)" : "var(--border)"}`,
+                    color: showHint ? "var(--accent)" : "var(--text-muted)",
+                    fontSize: 12, fontWeight: 600, cursor: "pointer",
+                  }}
+                >
+                  {lang === "ja" ? (showHint ? "ヒントを隠す" : "💡 ヒントを見る") : (showHint ? "Hide hint" : "💡 Hint")}
+                </button>
+              )}
             </div>
           )}
         </div>
