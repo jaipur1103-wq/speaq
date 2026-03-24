@@ -383,8 +383,8 @@ export default function PracticePage() {
         <div ref={chatEndRef} />
       </div>
 
-      {/* Input area — fixed height for stable layout */}
-      <div style={{
+      {/* Input area — hidden when session is done */}
+      {!sessionDone && <div style={{
         borderTop: "1px solid var(--border)",
         background: "var(--surface)",
         boxShadow: "0 -4px 20px rgba(0,0,0,0.06)",
@@ -495,7 +495,7 @@ export default function PracticePage() {
             </div>
           )}
         </div>
-      </div>
+      </div>}
 
 
       {/* Session Summary Modal */}
