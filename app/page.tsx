@@ -9,6 +9,7 @@ import SpeaqLogo from "@/components/SpeaqLogo";
 import {
   getSettings, saveSettings, getSavedScenarios, saveGeneratedScenario,
   deleteSavedScenario, getCustomScenarios, deleteCustomScenario, getFavoriteIds,
+  initDemoScenario,
 } from "@/lib/storage";
 import { i18n } from "@/lib/i18n";
 import type { AppSettings, Language, Scenario } from "@/types";
@@ -33,7 +34,7 @@ export default function Home() {
     setFavoriteIds(getFavoriteIds());
   };
 
-  useEffect(() => { reload(); }, []);
+  useEffect(() => { initDemoScenario(); reload(); }, []);
 
   const handleSettingsChange = (s: AppSettings) => {
     setSettings(s);
@@ -177,6 +178,25 @@ export default function Home() {
             <p style={{ fontSize: 14, lineHeight: 1.7, color: "var(--text-secondary)", marginBottom: 0 }}>
               {tr.noScenariosDesc}
             </p>
+          </div>
+
+          {/* 3ステップ */}
+          <div style={{ display: "flex", justifyContent: "center", gap: 0, padding: "0 16px 24px" }}>
+            {[
+              { num: "①", label: lang === "ja" ? "設定して生成" : "Generate" },
+              { num: "②", label: lang === "ja" ? "AIと会話練習" : "Practice" },
+              { num: "③", label: lang === "ja" ? "表現を保存・復習" : "Review" },
+            ].map((step, i) => (
+              <div key={i} style={{ flex: 1, display: "flex", alignItems: "center" }}>
+                <div style={{ flex: 1, textAlign: "center" }}>
+                  <div style={{ fontSize: 18, marginBottom: 4 }}>{step.num}</div>
+                  <div style={{ fontSize: 11, color: "var(--text-muted)", fontWeight: 600 }}>{step.label}</div>
+                </div>
+                {i < 2 && (
+                  <div style={{ fontSize: 16, color: "var(--border)", flexShrink: 0 }}>→</div>
+                )}
+              </div>
+            ))}
           </div>
 
           {/* 仕切り */}

@@ -6,6 +6,33 @@ const SAVED_SCENARIOS_KEY = "bep_saved_scenarios";
 const EXPRESSIONS_KEY = "bep_expressions";
 const SCORE_HISTORY_KEY = "bep_score_history";
 const FAVORITES_KEY = "bep_favorites";
+const FIRST_VISIT_KEY = "bep_first_visit_done";
+
+const DEMO_SCENARIO: Scenario = {
+  id: "demo_001",
+  category: "business",
+  title: "Introduce yourself in a business meeting",
+  titleJa: "ビジネス会議で自己紹介する",
+  brief: "You're joining a new project team and need to introduce yourself to international colleagues.",
+  briefJa: "新しいプロジェクトチームに加わり、海外の同僚に自己紹介します。",
+  opener: "Hi everyone, glad to have you on board. Could you start by introducing yourself?",
+  openerJa: "皆さん、ようこそ。まず自己紹介をお願いできますか？",
+  difficulty: "intermediate",
+  industry: "general",
+  personaStyle: "neutral",
+  personaName: "Alex",
+  personaRole: "Project Manager",
+};
+
+export function initDemoScenario(): void {
+  if (typeof window === "undefined") return;
+  if (localStorage.getItem(FIRST_VISIT_KEY)) return;
+  const existing = getSavedScenarios();
+  if (existing.length === 0) {
+    localStorage.setItem(SAVED_SCENARIOS_KEY, JSON.stringify([DEMO_SCENARIO]));
+  }
+  localStorage.setItem(FIRST_VISIT_KEY, "1");
+}
 
 export const DEFAULT_SETTINGS: AppSettings = {
   language: "ja",
