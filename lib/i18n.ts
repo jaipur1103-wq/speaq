@@ -1,7 +1,7 @@
 export const i18n = {
   en: {
     // nav
-    navPractice: "Practice", navNotebook: "Notebook", navQuiz: "Test", navHistory: "History", navGuide: "Guide",
+    navPractice: "Home", navNotebook: "Notebook", navQuiz: "Test", navHistory: "History", navGuide: "Guide",
     // header
     howToUse: "How to use",
     // settings
@@ -121,7 +121,7 @@ export const i18n = {
   },
   ja: {
     // nav
-    navPractice: "練習", navNotebook: "ノート", navQuiz: "テスト", navHistory: "履歴", navGuide: "使い方",
+    navPractice: "ホーム", navNotebook: "ノート", navQuiz: "テスト", navHistory: "履歴", navGuide: "使い方",
     // header
     howToUse: "使い方",
     // settings

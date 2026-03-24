@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { getScoreHistory, getSettings, saveSettings } from "@/lib/storage";
+import { getScoreHistory, getSettings, saveSettings, getSavedExpressions } from "@/lib/storage";
 import type { Language, ScoreRecord } from "@/types";
 import SpeaqLogo from "@/components/SpeaqLogo";
 import { ChevronDown, ChevronUp } from "lucide-react";
@@ -19,10 +19,12 @@ const difficultyLabel: Record<string, Record<string, string>> = {
 
 export default function HistoryPage() {
   const [history, setHistory] = useState<ScoreRecord[]>([]);
+  const [expressionCount, setExpressionCount] = useState(0);
   const [lang, setLang] = useState<Language>(() => getSettings().language ?? "en");
 
   useEffect(() => {
     setHistory(getScoreHistory());
+    setExpressionCount(getSavedExpressions().length);
   }, []);
 
   const toggleLang = () => {
@@ -80,6 +82,7 @@ export default function HistoryPage() {
           <div style={{ display: "flex", gap: 10, marginBottom: 20 }}>
             <StatPill value={history.length} label={isJa ? "セッション" : "Sessions"} />
             <StatPill value={totalTurns} label={isJa ? "総ターン" : "Total turns"} />
+            <StatPill value={expressionCount} label={isJa ? "保存表現" : "Expressions"} />
             <StatPill value={recentDates.filter(Boolean).length} label={isJa ? "直近7日" : "Last 7 days"} />
           </div>
 

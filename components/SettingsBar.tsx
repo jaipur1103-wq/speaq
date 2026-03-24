@@ -59,10 +59,10 @@ export default function SettingsBar({ settings, onChange, open, onOpenChange }: 
     { value: "tough", label: tr.personaTough },
   ];
 
-  const sessionLengths: { value: SessionLength; label: string }[] = [
-    { value: 3, label: "3" },
-    { value: 5, label: "5" },
-    { value: 10, label: "10" },
+  const sessionLengths: { value: SessionLength; label: string; hint: string }[] = [
+    { value: 3, label: "3", hint: settings.language === "ja" ? "約2分" : "~2 min" },
+    { value: 5, label: "5", hint: settings.language === "ja" ? "約3分" : "~3 min" },
+    { value: 10, label: "10", hint: settings.language === "ja" ? "約7分" : "~7 min" },
   ];
 
   return (
@@ -143,7 +143,8 @@ export default function SettingsBar({ settings, onChange, open, onOpenChange }: 
             <div style={{ display: "flex", gap: 6 }}>
               {sessionLengths.map((s) => (
                 <SheetChip key={s.value} active={(settings.sessionLength ?? 5) === s.value} onClick={() => set("sessionLength", s.value)}>
-                  {s.label} turns
+                  <span>{s.label} turns</span>
+                  <span style={{ display: "block", fontSize: 10, fontWeight: 500, opacity: 0.7 }}>{s.hint}</span>
                 </SheetChip>
               ))}
             </div>

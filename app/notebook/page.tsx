@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { Moon, Sun } from "lucide-react";
 import { getSavedExpressions, deleteExpression, getSettings, saveSettings } from "@/lib/storage";
+import { useRouter } from "next/navigation";
 import { i18n } from "@/lib/i18n";
 import type { Tr } from "@/lib/i18n";
 import type { Language, SavedExpression } from "@/types";
@@ -11,6 +12,7 @@ import SpeaqLogo from "@/components/SpeaqLogo";
 type Filter = "all" | "tolearn" | "learned" | "collection";
 
 export default function NotebookPage() {
+  const router = useRouter();
   const [expressions, setExpressions] = useState<SavedExpression[]>([]);
   const [filter, setFilter] = useState<Filter>("all");
   const [dark, setDark] = useState(false);
@@ -86,11 +88,30 @@ export default function NotebookPage() {
       </div>
 
       {/* Stats */}
-      <div style={{ display: "flex", gap: 10, marginBottom: 24 }}>
+      <div style={{ display: "flex", gap: 10, marginBottom: toLearnCount > 0 ? 12 : 24 }}>
         <StatCard label={tr.saved} value={expressions.length} />
         <StatCard label={tr.toLearn} value={toLearnCount} color="var(--orange)" />
         <StatCard label={tr.totalLearned} value={learnedCount} color="var(--green)" />
       </div>
+
+      {/* クイズへの誘導 */}
+      {toLearnCount > 0 && (
+        <button
+          onClick={() => router.push("/quiz")}
+          style={{
+            width: "100%", padding: "14px 16px", marginBottom: 20,
+            background: "linear-gradient(135deg, #5856D6 0%, #AF52DE 100%)",
+            border: "none", borderRadius: 14,
+            display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
+            cursor: "pointer", boxShadow: "0 4px 14px rgba(88,86,214,0.3)",
+          }}
+        >
+          <span style={{ fontSize: 18 }}>🧠</span>
+          <span style={{ fontSize: 15, fontWeight: 700, color: "#fff" }}>
+            {lang === "ja" ? `学習中の表現 ${toLearnCount}件をクイズで復習する` : `Quiz ${toLearnCount} expression(s)`}
+          </span>
+        </button>
+      )}
 
       {/* Filter tabs */}
       <div style={{ display: "flex", gap: 6, marginBottom: 18 }}>

@@ -501,7 +501,7 @@ export default function PracticePage() {
 
       {/* Session Summary Modal */}
       {showSummary && scenario && finalFeedback && (
-        <SessionSummary feedback={finalFeedback} turnCount={pendingTurns.length} savedCount={savedIds.size} tr={tr} onContinue={resetSession} onDone={() => router.push("/")} />
+        <SessionSummary feedback={finalFeedback} turnCount={pendingTurns.length} savedCount={savedIds.size} tr={tr} onContinue={resetSession} onDone={() => router.push("/")} onGoNotebook={() => router.push("/notebook")} />
       )}
     </div>
   );
@@ -828,8 +828,8 @@ function ShadowSection({ suggestedResponse, tr }: { suggestedResponse: string; t
 }
 
 // ── Session summary ────────────────────────────────────────────────────────────
-function SessionSummary({ feedback, turnCount, savedCount, tr, onContinue, onDone }: {
-  feedback: Feedback; turnCount: number; savedCount: number; tr: Tr; onContinue: () => void; onDone: () => void;
+function SessionSummary({ feedback, turnCount, savedCount, tr, onContinue, onDone, onGoNotebook }: {
+  feedback: Feedback; turnCount: number; savedCount: number; tr: Tr; onContinue: () => void; onDone: () => void; onGoNotebook: () => void;
 }) {
   return (
     <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", display: "flex", alignItems: "flex-end", justifyContent: "center", zIndex: 100, backdropFilter: "blur(4px)" }}>
@@ -845,9 +845,18 @@ function SessionSummary({ feedback, turnCount, savedCount, tr, onContinue, onDon
           </div>
         )}
         {savedCount > 0 && (
-          <div style={{ background: "var(--accent-bg)", borderRadius: 12, padding: "12px 16px", marginBottom: 20 }}>
-            <span style={{ fontSize: 13, color: "var(--accent)", fontWeight: 600 }}>{tr.expressionsSaved(savedCount)}</span>
-          </div>
+          <button
+            onClick={onGoNotebook}
+            style={{
+              width: "100%", padding: "14px", marginBottom: 10,
+              background: "var(--accent-bg)", borderRadius: 14,
+              border: "1.5px solid var(--accent)",
+              color: "var(--accent)", fontWeight: 700, fontSize: 14,
+              cursor: "pointer", textAlign: "center",
+            }}
+          >
+            📒 {tr.expressionsSaved(savedCount)}　→ ノートで復習する
+          </button>
         )}
         <div style={{ display: "flex", gap: 10 }}>
           <button onClick={onContinue} style={{ flex: 1, padding: "14px", background: "var(--surface2)", color: "var(--text)", border: "1px solid var(--border)", borderRadius: 14, fontWeight: 700, fontSize: 14, cursor: "pointer" }}>{tr.continuePractice}</button>
