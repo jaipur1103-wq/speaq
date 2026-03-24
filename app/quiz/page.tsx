@@ -268,49 +268,55 @@ function QuizCard({
 }) {
   const [answerRevealed, setAnswerRevealed] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
+  const [isTranscribing, setIsTranscribing] = useState(false);
   const [transcription, setTranscription] = useState("");
   const [speechSupported, setSpeechSupported] = useState(true);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const recognitionRef = useRef<any>(null);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const audioChunksRef = useRef<Blob[]>([]);
 
   useEffect(() => {
     setAnswerRevealed(false);
     setTranscription("");
     setIsRecording(false);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const w = window as any;
-    const SpeechAPI = w.SpeechRecognition || w.webkitSpeechRecognition;
-    if (!SpeechAPI) { setSpeechSupported(false); return; }
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const rec = new SpeechAPI() as any;
-    rec.lang = "en-US";
-    rec.interimResults = true;
-    rec.continuous = false;
-    let finalText = "";
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    rec.onresult = (e: any) => {
-      let interim = "";
-      for (let i = e.resultIndex; i < e.results.length; i++) {
-        if (e.results[i].isFinal) finalText += e.results[i][0].transcript + " ";
-        else interim = e.results[i][0].transcript;
-      }
-      setTranscription((finalText + interim).trim());
-    };
-    rec.onend = () => setIsRecording(false);
-    rec.onerror = () => setIsRecording(false);
-    recognitionRef.current = rec;
-    return () => { try { rec.stop(); } catch { /* ignore */ } };
+    setIsTranscribing(false);
+    if (!navigator.mediaDevices?.getUserMedia) setSpeechSupported(false);
+    return () => { mediaRecorderRef.current?.stop(); };
   }, [index]);
 
-  const toggleRecording = () => {
-    if (!recognitionRef.current) return;
+  const toggleRecording = async () => {
     if (isRecording) {
-      recognitionRef.current.stop();
+      mediaRecorderRef.current?.stop();
       setIsRecording(false);
     } else {
-      setTranscription("");
-      recognitionRef.current.start();
-      setIsRecording(true);
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        const mimeType = MediaRecorder.isTypeSupported("audio/webm") ? "audio/webm" : "audio/mp4";
+        const recorder = new MediaRecorder(stream, { mimeType });
+        audioChunksRef.current = [];
+        recorder.ondataavailable = (e) => { if (e.data.size > 0) audioChunksRef.current.push(e.data); };
+        recorder.onstop = async () => {
+          stream.getTracks().forEach((t) => t.stop());
+          const blob = new Blob(audioChunksRef.current, { type: mimeType });
+          const ext = mimeType.includes("webm") ? "webm" : "mp4";
+          const file = new File([blob], `recording.${ext}`, { type: mimeType });
+          setIsTranscribing(true);
+          try {
+            const fd = new FormData();
+            fd.append("audio", file);
+            const res = await fetch("/api/transcribe", { method: "POST", body: fd });
+            const data = await res.json();
+            setTranscription(data.text?.trim() ?? "");
+          } catch { /* silent */ } finally {
+            setIsTranscribing(false);
+          }
+        };
+        mediaRecorderRef.current = recorder;
+        setTranscription("");
+        recorder.start();
+        setIsRecording(true);
+      } catch {
+        setSpeechSupported(false);
+      }
     }
   };
 
@@ -349,36 +355,49 @@ function QuizCard({
       {!answerRevealed && (
         <div style={{ marginBottom: 16 }}>
           {speechSupported ? (
-            <button
-              onClick={toggleRecording}
-              style={{
-                width: "100%", padding: "13px", borderRadius: 12,
-                background: isRecording ? "#FF3B30" : "var(--surface2)",
-                color: isRecording ? "#FFFFFF" : "var(--text)",
-                border: isRecording ? "none" : "1px solid var(--border)",
-                fontWeight: 700, fontSize: 14, cursor: "pointer", transition: "all 0.15s",
-              }}
-            >
-              {isRecording ? "🔴 Recording... (tap to stop)" : "🎙 Tap to speak"}
-            </button>
+            isTranscribing ? (
+              <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8, padding: "16px 0" }}>
+                <div style={{ width: 44, height: 44, borderRadius: "50%", background: "var(--surface2)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                  <div style={{ width: 20, height: 20, borderRadius: "50%", border: "2.5px solid var(--accent)", borderTopColor: "transparent", animation: "spin 0.8s linear infinite" }} />
+                </div>
+                <div style={{ fontSize: 12, color: "var(--text-muted)", fontWeight: 500 }}>Transcribing...</div>
+              </div>
+            ) : (
+              <button
+                onClick={toggleRecording}
+                style={{
+                  width: "100%", padding: "13px", borderRadius: 12,
+                  background: isRecording ? "#FF3B30" : "var(--surface2)",
+                  color: isRecording ? "#FFFFFF" : "var(--text)",
+                  border: isRecording ? "none" : "1px solid var(--border)",
+                  fontWeight: 700, fontSize: 14, cursor: "pointer", transition: "all 0.15s",
+                }}
+              >
+                {isRecording ? "🔴 Recording... (tap to stop)" : "🎙 Tap to speak"}
+              </button>
+            )
           ) : (
             <div style={{ fontSize: 12, color: "var(--text-muted)", textAlign: "center", padding: "10px 0" }}>
-              ⚠️ Speech not supported. Use Chrome.
+              ⚠️ Microphone not available.
             </div>
           )}
-          {transcription && (
+
+          {/* Transcription — prominent display */}
+          {transcription && !isTranscribing && (
             <div style={{
-              marginTop: 10, padding: "12px 16px",
-              background: "var(--surface2)", borderRadius: 10,
-              fontSize: 14, color: "var(--text)", border: "1px solid var(--border)",
+              marginTop: 12, padding: "16px 18px",
+              background: "var(--accent-bg)", borderRadius: 12,
+              border: "1.5px solid var(--accent)",
             }}>
-              &ldquo;{transcription}&rdquo;
+              <div style={{ fontSize: 10, color: "var(--accent)", fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", marginBottom: 6 }}>You said</div>
+              <div style={{ fontSize: 16, fontWeight: 600, color: "var(--text)", lineHeight: 1.6 }}>{transcription}</div>
             </div>
           )}
+
           <button
             onClick={() => setAnswerRevealed(true)}
             style={{
-              width: "100%", marginTop: 10, padding: "13px",
+              width: "100%", marginTop: 12, padding: "13px",
               background: "var(--accent)", color: "#FFFFFF",
               border: "none", borderRadius: 12,
               fontWeight: 700, fontSize: 15, cursor: "pointer",
@@ -392,26 +411,33 @@ function QuizCard({
 
       {answerRevealed && (
         <div style={{ marginBottom: 20 }}>
+          {/* Comparison: You said vs Model answer */}
           {transcription && (
-            <div style={{
-              marginBottom: 14, padding: "12px 16px",
-              background: "var(--surface2)", borderRadius: 10,
-              fontSize: 14, color: "var(--text-secondary)", border: "1px solid var(--border)",
-            }}>
-              &ldquo;{transcription}&rdquo;
+            <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 14 }}>
+              <div style={{ padding: "14px 16px", background: "var(--surface2)", borderRadius: 12, border: "1px solid var(--border)" }}>
+                <div style={{ fontSize: 10, color: "var(--text-muted)", fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", marginBottom: 5 }}>You said</div>
+                <div style={{ fontSize: 15, color: "var(--text-secondary)", lineHeight: 1.6 }}>{transcription}</div>
+              </div>
+              <div style={{ padding: "14px 16px", background: "var(--accent-bg)", borderRadius: 12, border: "1.5px solid var(--accent)" }}>
+                <div style={{ fontSize: 10, color: "var(--accent)", fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", marginBottom: 5 }}>{tr.quizModelAnswer}</div>
+                <div style={{ fontSize: 17, fontWeight: 700, color: "var(--text)", lineHeight: 1.5 }}>{card.natural}</div>
+              </div>
             </div>
           )}
+
           <div style={{ background: "var(--surface2)", borderRadius: 14, padding: "18px 20px" }}>
-            <div style={{ marginBottom: card.chunk ? 14 : 0 }}>
-              <div style={{ fontSize: 11, color: "var(--accent)", fontWeight: 700, letterSpacing: "0.05em", marginBottom: 6, textTransform: "uppercase" }}>
-                {tr.quizModelAnswer}
+            {!transcription && (
+              <div style={{ marginBottom: card.chunk ? 14 : 0 }}>
+                <div style={{ fontSize: 11, color: "var(--accent)", fontWeight: 700, letterSpacing: "0.05em", marginBottom: 6, textTransform: "uppercase" }}>
+                  {tr.quizModelAnswer}
+                </div>
+                <div style={{ fontSize: 18, fontWeight: 700, color: "var(--text)", letterSpacing: "-0.01em", lineHeight: 1.5 }}>
+                  &ldquo;{card.natural}&rdquo;
+                </div>
               </div>
-              <div style={{ fontSize: 18, fontWeight: 700, color: "var(--text)", letterSpacing: "-0.01em", lineHeight: 1.5 }}>
-                &ldquo;{card.natural}&rdquo;
-              </div>
-            </div>
+            )}
             {card.chunk && (
-              <div style={{ paddingTop: 14, borderTop: "1px solid var(--border)", marginBottom: card.explanation ? 14 : 0 }}>
+              <div style={{ paddingTop: transcription ? 0 : 14, borderTop: transcription ? "none" : "1px solid var(--border)", marginBottom: card.explanation ? 14 : 0 }}>
                 <div style={{ fontSize: 11, color: "var(--text-muted)", fontWeight: 700, letterSpacing: "0.05em", marginBottom: 6, textTransform: "uppercase" }}>
                   {tr.quizChunk}
                 </div>
