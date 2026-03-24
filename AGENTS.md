@@ -11,6 +11,8 @@ This version has breaking changes — APIs, conventions, and file structure may 
 | エージェント | 参照先 |
 |---|---|
 | Business Agent（`/business`） | `docs/01_business/` |
-| Dev Agent（`/dev`） | `docs/02_development/` + `app/` |
-| Marketing Agent（`/marketing`） | `docs/03_marketing/` |
-| Operations Agent（`/ops`） | `docs/04_operations/` |
+| Design Agent（`/design`） | `docs/02_design/` |
+| Dev Agent（`/dev`） | `docs/03_development/` + `app/` |
+| Marketing Agent（`/marketing`） | `docs/04_marketing/` |
+| Operations Agent（`/ops`） | `docs/05_operations/` |
+| Legal Agent（`/legal`） | `docs/06_legal/` |

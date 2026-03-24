@@ -166,10 +166,11 @@ useEffect(() => {
 | ディレクトリ | 内容 |
 |---|---|
 | `docs/01_business/` | 戦略・ペルソナ・市場調査・競合分析・収益モデル |
-| `docs/02_development/` | ロードマップ・API設計・インフラ |
-| `docs/03_marketing/` | ブランディング・LP・SNS・インフルエンサー |
-| `docs/04_operations/` | フィードバック・タスク管理 |
-| `docs/05_assets/` | モックアップ・ロゴ |
+| `docs/02_design/` | デザインシステム・ユーザーフロー・UX原則・コンポーネント・アセット |
+| `docs/03_development/` | ロードマップ・API設計・インフラ |
+| `docs/04_marketing/` | ブランディング・LP・SNS・インフルエンサー |
+| `docs/05_operations/` | フィードバック・タスク管理 |
+| `docs/06_legal/` | プライバシーポリシー・利用規約 |
 
 ## エージェント参照
 
