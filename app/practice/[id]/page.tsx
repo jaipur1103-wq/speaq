@@ -441,7 +441,7 @@ export default function PracticePage() {
         )}
 
         {/* Turn progress — always reserves 36px even when hidden */}
-        <div style={{ height: 36, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", gap: 10, paddingInline: 16 }}>
+        <div style={{ height: 36, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", gap: 10, paddingInline: 16, position: "relative" }}>
           {!sessionDone && (
             <>
               <div style={{ display: "flex", gap: sessionLength <= 5 ? 6 : 4, alignItems: "center" }}>
@@ -466,6 +466,25 @@ export default function PracticePage() {
                   style={{ fontSize: 10, padding: "2px 8px", borderRadius: 20, border: "1px solid var(--border)", background: "transparent", color: "var(--text-muted)", cursor: "pointer", fontWeight: 600, whiteSpace: "nowrap" }}
                 >
                   {tr.finishEarly}
+                </button>
+              )}
+              {!isRecording && (
+                <button
+                  onClick={hintLevel > 0 ? () => { setHintLevel(0); setHintData(null); } : handleHint}
+                  disabled={hintLoading}
+                  style={{
+                    position: "absolute", right: 16,
+                    padding: "3px 10px", borderRadius: 20,
+                    background: hintLevel > 0 ? "var(--accent-bg)" : "transparent",
+                    border: `1px solid ${hintLevel > 0 ? "var(--accent)" : "var(--border)"}`,
+                    color: hintLevel > 0 ? "var(--accent)" : "var(--text-muted)",
+                    fontSize: 11, fontWeight: 600, cursor: hintLoading ? "not-allowed" : "pointer",
+                    opacity: hintLoading ? 0.6 : 1, whiteSpace: "nowrap",
+                  }}
+                >
+                  {hintLevel === 0
+                    ? (lang === "ja" ? "💡 ヒント" : "💡 Hint")
+                    : (lang === "ja" ? "✕ 閉じる" : "✕ Close")}
                 </button>
               )}
             </>
@@ -534,24 +553,6 @@ export default function PracticePage() {
                   </div>
                 )}
               </div>
-              {!isRecording && (
-                <button
-                  onClick={hintLevel > 0 ? () => { setHintLevel(0); setHintData(null); } : handleHint}
-                  disabled={hintLoading}
-                  style={{
-                    marginTop: 4, padding: "5px 14px", borderRadius: 20,
-                    background: hintLevel > 0 ? "var(--accent-bg)" : "transparent",
-                    border: `1px solid ${hintLevel > 0 ? "var(--accent)" : "var(--border)"}`,
-                    color: hintLevel > 0 ? "var(--accent)" : "var(--text-muted)",
-                    fontSize: 12, fontWeight: 600, cursor: hintLoading ? "not-allowed" : "pointer",
-                    opacity: hintLoading ? 0.6 : 1,
-                  }}
-                >
-                  {hintLevel === 0
-                    ? (lang === "ja" ? "💡 ヒントを見る" : "💡 Hint")
-                    : (lang === "ja" ? "💡 ヒントを閉じる" : "Close hint")}
-                </button>
-              )}
             </div>
           )}
         </div>
