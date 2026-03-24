@@ -120,8 +120,11 @@ useEffect(() => {
 - `improvements`: 可変0〜2件。英語が自然・正確なら `[]`。各件は `ImprovementItem { comment, suggestedResponse }` 形式
   - `comment`: ユーザーの発言を「」で引用し、改善案 + 具体的な理由 + この場面でなぜ重要かを説明。"more natural", "sounds better" 禁止。JA設定時は日本語
   - `suggestedResponse`: その問題が発生したターンの模範回答（英語の完全文）
-- `naturalExpressions`: 2〜4件。improvements で取り上げた表現をベースに選ぶ。問題がなければ `[]`
-  - **難易度別レベルフィルター**：beginner=A2のみ / intermediate=B1-B2のみ / advanced=C1-C2のみ
+- `naturalExpressions`: 2〜4件。**抽出源はペルソナ（相手役AI）の発言**。ユーザー発言から抽出しない（ユーザー発言は低レベルになりがちなため）。
+  - **難易度別レベルガイド（CEFRラベルは使わない。行動的記述で指定）**：
+    - beginner: 高校英語は前提。"Can you~" "I want~" レベルは禁止。職場で使えるシンプルなフレーズ（8語以内）。今より一段上の表現を優先
+    - intermediate: コロケーション・ヘッジング表現・つなぎ言葉。プロフェッショナルだが会話的なトーン
+    - advanced: 洗練された語彙・フォーマルなレジスター・ニュアンスのある表現
   - `reason`: grammar / collocation / literal / set-phrase / formality / nuance
   - `natural`: **最小限の修正のみ**。問題のある単語・箇所だけ直す。文全体を構造ごと変えてはいけない
     - collocation → 問題の単語だけ自然なコロケーションに差し替える（例: "big potential" → "great potential"）

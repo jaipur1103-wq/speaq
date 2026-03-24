@@ -31,6 +31,19 @@ export async function POST(req: NextRequest) {
 
     const totalWords = turns.reduce((sum, t) => sum + t.userMessage.trim().split(/\s+/).filter(Boolean).length, 0);
 
+    // Behavioral expression level guide — avoids unreliable CEFR labels
+    const expressionLevelGuide: Record<string, string> = {
+      beginner: `High school English is assumed — NEVER suggest phrases like "Can you~", "I want~", "I need~" (too elementary).
+    Target: simple but workplace-appropriate phrases (under 8 words). One step above what a beginner already knows.
+    Good examples: "I'll look into it." / "Could we schedule a time?" / "I'll get back to you on that."`,
+      intermediate: `Avoid expressions a beginner already knows. Target: natural business collocations, hedging phrases, transition expressions.
+    Professional but conversational tone.
+    Good examples: "I was wondering if~" / "move forward with~" / "I appreciate your input" / "That being said~"`,
+      advanced: `Avoid intermediate-level expressions. Target: sophisticated vocabulary, formal register, nuanced discourse.
+    Good examples: "I'd like to revisit the premise of~" / "contingent on~" / "from a strategic standpoint" / "ensure we're aligned on~"`,
+    };
+    const levelGuide = expressionLevelGuide[scenario.difficulty] ?? expressionLevelGuide.intermediate;
+
     const systemContent = isJa
       ? "You are an English speaking coach. The learner's language is Japanese. You MUST write encouragement, strengths, improvements[].comment, and naturalExpressions[].explanation and naturalExpressions[].chunkDetail in Japanese. All other fields (original, natural, chunk, example, suggestedResponse, errorEvidence) remain in English. Always return valid JSON only, no markdown, no backticks."
       : "You are an English speaking coach. Always return valid JSON only, no markdown, no backticks.";
@@ -73,7 +86,11 @@ CRITICAL RULES:
     FORBIDDEN in comment: "more natural", "sounds better", "more commonly used", "sounds awkward".${isJa ? " Write in Japanese." : ""}
   - "suggestedResponse": Full, natural English response for that turn.
 
-- "naturalExpressions": 2-4 items based on improvements where possible. LEVEL FILTER — beginner: A2 only; intermediate: B1-B2 only; advanced: C1-C2 only.
+- "naturalExpressions": 2-4 expressions the LEARNER COULD USE in this scenario.
+  Source: Extract from ${scenario.personaName}'s responses in this conversation — NOT from the user's utterances.
+  If the counterpart's responses lack suitable expressions, generate additional ones appropriate for this scenario.
+  Level guide for "${scenario.difficulty}": ${levelGuide}
+  Only include expressions that match the level guide. Skip anything too simple or too advanced for this level.
 - "naturalExpressions[].reason": grammar / collocation / literal / set-phrase / formality / nuance
 - "naturalExpressions[].explanation": 1-2 sentences. FORBIDDEN: "more natural", "sounds better". Grammar: cite exact rule. Collocation: name wrong pair and correct pairs. Literal: name source and why it fails. Formality: name register mismatch. Nuance: contrast original vs natural.${isJa ? " Write in Japanese." : ""}
 - "naturalExpressions[].natural": Minimal fix only. Swap the problematic word/phrase only. Do NOT restructure.
