@@ -15,9 +15,9 @@ const DIFFICULTIES: Record<Difficulty, string> = {
     "VERY simple reply. 1 sentence only. Use everyday words, no jargon. " +
     "Be encouraging and friendly. Easy for a beginner English speaker to understand.",
   intermediate:
-    "Give a natural 2-3 sentence reply with some complexity or a mild challenge.",
+    "1-2 sentences only. Natural reply with a mild challenge.",
   advanced:
-    "Give a sophisticated 2-3 sentence reply. Raise a challenging counter-point or add pressure.",
+    "1-2 sentences only. Sophisticated reply with pressure or a counter-point.",
 };
 
 export async function POST(req: NextRequest) {
