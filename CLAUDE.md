@@ -158,3 +158,20 @@ useEffect(() => {
 - コミットメッセージは変更内容を英語で簡潔に書く
 - `.env.local` はコミットしない（.gitignoreで除外済み）
 - GitHub: https://github.com/jaipur1103-wq/speaq
+
+## ドキュメント構成
+
+このプロジェクトのドキュメントは `docs/` 配下に格納されています。
+
+| ディレクトリ | 内容 |
+|---|---|
+| `docs/01_business/` | 戦略・ペルソナ・市場調査・競合分析・収益モデル |
+| `docs/02_development/` | ロードマップ・API設計・インフラ |
+| `docs/03_marketing/` | ブランディング・LP・SNS・インフルエンサー |
+| `docs/04_operations/` | フィードバック・タスク管理 |
+| `docs/05_assets/` | モックアップ・ロゴ |
+
+## エージェント参照
+
+ワークスペースルート（`../`）から起動した場合は `../AGENTS.md` を参照。
+各専門エージェントのコマンドは `../.claude/commands/` にあります。
