@@ -153,13 +153,13 @@ function getDifficultyDesc(difficulty: Difficulty): string {
     return (
       "CEFR B1-B2. Conversational English. Accessible vocabulary. " +
       "Counterpart is professional but approachable. Mild challenges only. " +
-      "Keep the brief to 2 short sentences."
+      "Keep brief and opener short: 1-2 sentences each, no more than 30 words each."
     );
   }
   return (
     "CEFR C1-C2. Sophisticated language, complex negotiations, high stakes. " +
     "Counterpart is challenging and demanding. Use topic-appropriate terminology. " +
-    "Keep the brief to 2 short sentences."
+    "Keep brief and opener short: 1-2 sentences each, no more than 30 words each."
   );
 }
 
