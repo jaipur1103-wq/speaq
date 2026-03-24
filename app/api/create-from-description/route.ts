@@ -26,7 +26,7 @@ Return ONLY valid JSON with this exact structure:
 {
   "category": "<choose best fit: Negotiation/Sales/1-on-1/Cross-team/Presentation/Client Meeting/Performance Review/Crisis Management/Partnership/Hiring/Travel/Restaurant/Shopping/Hotel/Social/Study/Daily Life>",
   "title": "<concise action-oriented title, max 8 words>",
-  "brief": "<2 sentences: situation context + what the user needs to achieve>",
+  "brief": "<2 sentences max 30 words: situation context + what the user needs to achieve>",
   "opener": "<what the counterpart says first, 1-2 sentences, natural spoken English>",
   "personaName": "<realistic first name>",
   "personaRole": "<job title or role, e.g. CFO, Client Manager>",
@@ -43,7 +43,33 @@ Return ONLY valid JSON with this exact structure:
     const cleaned = text.replace(/^```json?\n?/, "").replace(/\n?```$/, "").trim();
     const data = JSON.parse(cleaned);
 
-    return NextResponse.json({ ...data, difficulty });
+    // Translate title, brief, opener to Japanese
+    const transCompletion = await groq.chat.completions.create({
+      model: "llama-3.3-70b-versatile",
+      messages: [
+        {
+          role: "system",
+          content: "You are a Japanese translator. Always return valid JSON only, no markdown, no backticks.",
+        },
+        {
+          role: "user",
+          content: `Translate these 3 English texts to natural Japanese. Return ONLY this JSON:
+{"titleJa":"<Japanese>","briefJa":"<Japanese>","openerJa":"<Japanese>"}
+
+title: ${data.title}
+brief: ${data.brief}
+opener: ${data.opener}`,
+        },
+      ],
+      temperature: 0.1,
+      max_tokens: 400,
+    });
+
+    const transText = transCompletion.choices[0].message.content?.trim() ?? "";
+    const transCleaned = transText.replace(/^```json?\n?/, "").replace(/\n?```$/, "").trim();
+    const transData = JSON.parse(transCleaned);
+
+    return NextResponse.json({ ...data, ...transData, difficulty });
   } catch (error) {
     console.error("create-from-description error:", error);
     return NextResponse.json({ error: "Failed to generate scenario" }, { status: 500 });
