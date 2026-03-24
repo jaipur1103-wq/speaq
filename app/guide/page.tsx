@@ -7,39 +7,33 @@ import SpeaqLogo from "@/components/SpeaqLogo";
 import type { Language } from "@/types";
 
 const STEPS_EN = [
-  { number: "1", title: "Choose your settings", description: "Select a topic, difficulty, industry, counterpart style, and session length (3, 5, or 10 turns).", icon: "⚙️" },
-  { number: "2", title: "Generate or create a scenario", description: "Tap Generate — AI creates a realistic situation. Or tap Create to build your own.", icon: "✨" },
-  { number: "3", title: "Speak each turn", description: "Tap the mic and speak in English. Your voice is transcribed automatically. Tap again to stop, then send.", icon: "🎙" },
-  { number: "4", title: "Get CEFR-aligned feedback", description: "After your session, receive scores for Accuracy, Range, Interaction, and Coherence — rated from A1 to C2.", icon: "📊" },
-  { number: "5", title: "Shadow the model response", description: "Tap 'Shadow this' to see a natural English response and practice saying it out loud.", icon: "🔄" },
-  { number: "6", title: "Save & quiz key expressions", description: "Save phrases to your Notebook. Quiz yourself with chunk-based practice — say it in English and self-evaluate.", icon: "📒" },
+  { number: "1", title: "Build your scenario", description: "Tomorrow's meeting, a client negotiation, any situation. AI instantly generates a realistic scenario for your exact context.", icon: "✨" },
+  { number: "2", title: "Speak with AI", description: "Tap the mic and speak in English. Your voice is transcribed automatically. After your session, get honest feedback and natural expressions you can actually use.", icon: "🎙" },
+  { number: "3", title: "Make expressions stick", description: "Save key phrases to your Notebook. Quiz yourself with chunk-based practice — say it, self-evaluate, repeat until it's yours.", icon: "📒" },
 ];
 
 const STEPS_JA = [
-  { number: "1", title: "設定を選ぶ", description: "トピック、難易度、業種、相手のスタイル、セッションのターン数（3・5・10回）を選択します。", icon: "⚙️" },
-  { number: "2", title: "シナリオを生成または作成する", description: "「生成」をタップするとAIがシナリオを作成。「作成」から自分でオリジナルも作れます。", icon: "✨" },
-  { number: "3", title: "各ターンで英語を話す", description: "マイクをタップして英語で話してください。音声は自動でテキストに変換されます。もう一度タップして停止し、送信します。", icon: "🎙" },
-  { number: "4", title: "CEFRベースのフィードバックを得る", description: "セッション終了後、正確さ・語彙幅・会話力・一貫性の4軸でスコアが表示されます。A1〜C2レベルで評価されます。", icon: "📊" },
-  { number: "5", title: "シャドーイングで学ぶ", description: "「シャドーイング」をタップして自然な英語の模範回答を確認し、声に出して練習しましょう。", icon: "🔄" },
-  { number: "6", title: "表現を保存してクイズで復習する", description: "使えるフレーズをノートに保存。「英語で言ってみる→自己評価」形式のクイズで繰り返し練習できます。", icon: "📒" },
+  { number: "1", title: "シナリオを作る", description: "明日の会議、取引先との交渉、どんなシーンでも。AIが即座にリアルな練習シナリオを生成します。", icon: "✨" },
+  { number: "2", title: "AIと話す", description: "マイクをタップして英語で話すだけ。音声は自動でテキストに変換されます。セッション後は、あなたが本当に使えるようになる表現をフィードバック。採点ではなく、コーチング。", icon: "🎙" },
+  { number: "3", title: "表現を定着させる", description: "気になった表現をノートに保存。クイズで繰り返し練習して、自分のものにします。", icon: "📒" },
 ];
 
 const FEATURES_EN = [
-  { icon: "🌍", title: "5 topics", desc: "Business, Travel, Daily Life, Social, Study" },
-  { icon: "📈", title: "3 difficulty levels", desc: "Beginner (A2) · Intermediate (B1-B2) · Advanced (C1-C2)" },
-  { icon: "🔊", title: "Voice playback", desc: "Hear any message read aloud with one tap" },
-  { icon: "🧠", title: "Chunk quiz", desc: "Practice key expressions from your Notebook" },
+  { icon: "✨", title: "Custom scenarios", desc: "AI generates a scenario for your exact situation" },
+  { icon: "🎙", title: "Voice input", desc: "Speak naturally — transcription is automatic" },
+  { icon: "💬", title: "Honest feedback", desc: "Coaching, not scoring — real expressions you can use next time" },
+  { icon: "📒", title: "Expression notebook", desc: "Save and manage phrases that matter to you" },
+  { icon: "🧠", title: "Chunk quiz", desc: "Repeat until key expressions are truly yours" },
   { icon: "⭐", title: "Favorites", desc: "Pin your most-used scenarios for quick access" },
-  { icon: "📝", title: "Custom scenarios", desc: "Build your own practice situations" },
 ];
 
 const FEATURES_JA = [
-  { icon: "🌍", title: "5つのトピック", desc: "ビジネス・旅行・日常・交流・学習" },
-  { icon: "📈", title: "3段階の難易度", desc: "初級 (A2) · 中級 (B1-B2) · 上級 (C1-C2)" },
-  { icon: "🔊", title: "音声再生", desc: "メッセージをタップして読み上げ" },
-  { icon: "🧠", title: "フレーズクイズ", desc: "保存した使えるフレーズをクイズで繰り返し練習" },
-  { icon: "⭐", title: "お気に入り", desc: "よく使うシナリオをピン留め" },
-  { icon: "📝", title: "カスタムシナリオ", desc: "オリジナルの練習シナリオを作成" },
+  { icon: "✨", title: "カスタムシナリオ", desc: "あなたのシーンに合ったシナリオをAIが即座に生成" },
+  { icon: "🎙", title: "音声入力", desc: "話すだけ。文字起こしは自動" },
+  { icon: "💬", title: "正直なフィードバック", desc: "採点ではなくコーチング。次に使える表現を提示" },
+  { icon: "📒", title: "表現ノート", desc: "気になった表現を保存して管理" },
+  { icon: "🧠", title: "クイズで定着", desc: "繰り返し練習して、自分のものにする" },
+  { icon: "⭐", title: "お気に入り", desc: "よく使うシナリオをすぐ呼び出せる" },
 ];
 
 export default function GuidePage() {
@@ -56,11 +50,10 @@ export default function GuidePage() {
   const steps = lang === "ja" ? STEPS_JA : STEPS_EN;
   const features = lang === "ja" ? FEATURES_JA : FEATURES_EN;
 
-  const heroSubtitle = lang === "ja" ? "AIスピーキング練習" : "AI Speaking Practice";
-  const heroTitle = lang === "ja" ? <>リアルな会話。<br />リアルなフィードバック。</> : <>Real conversations.<br />Real feedback.</>;
+  const heroTitle = lang === "ja" ? <>明日使う英語を、<br />今日練習する。</> : <>Practice tomorrow's<br />English, today.</>;
   const heroDesc = lang === "ja"
-    ? "いつでも、どこでも、恥ずかしくなく、リアルなシナリオで英語スピーキングを練習できます。"
-    : "Practice English speaking in realistic scenarios — anytime, anywhere, without embarrassment.";
+    ? "知らなかった表現と出会い、使うたびに自分のものになる。"
+    : "Meet new expressions. Make them yours.";
   const howItWorksLabel = lang === "ja" ? "使い方" : "How it works";
   const featuresLabel = lang === "ja" ? "機能" : "Features";
   const startBtn = lang === "ja" ? "練習を始める →" : "Start Practicing →";
@@ -103,9 +96,6 @@ export default function GuidePage() {
         background: "var(--accent)", borderRadius: 20, padding: "28px 24px",
         marginBottom: 28, textAlign: "center",
       }}>
-        <div style={{ fontSize: 13, fontWeight: 600, color: "rgba(255,255,255,0.7)", letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 10 }}>
-          {heroSubtitle}
-        </div>
         <div style={{ fontSize: 26, fontWeight: 800, color: "#fff", letterSpacing: "-0.03em", lineHeight: 1.2, marginBottom: 10 }}>
           {heroTitle}
         </div>
