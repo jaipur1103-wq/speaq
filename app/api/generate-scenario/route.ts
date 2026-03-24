@@ -209,7 +209,8 @@ Return ONLY valid JSON with this exact structure:
 
 Requirements:
 - Make it a specific, realistic scenario (include numbers, context, stakes)
-- Opener should feel natural, not scripted`,
+- Opener should feel natural, not scripted
+- Brief must be exactly 2 sentences and 25-40 words total, regardless of difficulty`,
         },
       ],
       temperature: 0.9,
