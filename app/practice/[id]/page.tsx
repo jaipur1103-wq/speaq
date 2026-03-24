@@ -507,59 +507,6 @@ export default function PracticePage() {
           ) : (
             /* Idle or recording: mic button */
             <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8 }}>
-              {/* Hint */}
-              {hintLevel > 0 && (
-                <div style={{
-                  width: "100%", padding: "12px 14px", marginBottom: 4,
-                  background: "var(--surface2)", borderRadius: 12,
-                  borderLeft: "3px solid var(--accent)",
-                }}>
-                  {hintLoading ? (
-                    <div style={{ fontSize: 13, color: "var(--text-muted)" }}>
-                      ⏳ {lang === "ja" ? "考え中..." : "Thinking..."}
-                    </div>
-                  ) : hintData ? (
-                    <>
-                      {/* Level 1: keywords */}
-                      <div style={{ fontSize: 11, fontWeight: 700, color: "var(--accent)", marginBottom: 6, textTransform: "uppercase", letterSpacing: "0.06em" }}>
-                        {lang === "ja" ? "💡 使えそうな表現" : "💡 Try using"}
-                      </div>
-                      <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: hintLevel >= 2 ? 12 : 0 }}>
-                        {hintData.keywords.map((kw, i) => (
-                          <span key={i} style={{
-                            fontSize: 13, fontWeight: 600, color: "var(--accent)",
-                            background: "var(--accent-bg)", padding: "3px 10px", borderRadius: 20,
-                          }}>{kw}</span>
-                        ))}
-                      </div>
-
-                      {/* Level 2: starter */}
-                      {hintLevel >= 2 && (
-                        <div style={{ marginBottom: hintLevel >= 3 ? 12 : 0 }}>
-                          <div style={{ fontSize: 11, fontWeight: 700, color: "var(--text-muted)", marginBottom: 4, textTransform: "uppercase", letterSpacing: "0.06em" }}>
-                            {lang === "ja" ? "書き出し" : "Starter"}
-                          </div>
-                          <div style={{ fontSize: 13, color: "var(--text-secondary)", fontStyle: "italic" }}>
-                            &ldquo;{hintData.starter}&rdquo;
-                          </div>
-                        </div>
-                      )}
-
-                      {/* Level 3: full */}
-                      {hintLevel >= 3 && (
-                        <div>
-                          <div style={{ fontSize: 11, fontWeight: 700, color: "var(--text-muted)", marginBottom: 4, textTransform: "uppercase", letterSpacing: "0.06em" }}>
-                            {lang === "ja" ? "例文" : "Example"}
-                          </div>
-                          <div style={{ fontSize: 13, color: "var(--text-secondary)", fontStyle: "italic", lineHeight: 1.6 }}>
-                            &ldquo;{hintData.full}&rdquo;
-                          </div>
-                        </div>
-                      )}
-                    </>
-                  ) : null}
-                </div>
-              )}
               <button
                 onClick={toggleRecording}
                 className={isRecording ? "animate-pulse-ring" : ""}
@@ -589,7 +536,7 @@ export default function PracticePage() {
               </div>
               {!isRecording && (
                 <button
-                  onClick={hintLevel === 0 ? handleHint : hintLevel < 3 ? handleHint : () => { setHintLevel(0); setHintData(null); }}
+                  onClick={hintLevel > 0 ? () => { setHintLevel(0); setHintData(null); } : handleHint}
                   disabled={hintLoading}
                   style={{
                     marginTop: 4, padding: "5px 14px", borderRadius: 20,
@@ -602,16 +549,102 @@ export default function PracticePage() {
                 >
                   {hintLevel === 0
                     ? (lang === "ja" ? "💡 ヒントを見る" : "💡 Hint")
-                    : hintLevel === 1
-                    ? (lang === "ja" ? "もう少し見る →" : "More →")
-                    : hintLevel === 2
-                    ? (lang === "ja" ? "全文を見る →" : "Full example →")
-                    : (lang === "ja" ? "ヒントを隠す" : "Hide hint")}
+                    : (lang === "ja" ? "💡 ヒントを閉じる" : "Close hint")}
                 </button>
               )}
             </div>
           )}
         </div>
+      </div>
+
+      {/* Hint bottom sheet backdrop */}
+      {hintLevel > 0 && (
+        <div
+          onClick={() => { setHintLevel(0); setHintData(null); }}
+          style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.3)", zIndex: 50 }}
+        />
+      )}
+
+      {/* Hint bottom sheet */}
+      <div style={{
+        position: "fixed",
+        bottom: `calc(164px + env(safe-area-inset-bottom))`,
+        left: 0, right: 0,
+        maxWidth: 640, margin: "0 auto",
+        zIndex: 51,
+        transform: hintLevel > 0 ? "translateY(0)" : "translateY(110%)",
+        transition: "transform 0.28s cubic-bezier(0.32,0.72,0,1)",
+        background: "var(--surface)",
+        borderRadius: "18px 18px 0 0",
+        boxShadow: "0 -8px 32px rgba(0,0,0,0.15)",
+        padding: "16px 20px 20px",
+      }}>
+        {/* Handle */}
+        <div style={{ display: "flex", justifyContent: "center", marginBottom: 14 }}>
+          <div style={{ width: 36, height: 4, borderRadius: 2, background: "var(--border)" }} />
+        </div>
+
+        {hintLoading ? (
+          <div style={{ fontSize: 13, color: "var(--text-muted)", textAlign: "center", padding: "8px 0" }}>
+            ⏳ {lang === "ja" ? "考え中..." : "Thinking..."}
+          </div>
+        ) : hintData ? (
+          <>
+            {/* Level 1: keywords */}
+            <div style={{ fontSize: 11, fontWeight: 700, color: "var(--accent)", marginBottom: 8, textTransform: "uppercase", letterSpacing: "0.06em" }}>
+              💡 {lang === "ja" ? "使えそうな表現" : "Try using"}
+            </div>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 16 }}>
+              {hintData.keywords.map((kw, i) => (
+                <span key={i} style={{
+                  fontSize: 14, fontWeight: 600, color: "var(--accent)",
+                  background: "var(--accent-bg)", padding: "5px 12px", borderRadius: 20,
+                }}>{kw}</span>
+              ))}
+            </div>
+
+            {/* Level 2: starter */}
+            {hintLevel >= 2 && (
+              <div style={{ marginBottom: hintLevel >= 3 ? 16 : 0 }}>
+                <div style={{ fontSize: 11, fontWeight: 700, color: "var(--text-muted)", marginBottom: 6, textTransform: "uppercase", letterSpacing: "0.06em" }}>
+                  {lang === "ja" ? "話し始め" : "Opening"}
+                </div>
+                <div style={{ fontSize: 14, color: "var(--text-secondary)", fontStyle: "italic", lineHeight: 1.6 }}>
+                  &ldquo;{hintData.starter}&rdquo;
+                </div>
+              </div>
+            )}
+
+            {/* Level 3: full */}
+            {hintLevel >= 3 && (
+              <div>
+                <div style={{ fontSize: 11, fontWeight: 700, color: "var(--text-muted)", marginBottom: 6, textTransform: "uppercase", letterSpacing: "0.06em" }}>
+                  {lang === "ja" ? "例文" : "Example"}
+                </div>
+                <div style={{ fontSize: 14, color: "var(--text-secondary)", fontStyle: "italic", lineHeight: 1.6 }}>
+                  &ldquo;{hintData.full}&rdquo;
+                </div>
+              </div>
+            )}
+
+            {/* Next level button */}
+            {hintLevel < 3 && (
+              <button
+                onClick={handleHint}
+                style={{
+                  marginTop: 16, width: "100%", padding: "12px",
+                  background: "var(--accent)", color: "#fff",
+                  border: "none", borderRadius: 12,
+                  fontSize: 14, fontWeight: 700, cursor: "pointer",
+                }}
+              >
+                {hintLevel === 1
+                  ? (lang === "ja" ? "話し始めを見る →" : "Show opening →")
+                  : (lang === "ja" ? "例文を見る →" : "Show example →")}
+              </button>
+            )}
+          </>
+        ) : null}
       </div>
 
       {/* Session Summary Modal */}
