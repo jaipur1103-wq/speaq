@@ -148,31 +148,84 @@ export default function Home() {
       )}
 
       {/* Scenario list header */}
-      <div style={{ marginBottom: 14 }}>
-        <span style={{ fontSize: 18, fontWeight: 800, color: "var(--text)", letterSpacing: "-0.02em" }}>
-          {lang === "ja" ? "シナリオを選ぶ" : "Pick a scenario"}
-        </span>
-      </div>
+      {allScenarios.length > 0 && (
+        <div style={{ marginBottom: 14 }}>
+          <span style={{ fontSize: 18, fontWeight: 800, color: "var(--text)", letterSpacing: "-0.02em" }}>
+            {lang === "ja" ? "シナリオを選ぶ" : "Pick a scenario"}
+          </span>
+        </div>
+      )}
 
       {/* Scenario list */}
       {allScenarios.length === 0 ? (
         <div style={{
-          textAlign: "center", padding: "64px 24px", color: "var(--text-muted)",
           background: "var(--surface)", borderRadius: 20, boxShadow: "var(--shadow-sm)",
+          overflow: "hidden",
         }}>
-          <div style={{
-            width: 64, height: 64, borderRadius: 18, margin: "0 auto 16px",
-            background: "linear-gradient(135deg, #007AFF, #5856D6)",
-            display: "flex", alignItems: "center", justifyContent: "center",
-          }}>
-            <Sparkles size={28} color="#fff" strokeWidth={1.8} />
+          {/* 上部：説明 */}
+          <div style={{ textAlign: "center", padding: "40px 24px 24px" }}>
+            <div style={{
+              width: 64, height: 64, borderRadius: 18, margin: "0 auto 16px",
+              background: "linear-gradient(135deg, #007AFF, #5856D6)",
+              display: "flex", alignItems: "center", justifyContent: "center",
+            }}>
+              <Sparkles size={28} color="#fff" strokeWidth={1.8} />
+            </div>
+            <p style={{ fontWeight: 700, color: "var(--text)", marginBottom: 8, fontSize: 17 }}>
+              {tr.noScenarios}
+            </p>
+            <p style={{ fontSize: 14, lineHeight: 1.7, color: "var(--text-secondary)", marginBottom: 0 }}>
+              {tr.noScenariosDesc}
+            </p>
           </div>
-          <p style={{ fontWeight: 700, color: "var(--text)", marginBottom: 8, fontSize: 17 }}>
-            {tr.noScenarios}
-          </p>
-          <p style={{ fontSize: 14, lineHeight: 1.7, color: "var(--text-secondary)", marginBottom: 0 }}>
-            {tr.noScenariosDesc}
-          </p>
+
+          {/* 仕切り */}
+          <div style={{ height: 1, background: "var(--border)", margin: "0 20px" }} />
+
+          {/* 下部：現在の設定 + 生成ボタン */}
+          <div style={{ padding: "20px 24px 28px" }}>
+            {/* 設定サマリー */}
+            <div style={{
+              display: "flex", alignItems: "center", justifyContent: "space-between",
+              marginBottom: 16,
+            }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+                <SlidersHorizontal size={14} color="var(--text-muted)" strokeWidth={2} />
+                <span style={{ fontSize: 13, color: "var(--text-muted)", fontWeight: 500 }}>
+                  {settingsSummary}
+                </span>
+              </div>
+              <button
+                onClick={() => setSettingsOpen(true)}
+                style={{
+                  fontSize: 13, color: "var(--accent)", fontWeight: 600,
+                  background: "none", border: "none", cursor: "pointer", padding: "2px 0",
+                  flexShrink: 0,
+                }}
+              >
+                {lang === "ja" ? "変更" : "Change"}
+              </button>
+            </div>
+
+            {/* 生成ボタン */}
+            <button
+              onClick={generateScenario}
+              disabled={generating}
+              style={{
+                width: "100%", padding: "16px",
+                background: "linear-gradient(135deg, #007AFF 0%, #5856D6 100%)",
+                border: "none", borderRadius: 14,
+                display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
+                cursor: generating ? "not-allowed" : "pointer",
+                opacity: generating ? 0.7 : 1,
+              }}
+            >
+              {generating ? <SpinnerIcon /> : <Sparkles size={18} color="#fff" strokeWidth={2} />}
+              <span style={{ fontSize: 16, fontWeight: 700, color: "#fff" }}>
+                {lang === "ja" ? "この設定で生成する" : "Generate with these settings"}
+              </span>
+            </button>
+          </div>
         </div>
       ) : (
         <div>
