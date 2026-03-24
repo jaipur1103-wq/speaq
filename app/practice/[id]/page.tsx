@@ -45,7 +45,9 @@ export default function PracticePage() {
   const [turn, setTurn] = useState(1);
   const [savedIds, setSavedIds] = useState<Set<string>>(new Set());
   const [showSummary, setShowSummary] = useState(false);
-  const [showHint, setShowHint] = useState(false);
+  const [hintLevel, setHintLevel] = useState(0); // 0=hidden, 1=keywords, 2=starter, 3=full
+  const [hintData, setHintData] = useState<{ keywords: string[]; starter: string; full: string } | null>(null);
+  const [hintLoading, setHintLoading] = useState(false);
   const [scoreSaved, setScoreSaved] = useState(false);
   const [feedbackError, setFeedbackError] = useState<string | null>(null);
   const [tr, setTr] = useState<Tr>(i18n.en);
@@ -174,6 +176,43 @@ export default function PracticePage() {
     }
   };
 
+  const handleHint = async () => {
+    if (hintLevel > 0) {
+      // 既にデータあり → 次のレベルへ
+      if (hintLevel < 3) setHintLevel((v) => v + 1);
+      return;
+    }
+    // 初回：API呼び出し
+    if (!scenario) return;
+    setHintLoading(true);
+    setHintLevel(1);
+    try {
+      const allMessages = chatItems.map((i) => i.data);
+      const lastCounterpart = [...allMessages].reverse().find((m) => m.role === "counterpart");
+      const conversationSoFar = allMessages
+        .slice(0, -1)
+        .map((m) => `${m.role === "counterpart" ? "Counterpart" : "User"}: ${m.text}`)
+        .join("\n");
+      const res = await fetch("/api/hint", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          scenarioBrief: scenario.brief,
+          conversationSoFar,
+          lastCounterpartMessage: lastCounterpart?.text ?? scenario.opener,
+          language: lang,
+        }),
+      });
+      if (!res.ok) throw new Error("hint fetch failed");
+      const data = await res.json();
+      setHintData(data);
+    } catch {
+      setHintLevel(0);
+    } finally {
+      setHintLoading(false);
+    }
+  };
+
   const handleRetake = () => {
     setInputText("");
     setRecordingSeconds(0);
@@ -217,6 +256,8 @@ export default function PracticePage() {
     setInputText("");
     setRecordingSeconds(0);
     setTurn((t) => t + 1);
+    setHintLevel(0);
+    setHintData(null);
 
     // Silently add punctuation before passing to APIs
     const correctedText = await punctuateText(text);
@@ -467,18 +508,56 @@ export default function PracticePage() {
             /* Idle or recording: mic button */
             <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8 }}>
               {/* Hint */}
-              {showHint && scenario && (
+              {hintLevel > 0 && (
                 <div style={{
                   width: "100%", padding: "12px 14px", marginBottom: 4,
                   background: "var(--surface2)", borderRadius: 12,
                   borderLeft: "3px solid var(--accent)",
                 }}>
-                  <div style={{ fontSize: 11, fontWeight: 700, color: "var(--accent)", marginBottom: 4, textTransform: "uppercase", letterSpacing: "0.06em" }}>
-                    {lang === "ja" ? "ヒント" : "Hint"}
-                  </div>
-                  <div style={{ fontSize: 13, color: "var(--text-secondary)", lineHeight: 1.6 }}>
-                    {lang === "ja" && scenario.briefJa ? scenario.briefJa : scenario.brief}
-                  </div>
+                  {hintLoading ? (
+                    <div style={{ fontSize: 13, color: "var(--text-muted)" }}>
+                      ⏳ {lang === "ja" ? "考え中..." : "Thinking..."}
+                    </div>
+                  ) : hintData ? (
+                    <>
+                      {/* Level 1: keywords */}
+                      <div style={{ fontSize: 11, fontWeight: 700, color: "var(--accent)", marginBottom: 6, textTransform: "uppercase", letterSpacing: "0.06em" }}>
+                        {lang === "ja" ? "💡 使えそうな表現" : "💡 Try using"}
+                      </div>
+                      <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: hintLevel >= 2 ? 12 : 0 }}>
+                        {hintData.keywords.map((kw, i) => (
+                          <span key={i} style={{
+                            fontSize: 13, fontWeight: 600, color: "var(--accent)",
+                            background: "var(--accent-bg)", padding: "3px 10px", borderRadius: 20,
+                          }}>{kw}</span>
+                        ))}
+                      </div>
+
+                      {/* Level 2: starter */}
+                      {hintLevel >= 2 && (
+                        <div style={{ marginBottom: hintLevel >= 3 ? 12 : 0 }}>
+                          <div style={{ fontSize: 11, fontWeight: 700, color: "var(--text-muted)", marginBottom: 4, textTransform: "uppercase", letterSpacing: "0.06em" }}>
+                            {lang === "ja" ? "書き出し" : "Starter"}
+                          </div>
+                          <div style={{ fontSize: 13, color: "var(--text-secondary)", fontStyle: "italic" }}>
+                            &ldquo;{hintData.starter}&rdquo;
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Level 3: full */}
+                      {hintLevel >= 3 && (
+                        <div>
+                          <div style={{ fontSize: 11, fontWeight: 700, color: "var(--text-muted)", marginBottom: 4, textTransform: "uppercase", letterSpacing: "0.06em" }}>
+                            {lang === "ja" ? "例文" : "Example"}
+                          </div>
+                          <div style={{ fontSize: 13, color: "var(--text-secondary)", fontStyle: "italic", lineHeight: 1.6 }}>
+                            &ldquo;{hintData.full}&rdquo;
+                          </div>
+                        </div>
+                      )}
+                    </>
+                  ) : null}
                 </div>
               )}
               <button
@@ -510,16 +589,24 @@ export default function PracticePage() {
               </div>
               {!isRecording && (
                 <button
-                  onClick={() => setShowHint((v) => !v)}
+                  onClick={hintLevel === 0 ? handleHint : hintLevel < 3 ? handleHint : () => { setHintLevel(0); setHintData(null); }}
+                  disabled={hintLoading}
                   style={{
                     marginTop: 4, padding: "5px 14px", borderRadius: 20,
-                    background: showHint ? "var(--accent-bg)" : "transparent",
-                    border: `1px solid ${showHint ? "var(--accent)" : "var(--border)"}`,
-                    color: showHint ? "var(--accent)" : "var(--text-muted)",
-                    fontSize: 12, fontWeight: 600, cursor: "pointer",
+                    background: hintLevel > 0 ? "var(--accent-bg)" : "transparent",
+                    border: `1px solid ${hintLevel > 0 ? "var(--accent)" : "var(--border)"}`,
+                    color: hintLevel > 0 ? "var(--accent)" : "var(--text-muted)",
+                    fontSize: 12, fontWeight: 600, cursor: hintLoading ? "not-allowed" : "pointer",
+                    opacity: hintLoading ? 0.6 : 1,
                   }}
                 >
-                  {lang === "ja" ? (showHint ? "ヒントを隠す" : "💡 ヒントを見る") : (showHint ? "Hide hint" : "💡 Hint")}
+                  {hintLevel === 0
+                    ? (lang === "ja" ? "💡 ヒントを見る" : "💡 Hint")
+                    : hintLevel === 1
+                    ? (lang === "ja" ? "もう少し見る →" : "More →")
+                    : hintLevel === 2
+                    ? (lang === "ja" ? "全文を見る →" : "Full example →")
+                    : (lang === "ja" ? "ヒントを隠す" : "Hide hint")}
                 </button>
               )}
             </div>
