@@ -89,17 +89,8 @@ export default function ScenarioCard({ scenario, onDelete, isFavorite, onFavorit
           </div>
         )}
 
-        {/* Brief snippet */}
-        {(scenario.briefJa || scenario.brief) && (
-          <div style={{ fontSize: 12, color: "var(--text-muted)", marginTop: 6, lineHeight: 1.5,
-            overflow: "hidden", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" as const,
-          }}>
-            {lang === "ja" && scenario.briefJa ? scenario.briefJa : scenario.brief}
-          </div>
-        )}
-
         {/* Persona */}
-        <div style={{ marginTop: 6 }}>
+        <div style={{ marginTop: 4 }}>
           <span style={{ fontSize: 12, color: "var(--text-secondary)" }}>
             {scenario.personaName} · {scenario.personaRole}
           </span>
