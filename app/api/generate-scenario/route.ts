@@ -152,12 +152,14 @@ function getDifficultyDesc(difficulty: Difficulty): string {
   if (difficulty === "intermediate") {
     return (
       "CEFR B1-B2. Conversational English. Accessible vocabulary. " +
-      "Counterpart is professional but approachable. Mild challenges only."
+      "Counterpart is professional but approachable. Mild challenges only. " +
+      "Keep the brief to 2 short sentences."
     );
   }
   return (
     "CEFR C1-C2. Sophisticated language, complex negotiations, high stakes. " +
-    "Counterpart is challenging and demanding. Use topic-appropriate terminology."
+    "Counterpart is challenging and demanding. Use topic-appropriate terminology. " +
+    "Keep the brief to 2 short sentences."
   );
 }
 
@@ -201,7 +203,7 @@ Return ONLY valid JSON with this exact structure:
 {
   "category": "<choose best fit: for business: Negotiation/Sales/1-on-1/Cross-team/Presentation/Client Meeting/Performance Review/Crisis Management/Partnership/Hiring; for non-business: Travel/Restaurant/Shopping/Hotel/Social/Study/Daily Life>",
   "title": "<concise action-oriented title, max 8 words>",
-  "brief": "<2 sentences, 25-40 words: situation context + what the user needs to achieve>",
+  "brief": "<2 sentences: situation context + what the user needs to achieve>",
   "opener": "<what the counterpart says first, 1-2 sentences, natural spoken English>",
   "personaName": "<realistic first name>",
   "personaRole": "<job title or role, e.g. CFO, Hotel Receptionist, Classmate>"
@@ -209,8 +211,7 @@ Return ONLY valid JSON with this exact structure:
 
 Requirements:
 - Make it a specific, realistic scenario (include numbers, context, stakes)
-- Opener should feel natural, not scripted
-- Brief must be exactly 2 sentences and 25-40 words total, regardless of difficulty`,
+- Opener should feel natural, not scripted`,
         },
       ],
       temperature: 0.9,
