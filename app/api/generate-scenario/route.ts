@@ -201,7 +201,7 @@ Return ONLY valid JSON with this exact structure:
 {
   "category": "<choose best fit: for business: Negotiation/Sales/1-on-1/Cross-team/Presentation/Client Meeting/Performance Review/Crisis Management/Partnership/Hiring; for non-business: Travel/Restaurant/Shopping/Hotel/Social/Study/Daily Life>",
   "title": "<concise action-oriented title, max 8 words>",
-  "brief": "<2 sentences max 30 words: situation context + what the user needs to achieve>",
+  "brief": "<2 sentences, 25-40 words: situation context + what the user needs to achieve>",
   "opener": "<what the counterpart says first, 1-2 sentences, natural spoken English>",
   "personaName": "<realistic first name>",
   "personaRole": "<job title or role, e.g. CFO, Hotel Receptionist, Classmate>"
