@@ -343,12 +343,10 @@ export default function PracticePage() {
         </div>
       </div>
 
-      {/* Briefing */}
-      <BriefingArea scenario={scenario} tr={tr} />
-
-
       {/* Chat */}
       <div style={{ flex: 1, overflowY: "auto", padding: "16px", display: "flex", flexDirection: "column", gap: 12 }}>
+        {/* Briefing */}
+        <BriefingArea scenario={scenario} tr={tr} />
         {chatItems.map((item, i) => (
           <ChatBubble key={i} msg={item.data} personaName={scenario.personaName} tr={tr} />
         ))}
@@ -513,7 +511,7 @@ function BriefingArea({ scenario, tr }: { scenario: Scenario; tr: Tr }) {
   const hasTrans = !!scenario.briefJa;
 
   return (
-    <div style={{ padding: "14px 16px", background: "var(--accent-bg)", borderBottom: "1px solid var(--border)" }}>
+    <div style={{ padding: "14px 16px", background: "var(--accent-bg)", borderRadius: 14, border: "1px solid var(--border)" }}>
       <p style={{ color: "var(--accent)", fontSize: 15, margin: "0 0 6px", lineHeight: 1.65, fontWeight: 500 }}>
         {scenario.brief}
       </p>
