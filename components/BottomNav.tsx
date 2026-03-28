@@ -21,8 +21,8 @@ export default function BottomNav() {
 
   // Hide during practice
   if (pathname.startsWith("/practice")) return null;
-  // Hide on guide / create pages
-  if (pathname === "/guide" || pathname === "/create") return null;
+  // Hide on create page
+  if (pathname === "/create") return null;
 
   const tr = i18n[lang];
 

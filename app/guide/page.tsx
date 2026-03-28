@@ -11,14 +11,14 @@ const CONTENT = {
     startBtn: "Start Practicing",
     hero: {
       title: "Every conversation grows\nyour expressions.",
-      sub: "Speak. Get feedback. Keep the expressions that stick.",
+      sub: "Speak. Get feedback.\nKeep the expressions that stick.",
     },
     problem: {
       title: "Sound familiar?",
       items: [
-        "You understand English — but in the moment, the same phrases keep coming out.",
-        "Knowing English and using English are two different things.",
-        "It's in your head. But it won't come out.",
+        "You understand English —\nbut in the moment, the same phrases keep coming out.",
+        "Knowing English and using English\nare two different things.",
+        "It's in your head.\nBut it won't come out.",
       ],
     },
     how: {
@@ -27,35 +27,35 @@ const CONTENT = {
         {
           num: "1",
           title: "Recreate your exact situation",
-          desc: "Any scene you need — AI instantly builds a realistic scenario around it.",
+          desc: "Any scene you need —\nAI instantly builds a realistic scenario.",
         },
         {
           num: "2",
           title: "Speak and discover new expressions",
-          desc: "Tap the mic and talk. After each session, get feedback on how a native speaker would have said it.",
+          desc: "Tap the mic and talk.\nAfter each session, see how a native speaker\nwould have said it.",
         },
         {
           num: "3",
           title: "Keep using them until they're yours",
-          desc: "Save expressions to your Notebook. Quiz yourself until they come out naturally.",
+          desc: "Save expressions to your Notebook.\nQuiz yourself until they come out naturally.",
         },
       ],
     },
     loop: {
       title: "Speak. Notice. Own it.",
-      sub: "Practice, feedback, and retention — all in one loop.",
+      sub: "Practice, feedback, and retention —\nall in one loop.",
     },
   },
   ja: {
     startBtn: "練習を始める",
     hero: {
       title: "会話するたびに、\n使える表現が増える。",
-      sub: "話して、フィードバックを受けて、表現を自分のものにする。",
+      sub: "話して、フィードバックを受けて、\n表現を自分のものにする。",
     },
     problem: {
       title: "こんな経験、ありませんか？",
       items: [
-        "英語はわかるのに、いざ話すと同じ表現しか出てこない。",
+        "英語はわかるのに、いざ話すと\n同じ表現しか出てこない。",
         "知っている英語と、使える英語は、違う。",
         "頭にあるのに、口から出てこない。",
       ],
@@ -66,23 +66,23 @@ const CONTENT = {
         {
           num: "1",
           title: "あなたの場面を再現する",
-          desc: "どんなシーンでもOK。AIが即座にリアルなシナリオを生成する。",
+          desc: "どんなシーンでもOK。\nAIが即座にリアルなシナリオを生成する。",
         },
         {
           num: "2",
           title: "話しながら、表現を発見する",
-          desc: "マイクで話すだけ。セッション後、ネイティブならどう言うかをフィードバックで知る。",
+          desc: "マイクで話すだけ。セッション後、\nネイティブならどう言うかが\nフィードバックでわかる。",
         },
         {
           num: "3",
           title: "使い続けて、自分のものにする",
-          desc: "気になった表現をノートに保存。クイズで繰り返して、咄嗟に出てくるまで鍛える。",
+          desc: "気になった表現はノートに保存。\nクイズで繰り返して、\n自然に出てくるまで定着させる。",
         },
       ],
     },
     loop: {
       title: "話して、気づいて、定着する。",
-      sub: "練習・フィードバック・定着が、一つのループになっている。",
+      sub: "練習・フィードバック・定着が、\n一つのループになっている。",
     },
   },
 };
@@ -104,7 +104,7 @@ export default function GuidePage() {
       maxWidth: 640,
       width: "100%",
       margin: "0 auto",
-      padding: "24px 16px 120px",
+      padding: "24px 16px 88px",
       minHeight: "100vh",
     }}>
 
@@ -157,15 +157,15 @@ export default function GuidePage() {
             lineHeight: 1.3,
             marginBottom: 12,
             whiteSpace: "pre-line",
-            wordBreak: "auto-phrase",
-          } as React.CSSProperties}>
+          }}>
             {c.hero.title}
           </div>
           <div style={{
             fontSize: 14,
             color: "rgba(255,255,255,0.82)",
-            lineHeight: 1.6,
+            lineHeight: 1.65,
             fontWeight: 400,
+            whiteSpace: "pre-line",
           }}>
             {c.hero.sub}
           </div>
@@ -215,8 +215,8 @@ export default function GuidePage() {
                 color: "var(--text)",
                 lineHeight: 1.65,
                 fontWeight: 400,
-                wordBreak: "auto-phrase",
-              } as React.CSSProperties}>
+                whiteSpace: "pre-line",
+              }}>
                 {text}
               </span>
             </div>
@@ -287,16 +287,15 @@ export default function GuidePage() {
                     marginBottom: 6,
                     lineHeight: 1.4,
                     letterSpacing: "-0.01em",
-                    wordBreak: "auto-phrase",
-                  } as React.CSSProperties}>
+                  }}>
                     {step.title}
                   </div>
                   <div style={{
                     fontSize: 13,
                     color: "var(--text-secondary)",
                     lineHeight: 1.65,
-                    wordBreak: "auto-phrase",
-                  } as React.CSSProperties}>
+                    whiteSpace: "pre-line",
+                  }}>
                     {step.desc}
                   </div>
                 </div>
@@ -323,14 +322,14 @@ export default function GuidePage() {
             letterSpacing: "-0.02em",
             lineHeight: 1.35,
             marginBottom: 8,
-            wordBreak: "auto-phrase",
-          } as React.CSSProperties}>
+          }}>
             {c.loop.title}
           </div>
           <div style={{
             fontSize: 14,
             color: "var(--text-secondary)",
             lineHeight: 1.6,
+            whiteSpace: "pre-line",
           }}>
             {c.loop.sub}
           </div>
