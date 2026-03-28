@@ -118,17 +118,21 @@ ${turnsText}
 
 IMPORTANT: This is TRANSCRIBED VOICE INPUT — no punctuation exists. Do NOT mention punctuation anywhere.
 
+⚠️ SCOPE: Evaluate ONLY the lines marked "User responded:". NEVER evaluate or quote ${scenario.personaName}'s lines.
+
 CRITICAL RULES:
 
 - "conversationSummary": 1-2 sentences. What topics and key points were discussed.${isJa ? " Write in Japanese." : ""}
 
-- "encouragement": One sentence. Honest overall impression.${isJa ? " Write in Japanese." : ""}
+- "encouragement": One sentence. Honest overall impression of the User's responses only.${isJa ? " Write in Japanese." : ""}
 
-- "strengths": 1-3 items. Only genuine strengths. Quote using 「」, name specific linguistic feature.
+- "strengths": 1-3 items. Analyze ONLY "User responded:" lines. Never quote from ${scenario.personaName}'s lines.
+  Only genuine strengths. Quote using 「」, name specific linguistic feature.
   FORBIDDEN: "good job", "well done", "natural English".
   ${isJa ? "Write in Japanese. Example: 「I was wondering if ~」という形を使えていました。ネイティブが依頼するときによく使う丁寧な構造です。" : "Example: You used 「I was wondering if ~」— the standard native structure for polite requests."}
 
-- "improvements": 0-2 items. Fill "errorEvidence" FIRST with ONE of:
+- "improvements": 0-2 items. Analyze ONLY "User responded:" lines. Do NOT evaluate ${scenario.personaName}'s speech.
+  Fill "errorEvidence" FIRST with ONE of:
   (a) Grammar rule violated: name rule + show violation
   (b) Wrong collocation pair: name wrong + correct
   (c) Literal translation failure: name source + why it fails
