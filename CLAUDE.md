@@ -120,7 +120,7 @@ useEffect(() => {
 - `improvements`: 可変0〜2件。英語が自然・正確なら `[]`。各件は `ImprovementItem { comment, suggestedResponse }` 形式
   - `comment`: ユーザーの発言を「」で引用し、改善案 + 具体的な理由 + この場面でなぜ重要かを説明。"more natural", "sounds better" 禁止。JA設定時は日本語
   - `suggestedResponse`: その問題が発生したターンの模範回答（英語の完全文）
-- `naturalExpressions`: 2〜4件。**抽出源はペルソナ（相手役AI）の発言**。ユーザー発言から抽出しない（ユーザー発言は低レベルになりがちなため）。
+- `naturalExpressions`: 2〜4件。**抽出源はユーザーの発言**。ユーザーが使った表現の中で、より自然・効果的な言い方に置き換えられる箇所を抽出する。
   - **難易度別レベルガイド（CEFRラベルは使わない。行動的記述で指定）**：
     - beginner: 高校英語は前提。"Can you~" "I want~" レベルは禁止。職場で使えるシンプルなフレーズ（8語以内）。今より一段上の表現を優先
     - intermediate: コロケーション・ヘッジング表現・つなぎ言葉。プロフェッショナルだが会話的なトーン
