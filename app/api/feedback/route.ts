@@ -135,13 +135,15 @@ CRITICAL RULES:
   (d) Register mismatch: name register + why it conflicts
   If you cannot write specific errorEvidence of type (a)-(d), do NOT include that improvement.
   DO NOT include: contractions, synonyms, stylistic variation.
-  - "comment": Quote 「phrase」, give better version, explain via errorEvidence, add why it matters.
+  - "originalPhrase": The exact problematic phrase/word(s) the user said (English, keep short).
+  - "improvedPhrase": The natural replacement (English, phrase-level, concise — NOT a full sentence).
+  - "comment": Quote 「phrase」, explain via errorEvidence, add why it matters.
     FORBIDDEN: "more natural", "sounds better", "sounds awkward".${isJa ? " Write in Japanese." : ""}
   - "suggestedResponse": Full natural English response for that turn.
 
 EXAMPLES:
-Collocation: { "errorEvidence": "big + potential is unnatural; correct: great/enormous/tremendous + potential", "comment": "...", "suggestedResponse": "..." }
-Grammar: { "errorEvidence": "look forward to requires gerund [-ing]; 'to' is preposition here, not infinitive marker; user wrote 'look forward to see'", "comment": "...", "suggestedResponse": "..." }
+Collocation: { "errorEvidence": "big + potential is unnatural; correct: great/enormous/tremendous + potential", "originalPhrase": "big potential", "improvedPhrase": "great potential", "comment": "...", "suggestedResponse": "..." }
+Grammar: { "errorEvidence": "look forward to requires gerund [-ing]; 'to' is preposition here, not infinitive marker; user wrote 'look forward to see'", "originalPhrase": "look forward to see", "improvedPhrase": "look forward to seeing", "comment": "...", "suggestedResponse": "..." }
 
 Return ONLY valid JSON:
 {
@@ -151,7 +153,9 @@ Return ONLY valid JSON:
   "improvements": [
     {
       "errorEvidence": "<specific rule / collocation / literal / register>",
-      "comment": "<${isJa ? "「発言」→ 改善案 + 理由 + なぜ重要か" : "「phrase」→ better version + reason + why it matters"}>",
+      "originalPhrase": "<exact phrase user said>",
+      "improvedPhrase": "<natural replacement phrase>",
+      "comment": "<${isJa ? "「発言」→ 理由 + なぜ重要か" : "「phrase」→ reason + why it matters"}>",
       "suggestedResponse": "<full natural English response>"
     }
   ]
@@ -179,7 +183,7 @@ Scenario: ${scenario.title}
 Counterpart: ${scenario.personaName} (${scenario.personaRole})
 ${turnsText}
 
-SOURCE RULE: Extract from ${scenario.personaName}'s responses. If insufficient, generate scenario-appropriate expressions at the exact ${scenario.difficulty} level.
+SOURCE RULE: Extract from the User's responses. Find phrases the user said that could be expressed more naturally or effectively. If insufficient, generate alternative ways the user could have expressed the same idea at the ${scenario.difficulty} level.
 
 ${fewShot}
 
@@ -190,7 +194,7 @@ CHUNK RULES (strictly enforced):
 - GOOD patterns: "run into ~ issues", "It might be worth ~ing", "move forward with ~", "Having said that,~"
 
 For each expression:
-- "original": the phrase as spoken by ${scenario.personaName} (or the unnatural equivalent)
+- "original": the phrase as used by the User (the less natural or less effective version)
 - "natural": minimal fix only — swap the problematic word/phrase, do NOT restructure the sentence
 - "reason": grammar / collocation / literal / set-phrase / formality / nuance
 - "explanation": 1-2 sentences. Cite exact grammar rule, name wrong/correct collocation pair, or explain nuance.${isJa ? " Write in Japanese." : ""}

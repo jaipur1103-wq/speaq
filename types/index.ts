@@ -39,6 +39,8 @@ export interface Message {
 export type NaturalExpressionReason = "grammar" | "collocation" | "literal" | "set-phrase" | "formality" | "nuance";
 
 export interface ImprovementItem {
+  originalPhrase: string;
+  improvedPhrase: string;
   comment: string;
   suggestedResponse: string;
 }

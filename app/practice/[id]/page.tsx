@@ -675,12 +675,13 @@ function FeedbackPanel({ feedback, scenarioTitle, turns, savedIds, tr, onSaveExp
         <div style={{ marginBottom: 12 }}>
           <SectionLabel>{tr.tryNextTime}</SectionLabel>
           {feedback.improvements.map((item, i) => {
-            const sourceTurn = findSourceTurn(item.comment, turns);
             return (
             <div key={i} style={{ marginBottom: 10, paddingLeft: 12, borderLeft: "2.5px solid var(--orange)" }}>
-              {sourceTurn && (
-                <div style={{ fontSize: 12, color: "var(--text-muted)", background: "var(--surface2)", borderRadius: 8, padding: "6px 10px", marginBottom: 6, fontStyle: "italic" }}>
-                  &ldquo;{sourceTurn}&rdquo;
+              {item.originalPhrase && item.improvedPhrase && (
+                <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap", marginBottom: 6, fontSize: 13 }}>
+                  <span style={{ color: "var(--text-muted)", textDecoration: "line-through" }}>{item.originalPhrase}</span>
+                  <span style={{ color: "var(--text-muted)" }}>→</span>
+                  <span style={{ color: "var(--accent)", fontWeight: 700 }}>{item.improvedPhrase}</span>
                 </div>
               )}
               <div style={{ fontSize: 13, color: "var(--text-secondary)", lineHeight: 1.6, marginBottom: 6 }}>{item.comment}</div>
