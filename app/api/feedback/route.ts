@@ -167,15 +167,15 @@ CRITICAL RULES:
   (d) Register mismatch: name register + why it conflicts
   If you cannot write specific errorEvidence of type (a)-(d), do NOT include that improvement.
   DO NOT include: contractions, synonyms, stylistic variation.
-  - "originalPhrase": The exact problematic phrase/word(s) the user said (English, keep short).
+  - "originalPhrase": The clause or sentence containing the problematic expression (English, 8-15 words of context so it's clear where it occurred).
   - "improvedPhrase": The natural replacement (English, phrase-level, concise — NOT a full sentence).
   - "comment": Quote 「phrase」, explain via errorEvidence, add why it matters.
     FORBIDDEN: "more natural", "sounds better", "sounds awkward".${isJa ? " Write in Japanese." : ""}
   - "suggestedResponse": Full natural English response for that turn.
 
 EXAMPLES:
-Collocation: { "errorEvidence": "big + potential is unnatural; correct: great/enormous/tremendous + potential", "originalPhrase": "big potential", "improvedPhrase": "great potential", "comment": "...", "suggestedResponse": "..." }
-Grammar: { "errorEvidence": "look forward to requires gerund [-ing]; 'to' is preposition here, not infinitive marker; user wrote 'look forward to see'", "originalPhrase": "look forward to see", "improvedPhrase": "look forward to seeing", "comment": "...", "suggestedResponse": "..." }
+Collocation: { "errorEvidence": "big + potential is unnatural; correct: great/enormous/tremendous + potential", "originalPhrase": "I think this project has big potential for our team", "improvedPhrase": "great potential", "comment": "...", "suggestedResponse": "..." }
+Grammar: { "errorEvidence": "look forward to requires gerund [-ing]; 'to' is preposition here, not infinitive marker; user wrote 'look forward to see'", "originalPhrase": "I look forward to see you at the meeting next week", "improvedPhrase": "look forward to seeing", "comment": "...", "suggestedResponse": "..." }
 
 Return ONLY valid JSON:
 {
