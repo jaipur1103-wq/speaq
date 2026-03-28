@@ -303,6 +303,7 @@ export default function PracticePage() {
       strengths: fb.strengths,
       improvements: fb.improvements,
       expressionCount: fb.naturalExpressions?.length ?? 0,
+      naturalChunks: fb.naturalExpressions?.map(e => e.chunk).filter(Boolean) ?? [],
     });
     setScoreSaved(true);
   };

@@ -107,7 +107,11 @@ export default function HistoryPage() {
 function HistoryCard({ record, isJa }: { record: ScoreRecord; isJa: boolean }) {
   const [expanded, setExpanded] = useState(false);
 
-  const hasDetail = !!(record.conversationSummary || (record.strengths && record.strengths.length > 0) || (record.improvements && record.improvements.length > 0));
+  const hasDetail = !!(
+    (record.strengths && record.strengths.length > 0) ||
+    (record.improvements && record.improvements.length > 0) ||
+    (record.naturalChunks && record.naturalChunks.length > 0)
+  );
   const diffColor = record.difficulty ? difficultyColor[record.difficulty] : "var(--text-muted)";
   const diffLabel = record.difficulty ? (difficultyLabel[isJa ? "ja" : "en"][record.difficulty] ?? record.difficulty) : null;
 
@@ -163,11 +167,6 @@ function HistoryCard({ record, isJa }: { record: ScoreRecord; isJa: boolean }) {
       {/* Expanded detail */}
       {expanded && hasDetail && (
         <div style={{ borderTop: "1px solid var(--border)", padding: "14px 16px" }}>
-          {record.conversationSummary && (
-            <div style={{ fontSize: 13, color: "var(--text-secondary)", lineHeight: 1.6, marginBottom: 12 }}>
-              {record.conversationSummary}
-            </div>
-          )}
           {record.strengths && record.strengths.length > 0 && (
             <div style={{ marginBottom: 12 }}>
               <div style={{ fontSize: 11, fontWeight: 700, color: "#34C759", textTransform: "uppercase", letterSpacing: "0.07em", marginBottom: 6 }}>
@@ -182,15 +181,50 @@ function HistoryCard({ record, isJa }: { record: ScoreRecord; isJa: boolean }) {
           )}
 
           {record.improvements && record.improvements.length > 0 && (
-            <div>
+            <div style={{ marginBottom: 12 }}>
               <div style={{ fontSize: 11, fontWeight: 700, color: "var(--accent)", textTransform: "uppercase", letterSpacing: "0.07em", marginBottom: 6 }}>
                 {isJa ? "→ 改善点" : "→ Improvements"}
               </div>
-              {record.improvements.map((imp, i) => (
-                <div key={i} style={{ fontSize: 13, color: "var(--text-secondary)", lineHeight: 1.6, marginBottom: 8, paddingLeft: 10, borderLeft: "2px solid var(--accent)" }}>
-                  {typeof imp === "string" ? imp : imp.comment}
-                </div>
-              ))}
+              {record.improvements.map((imp, i) => {
+                const hasPhrasePair = typeof imp !== "string" && imp.originalPhrase && imp.improvedPhrase;
+                return (
+                  <div key={i} style={{ marginBottom: 10, paddingLeft: 10, borderLeft: "2px solid var(--accent)" }}>
+                    {hasPhrasePair && (
+                      <div style={{ fontSize: 13, fontWeight: 600, color: "var(--text)", marginBottom: 3 }}>
+                        <span style={{ color: "var(--text-muted)", textDecoration: "line-through" }}>
+                          {(imp as { originalPhrase: string }).originalPhrase}
+                        </span>
+                        <span style={{ color: "var(--text-muted)", margin: "0 6px" }}>→</span>
+                        <span style={{ color: "var(--accent)" }}>
+                          {(imp as { improvedPhrase: string }).improvedPhrase}
+                        </span>
+                      </div>
+                    )}
+                    <div style={{ fontSize: 13, color: "var(--text-secondary)", lineHeight: 1.6 }}>
+                      {typeof imp === "string" ? imp : imp.comment}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
+          {record.naturalChunks && record.naturalChunks.length > 0 && (
+            <div>
+              <div style={{ fontSize: 11, fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.07em", marginBottom: 8 }}>
+                {isJa ? "💬 ネイティブの言い回し" : "💬 Native expressions"}
+              </div>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+                {record.naturalChunks.map((chunk, i) => (
+                  <span key={i} style={{
+                    fontSize: 12, fontWeight: 600,
+                    padding: "4px 10px", borderRadius: 20,
+                    background: "var(--surface2)", color: "var(--text)",
+                  }}>
+                    {chunk}
+                  </span>
+                ))}
+              </div>
             </div>
           )}
         </div>

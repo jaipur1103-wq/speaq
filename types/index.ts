@@ -93,6 +93,7 @@ export interface ScoreRecord {
   strengths?: string[];
   improvements?: ImprovementItem[];
   expressionCount?: number;
+  naturalChunks?: string[];
 }
 
 export interface AppSettings {
