@@ -41,6 +41,28 @@ function isValidChunk(chunk: string): boolean {
   return true;
 }
 
+const BASIC_CHUNK_BLACKLIST = [
+  /^i want/i, /^i need/i, /^can you/i,
+  /^i think/i, /^please /i, /^thank you/i,
+  /^let me/i, /^i will /i, /^i'll /i,
+  /^i'd like to$/i, /^i don't/i,
+];
+
+function isUpgradeWorthwhile(original: string, natural: string): boolean {
+  if (!original || !natural) return false;
+  const orig = original.toLowerCase().trim();
+  const nat = natural.toLowerCase().trim();
+  if (orig === nat) return false;
+  // Short phrases where only 1 token differs = synonym swap, no learning value
+  const origTokens = orig.split(/\s+/);
+  const natTokens = nat.split(/\s+/);
+  if (origTokens.length === natTokens.length && origTokens.length <= 4) {
+    const diffCount = origTokens.filter((w, i) => w !== natTokens[i]).length;
+    if (diffCount <= 1) return false;
+  }
+  return true;
+}
+
 // ── Level guides ───────────────────────────────────────────────────────────────
 
 const LEVEL_GUIDES: Record<string, string> = {
@@ -55,32 +77,38 @@ Good examples: "I'd like to revisit the premise of~" / "contingent on~" / "from 
 };
 
 const FEW_SHOT_EXAMPLES: Record<string, string> = {
-  beginner: `FEW-SHOT EXAMPLES (beginner):
-✅ GOOD: chunk="I'll look into it" — simple, workplace-appropriate, concise
-✅ GOOD: chunk="Could we schedule a time?" — polite request under 8 words
-✅ GOOD: chunk="I'll get back to you on that" — common business phrase
-✅ GOOD: chunk="run into ~ issues" — useful workplace collocation
-❌ BAD: chunk="ensure we're aligned on~" — too advanced register for beginner
-❌ BAD: chunk="contingent on~" — too formal vocabulary for beginner
-❌ BAD: chunk="I'd like to~" — single structural word + ~, no learning value`,
+  beginner: `FEW-SHOT EXAMPLES (beginner) — show how to UPGRADE the user's expression:
+✅ GOOD: original="I want to talk about the deadline", natural="I'd like to go over the deadline"
+   chunk="go over ~" — replaces basic "talk about", workplace phrasal verb
+✅ GOOD: original="Can we meet tomorrow?", natural="Could we schedule a time tomorrow?"
+   chunk="Could we schedule a time" — polite upgrade from basic "Can we~"
+✅ GOOD: original="I will finish it soon", natural="I'll get back to you on that shortly"
+   chunk="get back to you on ~" — more professional than "I will finish"
+❌ SKIP: original="I think it's good", natural="I believe it's good" — synonym swap, A1→A1, no learning value
+❌ SKIP: original="I'll do it", natural="I will do it" — contraction only, skip
+❌ SKIP: original="I need more time", natural="I require more time" — trivial synonym, skip`,
 
-  intermediate: `FEW-SHOT EXAMPLES (intermediate):
-✅ GOOD: chunk="I was wondering if~" — polite indirect request, native hedging structure
-✅ GOOD: chunk="move forward with~" — business collocation
-✅ GOOD: chunk="Having said that,~" — discourse marker for nuanced responses
-✅ GOOD: chunk="It might be worth ~ing" — hedging expression
-❌ BAD: chunk="I'll look into it" — too basic for intermediate, beginner already knows this
-❌ BAD: chunk="contingent on~" — register too formal for conversational intermediate
-❌ BAD: chunk="I'll~" — no learning value, too simple`,
+  intermediate: `FEW-SHOT EXAMPLES (intermediate) — show how to UPGRADE the user's expression:
+✅ GOOD: original="I think there might be a problem", natural="I have some concerns about this"
+   chunk="I have some concerns about ~" — professional hedging, avoids blunt "I think there's a problem"
+✅ GOOD: original="Let's talk about this later", natural="Let's table this and revisit it later"
+   chunk="table this and revisit ~" — business idiom for deferring decisions
+✅ GOOD: original="That's a good point", natural="That's a valid point, and I'd add that~"
+   chunk="That's a valid point" — more precise than "good", builds on the conversation
+❌ SKIP: original="I'd like to discuss this", natural="I would like to discuss this" — no real upgrade
+❌ SKIP: original="I was wondering if we could proceed", natural="I was thinking if we could proceed" — trivial swap
+❌ SKIP: original="move forward with this plan", natural="proceed with this plan" — synonym, skip`,
 
-  advanced: `FEW-SHOT EXAMPLES (advanced):
-✅ GOOD: chunk="contingent on~" — sophisticated formal vocabulary
-✅ GOOD: chunk="from a strategic standpoint" — high-register discourse phrase
-✅ GOOD: chunk="I'd like to revisit~" — nuanced, shows initiative professionally
-✅ GOOD: chunk="ensure we're aligned on~" — formal alignment language
-❌ BAD: chunk="I was wondering if~" — too conversational/intermediate for advanced
-❌ BAD: chunk="Could we schedule~" — too simple for advanced
-❌ BAD: chunk="move forward with~" — intermediate collocation, not sophisticated enough`,
+  advanced: `FEW-SHOT EXAMPLES (advanced) — show how to UPGRADE the user's expression:
+✅ GOOD: original="I think we should reconsider this", natural="I'd like to revisit the premise of this approach"
+   chunk="revisit the premise of ~" — sophisticated, shows critical thinking
+✅ GOOD: original="This depends on the budget", natural="This is contingent on budget approval"
+   chunk="contingent on ~" — formal register appropriate for advanced business
+✅ GOOD: original="From a business point of view", natural="From a strategic standpoint"
+   chunk="from a strategic standpoint" — high-register discourse phrase
+❌ SKIP: original="ensure we're aligned", natural="make sure we agree" — downgrade, skip
+❌ SKIP: original="I was wondering if~", natural="I was thinking if~" — trivial swap
+❌ SKIP: original="contingent on approval", natural="subject to approval" — synonym at same level`,
 };
 
 // ── Main handler ───────────────────────────────────────────────────────────────
@@ -187,7 +215,11 @@ Scenario: ${scenario.title}
 Counterpart: ${scenario.personaName} (${scenario.personaRole})
 ${turnsText}
 
-SOURCE RULE: Extract from the User's responses. Find phrases the user said that could be expressed more naturally or effectively. If insufficient, generate alternative ways the user could have expressed the same idea at the ${scenario.difficulty} level.
+SOURCE RULE: Find phrases in the User's responses where a native business professional would express the same idea more naturally or effectively.
+INCLUDE: User said something correct but basic/common, AND there is a meaningfully more professional way to say it.
+SKIP: User's expression is already sophisticated for ${scenario.difficulty} level.
+SKIP: The only difference is a contraction or single synonym swap (e.g., "big" → "large", "I will" → "I'll").
+SKIP: The natural version changes the meaning rather than the register.
 
 ${fewShot}
 
@@ -199,7 +231,7 @@ CHUNK RULES (strictly enforced):
 
 For each expression:
 - "original": the phrase as used by the User (the less natural or less effective version)
-- "natural": minimal fix only — swap the problematic word/phrase, do NOT restructure the sentence
+- "natural": What a native business professional would say to express the SAME idea. This is an upgrade, not just a fix — aim for at least one sophistication level above what the user said. Restructuring is allowed if it produces a meaningfully more professional expression.
 - "reason": grammar / collocation / literal / set-phrase / formality / nuance
 - "explanation": 1-2 sentences. Cite exact grammar rule, name wrong/correct collocation pair, or explain nuance.${isJa ? " Write in Japanese." : ""}
 - "chunk": core learnable pattern (see CHUNK RULES above)
@@ -266,8 +298,10 @@ Return ONLY valid JSON:
       const exprData = JSON.parse(exprMatch[0]);
       if (Array.isArray(exprData.naturalExpressions)) {
         // Code-side chunk quality filter
-        naturalExpressions = exprData.naturalExpressions.filter((expr: { chunk?: string }) =>
-          isValidChunk(expr.chunk ?? "")
+        naturalExpressions = exprData.naturalExpressions.filter((expr: { chunk?: string; original?: string; natural?: string }) =>
+          isValidChunk(expr.chunk ?? "") &&
+          !BASIC_CHUNK_BLACKLIST.some(p => p.test(expr.chunk ?? "")) &&
+          isUpgradeWorthwhile(expr.original ?? "", expr.natural ?? "")
         );
       }
     }
