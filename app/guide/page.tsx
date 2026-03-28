@@ -8,88 +8,80 @@ import type { Language } from "@/types";
 
 const CONTENT = {
   en: {
-    langToggle: "JA",
     startBtn: "Start Practicing",
     hero: {
-      eyebrow: "English Speaking Practice",
-      title: "Speak more.\nSound like yourself.",
-      sub: "AI-powered practice built for the moment you freeze up.",
+      title: "Every conversation grows\nyour expressions.",
+      sub: "Speak. Get feedback. Keep the expressions that stick.",
     },
     problem: {
-      eyebrow: "The problem",
-      title: "You know English.\nYou just can't use it.",
+      title: "Sound familiar?",
       items: [
-        "Your vocabulary is fine. But the words don't come.",
-        "You practiced. Yet the same simple phrases keep coming out.",
-        "The gap between knowing and using never closes — until now.",
+        "You understand English — but in the moment, the same phrases keep coming out.",
+        "Knowing English and using English are two different things.",
+        "It's in your head. But it won't come out.",
       ],
     },
     how: {
-      eyebrow: "How it works",
+      title: "How it works",
       steps: [
         {
-          num: "01",
-          title: "Your scene,\ninstantly.",
-          desc: "Describe any real situation. Speaq builds a full conversation scenario around it in seconds.",
+          num: "1",
+          title: "Recreate your exact situation",
+          desc: "Any scene you need — AI instantly builds a realistic scenario around it.",
         },
         {
-          num: "02",
-          title: "Speak.\nGet real feedback.",
-          desc: "Use your voice. After each session, see exactly how a native speaker would have said it.",
+          num: "2",
+          title: "Speak and discover new expressions",
+          desc: "Tap the mic and talk. After each session, get feedback on how a native speaker would have said it.",
         },
         {
-          num: "03",
-          title: "Save it.\nOwn it.",
-          desc: "Add expressions to your Notebook. Quiz yourself until they come out without thinking.",
+          num: "3",
+          title: "Keep using them until they're yours",
+          desc: "Save expressions to your Notebook. Quiz yourself until they come out naturally.",
         },
       ],
     },
     loop: {
-      eyebrow: "The Speaq loop",
-      title: "Speak. Notice.\nOwn it.",
-      sub: "Practice, feedback, and retention in one seamless loop.",
+      title: "Speak. Notice. Own it.",
+      sub: "Practice, feedback, and retention — all in one loop.",
     },
   },
   ja: {
-    langToggle: "EN",
     startBtn: "練習を始める",
     hero: {
-      eyebrow: "英語スピーキング練習",
-      title: "話すたびに、\n自分の英語になる。",
-      sub: "「あのとき言えなかった」をなくすための、AIスピーキング練習。",
+      title: "会話するたびに、\n使える表現が増える。",
+      sub: "話して、フィードバックを受けて、表現を自分のものにする。",
     },
     problem: {
-      eyebrow: "こんな経験ありませんか",
-      title: "英語はわかる。\nでも、使えない。",
+      title: "こんな経験、ありませんか？",
       items: [
-        "単語は知っている。でも、いざとなると出てこない。",
-        "練習した。なのに、同じ表現しか口から出ない。",
-        "「知っている英語」と「使える英語」の差が、ずっと埋まらない。",
+        "英語はわかるのに、いざ話すと同じ表現しか出てこない。",
+        "知っている英語と、使える英語は、違う。",
+        "頭にあるのに、口から出てこない。",
       ],
     },
     how: {
-      eyebrow: "使い方",
+      title: "使い方",
       steps: [
         {
-          num: "01",
-          title: "あなたの場面を、\nすぐに再現。",
-          desc: "どんな状況でも大丈夫。AIが即座にリアルなシナリオを生成します。",
+          num: "1",
+          title: "あなたの場面を再現する",
+          desc: "どんなシーンでもOK。AIが即座にリアルなシナリオを生成する。",
         },
         {
-          num: "02",
-          title: "話す。\nリアルなフィードバック。",
-          desc: "マイクで話すだけ。セッション後、ネイティブならどう言うかがわかります。",
+          num: "2",
+          title: "話しながら、表現を発見する",
+          desc: "マイクで話すだけ。セッション後、ネイティブならどう言うかをフィードバックで知る。",
         },
         {
-          num: "03",
-          title: "保存して、\n自分のものにする。",
-          desc: "気になった表現はノートに保存。クイズで繰り返して、咄嗟に出てくるまで鍛えます。",
+          num: "3",
+          title: "使い続けて、自分のものにする",
+          desc: "気になった表現をノートに保存。クイズで繰り返して、咄嗟に出てくるまで鍛える。",
         },
       ],
     },
     loop: {
-      eyebrow: "Speaqのループ",
-      title: "話して、気づいて、\n定着する。",
+      title: "話して、気づいて、定着する。",
       sub: "練習・フィードバック・定着が、一つのループになっている。",
     },
   },
@@ -108,294 +100,279 @@ export default function GuidePage() {
   const c = CONTENT[lang];
 
   return (
-    <>
-      <style>{`
-        @keyframes fadeUp {
-          from { opacity: 0; transform: translateY(24px); }
-          to   { opacity: 1; transform: translateY(0); }
-        }
-        .gu-fade { animation: fadeUp 0.7s cubic-bezier(0.16,1,0.3,1) both; }
-        .gu-fade-1 { animation-delay: 0.05s; }
-        .gu-fade-2 { animation-delay: 0.15s; }
-        .gu-fade-3 { animation-delay: 0.25s; }
-      `}</style>
+    <main style={{
+      maxWidth: 640,
+      width: "100%",
+      margin: "0 auto",
+      padding: "24px 16px 120px",
+      minHeight: "100vh",
+    }}>
 
-      <main style={{
-        maxWidth: 600,
-        width: "100%",
-        margin: "0 auto",
-        minHeight: "100vh",
-        background: "var(--bg)",
-        paddingBottom: 120,
+      {/* Header */}
+      <div style={{
+        display: "flex",
+        justifyContent: "space-between",
+        alignItems: "center",
+        marginBottom: 32,
       }}>
-
-        {/* ── Nav ── */}
-        <nav style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          padding: "20px 24px",
-          position: "sticky",
-          top: 0,
-          zIndex: 50,
-          background: "rgba(245,245,247,0.85)",
-          backdropFilter: "blur(20px)",
-          WebkitBackdropFilter: "blur(20px)",
-        }}>
-          <SpeaqLogo />
-          <button
-            onClick={toggleLang}
-            style={{
-              padding: "6px 14px",
-              borderRadius: 20,
-              background: "transparent",
-              border: "1.5px solid var(--border)",
-              color: "var(--text-secondary)",
-              fontSize: 12,
-              fontWeight: 600,
-              cursor: "pointer",
-              letterSpacing: "0.04em",
-            }}
-          >
-            {c.langToggle}
-          </button>
-        </nav>
-
-        {/* ── Hero ── */}
-        <section style={{ padding: "56px 24px 72px" }}>
-          <div className="gu-fade gu-fade-1" style={{
-            fontSize: 11,
-            fontWeight: 700,
-            letterSpacing: "0.1em",
-            textTransform: "uppercase",
+        <SpeaqLogo />
+        <button
+          onClick={toggleLang}
+          style={{
+            padding: "6px 12px",
+            borderRadius: 20,
+            background: "var(--surface)",
+            border: "1px solid var(--border)",
             color: "var(--accent)",
-            marginBottom: 20,
-          }}>
-            {c.hero.eyebrow}
-          </div>
-          <h1 className="gu-fade gu-fade-2" style={{
-            fontSize: "clamp(36px, 9vw, 52px)",
+            fontSize: 12,
             fontWeight: 700,
-            letterSpacing: "-0.03em",
-            lineHeight: 1.1,
-            color: "var(--text)",
-            margin: 0,
-            marginBottom: 24,
+            cursor: "pointer",
+            boxShadow: "var(--shadow-sm)",
+          }}
+        >
+          {lang === "en" ? "JA" : "EN"}
+        </button>
+      </div>
+
+      {/* Hero */}
+      <div style={{
+        background: "linear-gradient(135deg, #007AFF 0%, #5856D6 100%)",
+        borderRadius: 20,
+        padding: "32px 24px 36px",
+        marginBottom: 12,
+        overflow: "hidden",
+        position: "relative",
+      }}>
+        <div style={{
+          position: "absolute", top: -32, right: -32,
+          width: 128, height: 128, borderRadius: "50%",
+          background: "rgba(255,255,255,0.06)",
+        }} />
+        <div style={{ position: "relative" }}>
+          <div style={{
+            fontSize: 24,
+            fontWeight: 800,
+            color: "#fff",
+            letterSpacing: "-0.025em",
+            lineHeight: 1.3,
+            marginBottom: 12,
             whiteSpace: "pre-line",
             wordBreak: "auto-phrase",
           } as React.CSSProperties}>
             {c.hero.title}
-          </h1>
-          <p className="gu-fade gu-fade-3" style={{
-            fontSize: 17,
-            color: "var(--text-secondary)",
+          </div>
+          <div style={{
+            fontSize: 14,
+            color: "rgba(255,255,255,0.82)",
             lineHeight: 1.6,
-            margin: 0,
-            maxWidth: 380,
             fontWeight: 400,
           }}>
             {c.hero.sub}
-          </p>
-        </section>
-
-        {/* ── Divider ── */}
-        <Divider />
-
-        {/* ── Problem ── */}
-        <section style={{ padding: "72px 24px" }}>
-          <Eyebrow>{c.problem.eyebrow}</Eyebrow>
-          <h2 style={{
-            fontSize: "clamp(28px, 7vw, 40px)",
-            fontWeight: 700,
-            letterSpacing: "-0.025em",
-            lineHeight: 1.15,
-            color: "var(--text)",
-            margin: "16px 0 40px",
-            whiteSpace: "pre-line",
-            wordBreak: "auto-phrase",
-          } as React.CSSProperties}>
-            {c.problem.title}
-          </h2>
-          <div style={{ display: "flex", flexDirection: "column", gap: 0 }}>
-            {c.problem.items.map((text, i) => (
-              <div
-                key={i}
-                style={{
-                  padding: "20px 0",
-                  borderBottom: i < c.problem.items.length - 1
-                    ? "1px solid var(--border)"
-                    : "none",
-                  display: "flex",
-                  alignItems: "baseline",
-                  gap: 16,
-                }}
-              >
-                <span style={{
-                  fontSize: 11,
-                  fontWeight: 700,
-                  color: "var(--text-muted)",
-                  letterSpacing: "0.04em",
-                  flexShrink: 0,
-                  minWidth: 20,
-                }}>
-                  {String(i + 1).padStart(2, "0")}
-                </span>
-                <span style={{
-                  fontSize: 16,
-                  color: "var(--text)",
-                  lineHeight: 1.6,
-                  fontWeight: 400,
-                  wordBreak: "auto-phrase",
-                } as React.CSSProperties}>
-                  {text}
-                </span>
-              </div>
-            ))}
           </div>
-        </section>
+        </div>
+      </div>
 
-        {/* ── Divider ── */}
-        <Divider />
+      {/* Problem */}
+      <div style={{ marginBottom: 12 }}>
+        <SectionHeader>{c.problem.title}</SectionHeader>
+        <div style={{
+          background: "var(--surface)",
+          borderRadius: 20,
+          boxShadow: "var(--shadow-sm)",
+          overflow: "hidden",
+        }}>
+          {c.problem.items.map((text, i) => (
+            <div
+              key={i}
+              style={{
+                padding: "16px 20px",
+                display: "flex",
+                alignItems: "flex-start",
+                gap: 12,
+                borderBottom: i < c.problem.items.length - 1
+                  ? "1px solid var(--border)"
+                  : "none",
+              }}
+            >
+              <div style={{
+                width: 22,
+                height: 22,
+                borderRadius: "50%",
+                background: "var(--surface2)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                flexShrink: 0,
+                fontSize: 11,
+                fontWeight: 700,
+                color: "var(--text-muted)",
+                marginTop: 1,
+              }}>
+                {i + 1}
+              </div>
+              <span style={{
+                fontSize: 14,
+                color: "var(--text)",
+                lineHeight: 1.65,
+                fontWeight: 400,
+                wordBreak: "auto-phrase",
+              } as React.CSSProperties}>
+                {text}
+              </span>
+            </div>
+          ))}
+        </div>
+      </div>
 
-        {/* ── How it works ── */}
-        <section style={{ padding: "72px 24px" }}>
-          <Eyebrow>{c.how.eyebrow}</Eyebrow>
-          <div style={{ display: "flex", flexDirection: "column", gap: 0, marginTop: 40 }}>
-            {c.how.steps.map((step, i) => (
-              <div
-                key={step.num}
-                style={{
-                  padding: "32px 0",
-                  borderBottom: i < c.how.steps.length - 1
-                    ? "1px solid var(--border)"
-                    : "none",
-                }}
-              >
+      {/* How it works */}
+      <div style={{ marginBottom: 12 }}>
+        <SectionHeader>{c.how.title}</SectionHeader>
+        <div style={{ display: "flex", flexDirection: "column", gap: 0 }}>
+          {c.how.steps.map((step, i) => (
+            <div
+              key={step.num}
+              style={{ display: "flex", gap: 0 }}
+            >
+              {/* Timeline */}
+              <div style={{
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                width: 48,
+                flexShrink: 0,
+              }}>
                 <div style={{
-                  fontSize: 11,
-                  fontWeight: 700,
-                  letterSpacing: "0.1em",
-                  color: "var(--text-muted)",
-                  marginBottom: 16,
+                  width: 36,
+                  height: 36,
+                  borderRadius: "50%",
+                  background: "linear-gradient(135deg, #007AFF 0%, #5856D6 100%)",
+                  color: "#fff",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  fontWeight: 800,
+                  fontSize: 14,
+                  flexShrink: 0,
+                  boxShadow: "0 2px 8px rgba(0,102,204,0.3)",
                 }}>
                   {step.num}
                 </div>
-                <h3 style={{
-                  fontSize: "clamp(22px, 5.5vw, 30px)",
-                  fontWeight: 700,
-                  letterSpacing: "-0.02em",
-                  lineHeight: 1.2,
-                  color: "var(--text)",
-                  margin: "0 0 14px",
-                  whiteSpace: "pre-line",
-                  wordBreak: "auto-phrase",
-                } as React.CSSProperties}>
-                  {step.title}
-                </h3>
-                <p style={{
-                  fontSize: 15,
-                  color: "var(--text-secondary)",
-                  lineHeight: 1.65,
-                  margin: 0,
-                  maxWidth: 400,
-                }}>
-                  {step.desc}
-                </p>
+                {i < c.how.steps.length - 1 && (
+                  <div style={{
+                    width: 2,
+                    flex: 1,
+                    background: "var(--border)",
+                    margin: "4px 0",
+                    minHeight: 24,
+                  }} />
+                )}
               </div>
-            ))}
-          </div>
-        </section>
 
-        {/* ── Divider ── */}
-        <Divider />
+              {/* Content */}
+              <div style={{
+                flex: 1,
+                paddingLeft: 12,
+                paddingBottom: i < c.how.steps.length - 1 ? 20 : 0,
+              }}>
+                <div style={{
+                  background: "var(--surface)",
+                  borderRadius: 16,
+                  padding: "14px 16px",
+                  boxShadow: "var(--shadow-sm)",
+                }}>
+                  <div style={{
+                    fontWeight: 700,
+                    fontSize: 15,
+                    color: "var(--text)",
+                    marginBottom: 6,
+                    lineHeight: 1.4,
+                    letterSpacing: "-0.01em",
+                    wordBreak: "auto-phrase",
+                  } as React.CSSProperties}>
+                    {step.title}
+                  </div>
+                  <div style={{
+                    fontSize: 13,
+                    color: "var(--text-secondary)",
+                    lineHeight: 1.65,
+                    wordBreak: "auto-phrase",
+                  } as React.CSSProperties}>
+                    {step.desc}
+                  </div>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
 
-        {/* ── Loop statement ── */}
-        <section style={{ padding: "72px 24px 80px", textAlign: "center" }}>
-          <Eyebrow center>{c.loop.eyebrow}</Eyebrow>
-          <h2 style={{
-            fontSize: "clamp(32px, 8vw, 46px)",
-            fontWeight: 700,
-            letterSpacing: "-0.03em",
-            lineHeight: 1.12,
+      {/* Loop */}
+      <div>
+        <div style={{
+          background: "var(--surface)",
+          borderRadius: 20,
+          padding: "28px 24px",
+          boxShadow: "var(--shadow-sm)",
+          textAlign: "center",
+          borderTop: "3px solid var(--accent)",
+        }}>
+          <div style={{
+            fontSize: 20,
+            fontWeight: 800,
             color: "var(--text)",
-            margin: "16px 0 20px",
-            whiteSpace: "pre-line",
+            letterSpacing: "-0.02em",
+            lineHeight: 1.35,
+            marginBottom: 8,
             wordBreak: "auto-phrase",
           } as React.CSSProperties}>
             {c.loop.title}
-          </h2>
-          <p style={{
-            fontSize: 15,
+          </div>
+          <div style={{
+            fontSize: 14,
             color: "var(--text-secondary)",
-            lineHeight: 1.65,
-            margin: 0,
-            maxWidth: 320,
-            marginLeft: "auto",
-            marginRight: "auto",
+            lineHeight: 1.6,
           }}>
             {c.loop.sub}
-          </p>
-        </section>
+          </div>
+        </div>
+      </div>
 
-      </main>
-
-      {/* ── Sticky CTA ── */}
-      <div style={{
-        position: "fixed",
-        bottom: 0,
-        left: 0,
-        right: 0,
-        padding: "16px 24px 36px",
-        background: "rgba(245,245,247,0.92)",
-        backdropFilter: "blur(24px)",
-        WebkitBackdropFilter: "blur(24px)",
-        borderTop: "1px solid var(--border)",
-        zIndex: 100,
-        display: "flex",
-        justifyContent: "center",
-      }}>
+      {/* CTA */}
+      <div style={{ marginTop: 24 }}>
         <button
           onClick={() => router.push("/")}
           style={{
             width: "100%",
-            maxWidth: 552,
-            padding: "16px 24px",
+            padding: "16px",
             borderRadius: 14,
-            background: "var(--text)",
-            color: "var(--bg)",
+            background: "linear-gradient(135deg, #007AFF 0%, #5856D6 100%)",
+            color: "#fff",
             border: "none",
-            fontWeight: 600,
-            fontSize: 17,
+            fontWeight: 700,
+            fontSize: 16,
             cursor: "pointer",
             letterSpacing: "-0.01em",
+            boxShadow: "0 4px 20px rgba(0,102,204,0.35)",
           }}
         >
           {c.startBtn}
         </button>
       </div>
-    </>
+
+    </main>
   );
 }
 
-function Divider() {
-  return (
-    <div style={{
-      height: 1,
-      background: "var(--border)",
-      margin: "0 24px",
-    }} />
-  );
-}
-
-function Eyebrow({ children, center }: { children: React.ReactNode; center?: boolean }) {
+function SectionHeader({ children }: { children: React.ReactNode }) {
   return (
     <div style={{
       fontSize: 11,
       fontWeight: 700,
-      letterSpacing: "0.1em",
       textTransform: "uppercase",
+      letterSpacing: "0.07em",
       color: "var(--text-muted)",
-      textAlign: center ? "center" : "left",
+      marginBottom: 10,
+      marginTop: 28,
     }}>
       {children}
     </div>
