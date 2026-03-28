@@ -106,19 +106,39 @@ export default function CreatePage() {
           <label style={{ fontSize: 12, fontWeight: 700, color: "var(--text-secondary)", textTransform: "uppercase", letterSpacing: "0.05em", display: "block", marginBottom: 8 }}>
             {tr.descriptionLabel}
           </label>
-          <textarea
+          <input
+            type="text"
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             placeholder={tr.descriptionPlaceholder}
-            rows={6}
             style={{
               width: "100%", padding: "14px 16px", borderRadius: 14,
               border: "1.5px solid var(--border)",
               background: "var(--surface)", color: "var(--text)",
               fontSize: 15, fontFamily: "inherit", outline: "none",
-              boxSizing: "border-box", resize: "none", lineHeight: 1.6,
+              boxSizing: "border-box",
             }}
           />
+          {/* Example chips */}
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginTop: 10 }}>
+            {(lang === "ja"
+              ? ["お店で注文する", "面接を受ける", "新しいテクノロジーについて話す", "プロジェクトの進捗を報告する", "旅行先でトラブル対応"]
+              : ["Ordering at a restaurant", "Job interview practice", "Discussing new technology", "Reporting project progress", "Handling travel issues"]
+            ).map((example) => (
+              <button
+                key={example}
+                onClick={() => setDescription(example)}
+                style={{
+                  padding: "6px 12px", borderRadius: 20,
+                  border: "1px solid var(--border)",
+                  background: "var(--surface2)", color: "var(--text-secondary)",
+                  fontSize: 13, cursor: "pointer", fontWeight: 500,
+                }}
+              >
+                {example}
+              </button>
+            ))}
+          </div>
         </div>
 
         {/* Difficulty */}

@@ -101,8 +101,8 @@ export const i18n = {
     turns: "turns", turnSingular: "turn",
     // create
     createTitle: "Create Scenario", createSubtitle: "Describe what you want to practice",
-    descriptionLabel: "Describe your scenario *",
-    descriptionPlaceholder: "e.g. I need to push back on a client demanding a 30% budget cut without losing the deal...",
+    descriptionLabel: "What do you want to practice?",
+    descriptionPlaceholder: "e.g. Ordering at a restaurant",
     difficultyLabel: "Difficulty",
     saveScenario: "Create Scenario",
     createFailed: "Failed to create scenario. Please try again.",
@@ -221,8 +221,8 @@ export const i18n = {
     turns: "ターン", turnSingular: "ターン",
     // create
     createTitle: "シナリオを作成", createSubtitle: "練習したい状況を説明してください",
-    descriptionLabel: "シナリオを説明してください *",
-    descriptionPlaceholder: "例：予算30%削減を求めてくるクライアントに、契約を失わずに断らなければならない...",
+    descriptionLabel: "何を練習したいですか？",
+    descriptionPlaceholder: "例：お店で注文する",
     difficultyLabel: "難易度",
     saveScenario: "シナリオを作成",
     createFailed: "シナリオの作成に失敗しました。もう一度お試しください。",

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Sparkles, PenLine, SlidersHorizontal, Plus, ChevronRight } from "lucide-react";
+import { Sparkles, PenLine, Plus, ChevronRight } from "lucide-react";
 import ScenarioCard from "@/components/ScenarioCard";
 import SettingsBar from "@/components/SettingsBar";
 import SpeaqLogo from "@/components/SpeaqLogo";
@@ -254,7 +254,7 @@ export default function Home() {
               marginBottom: 16,
             }}>
               <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
-                <SlidersHorizontal size={14} color="var(--text-muted)" strokeWidth={2} />
+                <Sparkles size={14} color="var(--text-muted)" strokeWidth={2} />
                 <span style={{ fontSize: 13, color: "var(--text-muted)", fontWeight: 500 }}>
                   {settingsSummary}
                 </span>
@@ -328,6 +328,7 @@ export default function Home() {
         onChange={handleSettingsChange}
         open={settingsOpen}
         onOpenChange={setSettingsOpen}
+        onGenerate={generateScenario}
       />
 
       {/* FAB */}
@@ -399,69 +400,35 @@ export default function Home() {
           {lang === "ja" ? "新しいシナリオ" : "New Scenario"}
         </div>
 
-        {/* Card 1: Generate + Settings */}
-        <div style={{
-          background: "var(--surface)",
-          borderRadius: 20,
-          overflow: "hidden",
-          boxShadow: "0 8px 32px rgba(0,0,0,0.16)",
-          marginBottom: 10,
-        }}>
-          {/* Generate row */}
-          <button
-            onClick={generateScenario}
-            disabled={generating}
-            style={{
-              width: "100%", display: "flex", alignItems: "center", gap: 16,
-              padding: "18px 20px",
-              background: "transparent", border: "none",
-              cursor: generating ? "not-allowed" : "pointer",
-              textAlign: "left",
-            }}
-          >
-            <div style={{
-              width: 52, height: 52, borderRadius: 14, flexShrink: 0,
-              background: "linear-gradient(135deg, #007AFF 0%, #5856D6 100%)",
-              display: "flex", alignItems: "center", justifyContent: "center",
-              boxShadow: "0 4px 12px rgba(0,102,204,0.35)",
-            }}>
-              <Sparkles size={24} color="#fff" strokeWidth={1.8} />
+        {/* Card 1: Generate */}
+        <button
+          onClick={() => { setSheetOpen(false); setTimeout(() => setSettingsOpen(true), 320); }}
+          style={{
+            width: "100%", display: "flex", alignItems: "center", gap: 16,
+            padding: "18px 20px", marginBottom: 10,
+            background: "var(--surface)", borderRadius: 20,
+            boxShadow: "0 8px 32px rgba(0,0,0,0.16)",
+            border: "none", cursor: "pointer", textAlign: "left",
+          }}
+        >
+          <div style={{
+            width: 52, height: 52, borderRadius: 14, flexShrink: 0,
+            background: "linear-gradient(135deg, #007AFF 0%, #5856D6 100%)",
+            display: "flex", alignItems: "center", justifyContent: "center",
+            boxShadow: "0 4px 12px rgba(0,102,204,0.35)",
+          }}>
+            <Sparkles size={24} color="#fff" strokeWidth={1.8} />
+          </div>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontWeight: 700, fontSize: 17, color: "var(--text)", marginBottom: 2, letterSpacing: "-0.01em" }}>
+              {lang === "ja" ? "シナリオを生成" : "Generate Scenario"}
             </div>
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ fontWeight: 700, fontSize: 17, color: "var(--text)", marginBottom: 2, letterSpacing: "-0.01em" }}>
-                {lang === "ja" ? "シナリオを生成" : "Generate Scenario"}
-              </div>
-              <div style={{ fontSize: 13, color: "var(--text-muted)" }}>
-                {lang === "ja" ? "AIがリアルなシナリオを作成" : "AI creates a realistic scenario"}
-              </div>
-            </div>
-            {generating && <SpinnerIcon color="var(--accent)" />}
-          </button>
-
-          {/* Divider */}
-          <div style={{ height: 1, background: "var(--border)", marginLeft: 88 }} />
-
-          {/* Settings row */}
-          <button
-            onClick={() => { setSheetOpen(false); setTimeout(() => setSettingsOpen(true), 320); }}
-            style={{
-              width: "100%", display: "flex", alignItems: "center", gap: 12,
-              padding: "13px 20px",
-              background: "transparent", border: "none",
-              cursor: "pointer", textAlign: "left",
-            }}
-          >
-            <div style={{
-              width: 52, display: "flex", justifyContent: "center", flexShrink: 0,
-            }}>
-              <SlidersHorizontal size={18} color="var(--text-muted)" strokeWidth={2} />
-            </div>
-            <div style={{ flex: 1, fontSize: 13, color: "var(--text-secondary)", fontWeight: 500 }}>
+            <div style={{ fontSize: 13, color: "var(--text-muted)" }}>
               {settingsSummary}
             </div>
-            <ChevronRight size={16} color="var(--text-muted)" strokeWidth={2} />
-          </button>
-        </div>
+          </div>
+          <ChevronRight size={18} color="var(--text-muted)" strokeWidth={2} />
+        </button>
 
         {/* Card 2: Create */}
         <button

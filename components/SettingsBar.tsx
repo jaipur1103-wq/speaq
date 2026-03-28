@@ -9,9 +9,10 @@ interface Props {
   onChange: (s: AppSettings) => void;
   open?: boolean;
   onOpenChange?: (v: boolean) => void;
+  onGenerate?: () => void;
 }
 
-export default function SettingsBar({ settings, onChange, open, onOpenChange }: Props) {
+export default function SettingsBar({ settings, onChange, open, onOpenChange, onGenerate }: Props) {
   const [internalOpen, setInternalOpen] = useState(false);
   const isOpen = open !== undefined ? open : internalOpen;
   const setOpen = (v: boolean) => {
@@ -174,10 +175,10 @@ export default function SettingsBar({ settings, onChange, open, onOpenChange }: 
 
         </div>
 
-        {/* Done button */}
+        {/* Done / Generate button */}
         <div style={{ padding: "16px 20px 28px" }}>
           <button
-            onClick={() => setOpen(false)}
+            onClick={() => { setOpen(false); if (onGenerate) onGenerate(); }}
             style={{
               width: "100%", padding: "14px",
               borderRadius: 14,
@@ -189,7 +190,9 @@ export default function SettingsBar({ settings, onChange, open, onOpenChange }: 
               letterSpacing: "-0.01em",
             }}
           >
-            {settings.language === "ja" ? "完了" : "Done"}
+            {onGenerate
+              ? (settings.language === "ja" ? "この設定で生成する" : "Generate with these settings")
+              : (settings.language === "ja" ? "完了" : "Done")}
           </button>
         </div>
       </div>
