@@ -86,32 +86,6 @@ export default function HistoryPage() {
             <StatPill value={recentDates.filter(Boolean).length} label={isJa ? "直近7日" : "Last 7 days"} />
           </div>
 
-          {/* 7-day activity dots */}
-          <div style={{
-            background: "var(--surface)", borderRadius: 16,
-            padding: "14px 16px", marginBottom: 20,
-            boxShadow: "var(--shadow-sm)",
-          }}>
-            <div style={{ fontSize: 11, fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.07em", marginBottom: 10 }}>
-              {isJa ? "直近7日の練習" : "Last 7 days"}
-            </div>
-            <div style={{ display: "flex", gap: 6, alignItems: "flex-end" }}>
-              {recentDates.map((active, i) => (
-                <div key={i} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 4, flex: 1 }}>
-                  <div style={{
-                    height: active ? 28 : 8,
-                    borderRadius: 6,
-                    background: active ? "var(--accent)" : "var(--surface2)",
-                    width: "100%",
-                    transition: "height 0.3s ease",
-                  }} />
-                  <span style={{ fontSize: 10, color: "var(--text-muted)", fontWeight: 500 }}>
-                    {getDayLabel(i, isJa)}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
 
           {/* Section label */}
           <div style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.07em", color: "var(--text-muted)", marginBottom: 10 }}>
@@ -251,14 +225,3 @@ function getRecentDays(history: ScoreRecord[], days: number): boolean[] {
   });
 }
 
-function getDayLabel(index: number, isJa: boolean): string {
-  const today = new Date();
-  const d = new Date(today);
-  d.setDate(today.getDate() - (6 - index));
-  if (isJa) {
-    const days = ["日", "月", "火", "水", "木", "金", "土"];
-    return days[d.getDay()];
-  }
-  const days = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
-  return days[d.getDay()];
-}
