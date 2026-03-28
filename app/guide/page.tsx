@@ -7,33 +7,15 @@ import SpeaqLogo from "@/components/SpeaqLogo";
 import type { Language } from "@/types";
 
 const STEPS_EN = [
-  { number: "1", title: "Build your scenario", description: "Tomorrow's meeting, a client negotiation, any situation. AI instantly generates a realistic scenario for your exact context.", icon: "✨" },
-  { number: "2", title: "Speak with AI", description: "Tap the mic and speak in English. Your voice is transcribed automatically. After your session, get honest feedback and natural expressions you can actually use.", icon: "🎙" },
-  { number: "3", title: "Make expressions stick", description: "Save key phrases to your Notebook. Quiz yourself with chunk-based practice — say it, self-evaluate, repeat until it's yours.", icon: "📒" },
+  { number: "1", title: "Recreate your exact situation", description: "Any scene you need — AI instantly builds a realistic scenario around it.", icon: "✨" },
+  { number: "2", title: "Speak and discover new expressions", description: "Tap the mic and talk. After each session, get feedback on how a native speaker would have said it.", icon: "🎙" },
+  { number: "3", title: "Keep using them until they're yours", description: "Save expressions to your Notebook. Quiz yourself until they come out naturally.", icon: "📒" },
 ];
 
 const STEPS_JA = [
-  { number: "1", title: "シナリオを作る", description: "明日の会議、取引先との交渉、どんなシーンでも。AIが即座にリアルな練習シナリオを生成します。", icon: "✨" },
-  { number: "2", title: "AIと話す", description: "マイクをタップして英語で話すだけ。音声は自動でテキストに変換されます。セッション後は、あなたが本当に使えるようになる表現をフィードバック。採点ではなく、コーチング。", icon: "🎙" },
-  { number: "3", title: "表現を定着させる", description: "気になった表現をノートに保存。クイズで繰り返し練習して、自分のものにします。", icon: "📒" },
-];
-
-const FEATURES_EN = [
-  { icon: "✨", title: "Custom scenarios", desc: "AI generates a scenario for your exact situation" },
-  { icon: "🎙", title: "Voice input", desc: "Speak naturally — transcription is automatic" },
-  { icon: "💬", title: "Honest feedback", desc: "Coaching, not scoring — real expressions you can use next time" },
-  { icon: "📒", title: "Expression notebook", desc: "Save and manage phrases that matter to you" },
-  { icon: "🧠", title: "Chunk quiz", desc: "Repeat until key expressions are truly yours" },
-  { icon: "⭐", title: "Favorites", desc: "Pin your most-used scenarios for quick access" },
-];
-
-const FEATURES_JA = [
-  { icon: "✨", title: "カスタムシナリオ", desc: "あなたのシーンに合ったシナリオをAIが即座に生成" },
-  { icon: "🎙", title: "音声入力", desc: "話すだけ。文字起こしは自動" },
-  { icon: "💬", title: "正直なフィードバック", desc: "採点ではなくコーチング。次に使える表現を提示" },
-  { icon: "📒", title: "表現ノート", desc: "気になった表現を保存して管理" },
-  { icon: "🧠", title: "クイズで定着", desc: "繰り返し練習して、自分のものにする" },
-  { icon: "⭐", title: "お気に入り", desc: "よく使うシナリオをすぐ呼び出せる" },
+  { number: "1", title: "あなたの場面を再現する", description: "どんなシーンでもOK。AIが即座にリアルなシナリオを生成する。", icon: "✨" },
+  { number: "2", title: "話しながら、表現を発見する", description: "マイクで話すだけ。セッション後、ネイティブならどう言うかをフィードバックで知る。", icon: "🎙" },
+  { number: "3", title: "使い続けて、自分のものにする", description: "気になった表現をノートに保存。クイズで繰り返して、咄嗟に出てくるまで鍛える。", icon: "📒" },
 ];
 
 export default function GuidePage() {
@@ -48,14 +30,23 @@ export default function GuidePage() {
   };
 
   const steps = lang === "ja" ? STEPS_JA : STEPS_EN;
-  const features = lang === "ja" ? FEATURES_JA : FEATURES_EN;
 
-  const heroTitle = lang === "ja" ? <>明日使う英語を、<br />今日練習する。</> : <>Practice tomorrow's<br />English, today.</>;
-  const heroDesc = lang === "ja"
-    ? "知らなかった表現と出会い、使うたびに自分のものになる。"
-    : "Meet new expressions. Make them yours.";
+  const heroTitle = lang === "ja" ? "会話するたびに、使える表現が増える。" : "Every conversation grows your expressions.";
+  const heroDesc = lang === "ja" ? "ネイティブの表現を、自分の言葉にする。" : "Make native expressions your own.";
+  const painPoints = lang === "ja"
+    ? [
+        "英語はわかるのに、いざ話すと同じ表現しか出てこない。",
+        "知ってる英語と、使える英語は、違う。",
+        "頭にあるのに、口から出てこない。",
+      ]
+    : [
+        "You understand English — but in the moment, the same phrases keep coming out.",
+        "Knowing English and using English are two different things.",
+        "It's in your head. But it won't come out.",
+      ];
   const howItWorksLabel = lang === "ja" ? "使い方" : "How it works";
-  const featuresLabel = lang === "ja" ? "機能" : "Features";
+  const whySpeaqLabel = lang === "ja" ? "Why Speaq" : "Why Speaq";
+  const whySpeaq = lang === "ja" ? "話して、気づいて、定着する。" : "Speak. Notice. Own it.";
   const startBtn = lang === "ja" ? "練習を始める →" : "Start Practicing →";
   const startShort = lang === "ja" ? "始める →" : "Start →";
 
@@ -93,15 +84,35 @@ export default function GuidePage() {
 
       {/* Hero */}
       <div style={{
-        background: "var(--accent)", borderRadius: 20, padding: "28px 24px",
+        background: "var(--accent)", borderRadius: 20, padding: "36px 24px",
         marginBottom: 28, textAlign: "center",
       }}>
-        <div style={{ fontSize: 26, fontWeight: 800, color: "#fff", letterSpacing: "-0.03em", lineHeight: 1.2, marginBottom: 10 }}>
+        <div style={{ fontSize: 24, fontWeight: 800, color: "#fff", letterSpacing: "-0.02em", lineHeight: 1.4, marginBottom: 10 }}>
           {heroTitle}
         </div>
-        <div style={{ fontSize: 14, color: "rgba(255,255,255,0.8)", lineHeight: 1.6 }}>
+        <div style={{ fontSize: 14, color: "rgba(255,255,255,0.75)", lineHeight: 1.7 }}>
           {heroDesc}
         </div>
+      </div>
+
+      {/* Pain */}
+      <div style={{
+        background: "var(--surface)", borderRadius: 20, padding: "20px 22px",
+        marginBottom: 28, boxShadow: "var(--shadow-sm)",
+      }}>
+        {painPoints.map((point, i) => (
+          <div key={i} style={{
+            display: "flex", alignItems: "flex-start", gap: 10,
+            paddingBottom: i < painPoints.length - 1 ? 12 : 0,
+            marginBottom: i < painPoints.length - 1 ? 12 : 0,
+            borderBottom: i < painPoints.length - 1 ? "1px solid var(--border)" : "none",
+          }}>
+            <span style={{ color: "var(--text-muted)", fontSize: 13, marginTop: 1, flexShrink: 0 }}>—</span>
+            <span style={{ fontSize: 14, color: "var(--text-secondary)", lineHeight: 1.6, wordBreak: "auto-phrase" } as React.CSSProperties}>
+              {point}
+            </span>
+          </div>
+        ))}
       </div>
 
       {/* How it works */}
@@ -126,7 +137,7 @@ export default function GuidePage() {
                 <div style={{ fontWeight: 700, fontSize: 14, color: "var(--text)", marginBottom: 3 }}>
                   {step.icon} {step.title}
                 </div>
-                <div style={{ fontSize: 13, color: "var(--text-secondary)", lineHeight: 1.5 }}>
+                <div style={{ fontSize: 13, color: "var(--text-secondary)", lineHeight: 1.6, wordBreak: "auto-phrase" } as React.CSSProperties}>
                   {step.description}
                 </div>
               </div>
@@ -135,20 +146,16 @@ export default function GuidePage() {
         </div>
       </div>
 
-      {/* Features */}
+      {/* Why Speaq */}
       <div style={{ marginBottom: 32 }}>
-        <SectionTitle>{featuresLabel}</SectionTitle>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
-          {features.map((f) => (
-            <div key={f.title} style={{
-              background: "var(--surface)", borderRadius: 16, padding: "14px 16px",
-              boxShadow: "var(--shadow-sm)",
-            }}>
-              <div style={{ fontSize: 22, marginBottom: 6 }}>{f.icon}</div>
-              <div style={{ fontWeight: 700, fontSize: 13, color: "var(--text)", marginBottom: 3 }}>{f.title}</div>
-              <div style={{ fontSize: 12, color: "var(--text-muted)", lineHeight: 1.4 }}>{f.desc}</div>
-            </div>
-          ))}
+        <SectionTitle>{whySpeaqLabel}</SectionTitle>
+        <div style={{
+          background: "var(--surface)", borderRadius: 20, padding: "24px 22px",
+          boxShadow: "var(--shadow-sm)", textAlign: "center",
+        }}>
+          <div style={{ fontSize: 20, fontWeight: 800, color: "var(--text)", letterSpacing: "-0.02em", lineHeight: 1.5 }}>
+            {whySpeaq}
+          </div>
         </div>
       </div>
 
