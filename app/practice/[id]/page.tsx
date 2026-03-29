@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import type { Feedback, Message, NaturalExpression, Scenario } from "@/types";
-import { saveExpression, getSettings, saveScoreRecord } from "@/lib/storage";
+import { saveExpression, getSettings, saveScoreRecord } from "@/lib/db";
 import { i18n } from "@/lib/i18n";
 import type { Tr } from "@/lib/i18n";
 
@@ -61,8 +61,8 @@ export default function PracticePage() {
   const replyTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const replyAbortRef = useRef<AbortController | null>(null);
 
-  const initSession = useRef(() => {});
-  initSession.current = () => {
+  const initSession = useRef(async () => {});
+  initSession.current = async () => {
     if (replyTimerRef.current) { clearTimeout(replyTimerRef.current); replyTimerRef.current = null; }
     if (replyAbortRef.current) { replyAbortRef.current.abort(); replyAbortRef.current = null; }
     const raw = sessionStorage.getItem("current_scenario");
@@ -83,7 +83,7 @@ export default function PracticePage() {
     setRecordingSeconds(0);
     setLoadingReply(false);
     setLoadingFinalFeedback(false);
-    const settings = getSettings();
+    const settings = await getSettings();
     const l = settings.language ?? "en";
     setLang(l);
     setTr(i18n[l]);
@@ -285,14 +285,14 @@ export default function PracticePage() {
     setLoadingFinalFeedback(false);
   };
 
-  const handleSaveExpression = (expr: NaturalExpression, scenarioTitle: string, exprKey: string) => {
-    saveExpression({ ...expr, scenarioTitle, category: scenario?.category ?? "" });
+  const handleSaveExpression = async (expr: NaturalExpression, scenarioTitle: string, exprKey: string) => {
+    await saveExpression({ ...expr, scenarioTitle, category: scenario?.category ?? "" });
     setSavedIds((prev) => new Set(prev).add(exprKey));
   };
 
-  const doSaveScore = (fb: Feedback, title: string) => {
+  const doSaveScore = async (fb: Feedback, title: string) => {
     if (scoreSaved) return;
-    saveScoreRecord({
+    await saveScoreRecord({
       date: new Date().toISOString().slice(0, 10),
       scenarioTitle: title,
       scenarioCategory: scenario?.category,

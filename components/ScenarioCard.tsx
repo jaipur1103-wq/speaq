@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Star, Trash2, ChevronRight } from "lucide-react";
 import type { Language, Scenario } from "@/types";
-import { toggleFavorite } from "@/lib/storage";
+import { toggleFavorite } from "@/lib/db";
 
 interface Props {
   scenario: Scenario;
@@ -29,9 +29,9 @@ export default function ScenarioCard({ scenario, onDelete, isFavorite, onFavorit
     router.push(`/practice/${scenario.id}?t=${Date.now()}`);
   };
 
-  const handleFavorite = (e: React.MouseEvent) => {
+  const handleFavorite = async (e: React.MouseEvent) => {
     e.stopPropagation();
-    toggleFavorite(scenario.id);
+    await toggleFavorite(scenario.id);
     onFavoriteChange?.();
   };
 

@@ -1,14 +1,15 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { saveCustomScenario, getSettings, saveSettings } from "@/lib/storage";
+import { saveCustomScenario, getSettings, saveSettings, DEFAULT_SETTINGS } from "@/lib/db";
 import { i18n } from "@/lib/i18n";
 import type { Difficulty, Language, Scenario } from "@/types";
 
 export default function CreatePage() {
   const router = useRouter();
-  const [lang, setLang] = useState<Language>(() => getSettings().language ?? "en");
+  const [lang, setLang] = useState<Language>(DEFAULT_SETTINGS.language);
+  const [settings, setSettings] = useState(DEFAULT_SETTINGS);
   const tr = i18n[lang];
 
   const [description, setDescription] = useState("");
@@ -16,11 +17,16 @@ export default function CreatePage() {
   const [generating, setGenerating] = useState(false);
   const [error, setError] = useState("");
 
+  useEffect(() => {
+    getSettings().then((s) => { setSettings(s); setLang(s.language); });
+  }, []);
+
   const toggleLang = () => {
     const newLang: Language = lang === "en" ? "ja" : "en";
     setLang(newLang);
-    const s = getSettings();
-    saveSettings({ ...s, language: newLang });
+    const newSettings = { ...settings, language: newLang };
+    setSettings(newSettings);
+    saveSettings(newSettings);
   };
 
   const handleCreate = async () => {
@@ -50,7 +56,7 @@ export default function CreatePage() {
         personaName: data.personaName,
         personaRole: data.personaRole,
       };
-      saveCustomScenario(scenario);
+      await saveCustomScenario(scenario);
       router.push("/");
     } catch {
       setError(tr.createFailed);

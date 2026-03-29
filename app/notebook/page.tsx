@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Moon, Sun } from "lucide-react";
-import { getSavedExpressions, deleteExpression, getSettings, saveSettings } from "@/lib/storage";
+import { getSavedExpressions, deleteExpression, getSettings, saveSettings, DEFAULT_SETTINGS } from "@/lib/db";
 import { useRouter } from "next/navigation";
 import { i18n } from "@/lib/i18n";
 import type { Tr } from "@/lib/i18n";
@@ -16,26 +16,36 @@ export default function NotebookPage() {
   const [expressions, setExpressions] = useState<SavedExpression[]>([]);
   const [filter, setFilter] = useState<Filter>("all");
   const [dark, setDark] = useState(false);
-  const [lang, setLang] = useState<Language>(() => getSettings().language ?? "en");
+  const [lang, setLang] = useState<Language>(DEFAULT_SETTINGS.language);
+  const [settings, setSettings] = useState(DEFAULT_SETTINGS);
 
   const tr = i18n[lang];
 
-  const reload = () => setExpressions(getSavedExpressions());
+  const reload = async () => {
+    setExpressions(await getSavedExpressions());
+  };
 
   useEffect(() => {
-    reload();
+    (async () => {
+      const [exprs, s] = await Promise.all([getSavedExpressions(), getSettings()]);
+      setExpressions(exprs);
+      setSettings(s);
+      setLang(s.language);
+    })();
     setDark(document.documentElement.classList.contains("dark"));
   }, []);
 
   const toggleLang = () => {
     const newLang: Language = lang === "en" ? "ja" : "en";
     setLang(newLang);
-    saveSettings({ ...getSettings(), language: newLang });
+    const newSettings = { ...settings, language: newLang };
+    setSettings(newSettings);
+    saveSettings(newSettings);
   };
 
-  const handleDelete = (id: string) => {
-    deleteExpression(id);
-    reload();
+  const handleDelete = async (id: string) => {
+    await deleteExpression(id);
+    await reload();
   };
 
   const filtered = expressions.filter((e) => {

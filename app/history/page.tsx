@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { getScoreHistory, getSettings, saveSettings, getSavedExpressions } from "@/lib/storage";
+import { getScoreHistory, getSettings, saveSettings, getSavedExpressions, DEFAULT_SETTINGS } from "@/lib/db";
 import type { Language, ScoreRecord } from "@/types";
 import SpeaqLogo from "@/components/SpeaqLogo";
 import { ChevronDown, ChevronUp } from "lucide-react";
@@ -20,17 +20,29 @@ const difficultyLabel: Record<string, Record<string, string>> = {
 export default function HistoryPage() {
   const [history, setHistory] = useState<ScoreRecord[]>([]);
   const [expressionCount, setExpressionCount] = useState(0);
-  const [lang, setLang] = useState<Language>(() => getSettings().language ?? "en");
+  const [lang, setLang] = useState<Language>(DEFAULT_SETTINGS.language);
+  const [settings, setSettings] = useState(DEFAULT_SETTINGS);
 
   useEffect(() => {
-    setHistory(getScoreHistory());
-    setExpressionCount(getSavedExpressions().length);
+    (async () => {
+      const [h, exprs, s] = await Promise.all([
+        getScoreHistory(),
+        getSavedExpressions(),
+        getSettings(),
+      ]);
+      setHistory(h);
+      setExpressionCount(exprs.length);
+      setSettings(s);
+      setLang(s.language);
+    })();
   }, []);
 
   const toggleLang = () => {
     const newLang: Language = lang === "en" ? "ja" : "en";
     setLang(newLang);
-    saveSettings({ ...getSettings(), language: newLang });
+    const newSettings = { ...settings, language: newLang };
+    setSettings(newSettings);
+    saveSettings(newSettings);
   };
 
   const isJa = lang === "ja";

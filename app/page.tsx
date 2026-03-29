@@ -7,16 +7,16 @@ import ScenarioCard from "@/components/ScenarioCard";
 import SettingsBar from "@/components/SettingsBar";
 import SpeaqLogo from "@/components/SpeaqLogo";
 import {
-  getSettings, saveSettings, getSavedScenarios, saveGeneratedScenario,
+  DEFAULT_SETTINGS, getSettings, saveSettings, getSavedScenarios, saveGeneratedScenario,
   deleteSavedScenario, getCustomScenarios, deleteCustomScenario, getFavoriteIds,
   getStreak, getSavedExpressions,
-} from "@/lib/storage";
+} from "@/lib/db";
 import { i18n } from "@/lib/i18n";
 import type { AppSettings, Language, Scenario } from "@/types";
 
 export default function Home() {
   const router = useRouter();
-  const [settings, setSettings] = useState<AppSettings>(getSettings());
+  const [settings, setSettings] = useState<AppSettings>(DEFAULT_SETTINGS);
   const [savedScenarios, setSavedScenarios] = useState<Scenario[]>([]);
   const [customScenarios, setCustomScenarios] = useState<Scenario[]>([]);
   const [favoriteIds, setFavoriteIds] = useState<string[]>([]);
@@ -30,16 +30,29 @@ export default function Home() {
   const lang = settings.language ?? "en";
   const tr = i18n[lang];
 
-  const reload = () => {
-    setSavedScenarios(getSavedScenarios());
-    setCustomScenarios(getCustomScenarios());
-    setFavoriteIds(getFavoriteIds());
+  const reload = async () => {
+    const [saved, custom, favs] = await Promise.all([
+      getSavedScenarios(),
+      getCustomScenarios(),
+      getFavoriteIds(),
+    ]);
+    setSavedScenarios(saved);
+    setCustomScenarios(custom);
+    setFavoriteIds(favs);
   };
 
   useEffect(() => {
-    reload();
-    setStreak(getStreak());
-    setReviewCount(getSavedExpressions().filter((e) => !e.learned).length);
+    (async () => {
+      const [s, streak, exprs] = await Promise.all([
+        getSettings(),
+        getStreak(),
+        getSavedExpressions(),
+      ]);
+      setSettings(s);
+      setStreak(streak);
+      setReviewCount(exprs.filter((e) => !e.learned).length);
+      await reload();
+    })();
   }, []);
 
   const handleSettingsChange = (s: AppSettings) => {
@@ -81,8 +94,8 @@ export default function Home() {
         personaStyle: data.personaStyle, personaName: data.personaName,
         personaRole: data.personaRole,
       };
-      saveGeneratedScenario(scenario);
-      reload();
+      await saveGeneratedScenario(scenario);
+      await reload();
     } catch {
       setError(tr.generateFailed);
     } finally {
@@ -90,8 +103,8 @@ export default function Home() {
     }
   };
 
-  const handleDeleteSaved = (id: string) => { deleteSavedScenario(id); reload(); };
-  const handleDeleteCustom = (id: string) => { deleteCustomScenario(id); reload(); };
+  const handleDeleteSaved = async (id: string) => { await deleteSavedScenario(id); await reload(); };
+  const handleDeleteCustom = async (id: string) => { await deleteCustomScenario(id); await reload(); };
 
   const allScenarios = [...customScenarios, ...savedScenarios];
   const favoriteScenarios = allScenarios.filter((s) => favoriteIds.includes(s.id));

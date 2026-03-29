@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { Moon, Sun } from "lucide-react";
-import { getSavedExpressions, markQuizSuccess, getSettings, saveSettings } from "@/lib/storage";
+import { getSavedExpressions, markQuizSuccess, getSettings, saveSettings, DEFAULT_SETTINGS } from "@/lib/db";
 import { i18n } from "@/lib/i18n";
 import type { Language, SavedExpression } from "@/types";
 import SpeaqLogo from "@/components/SpeaqLogo";
@@ -14,7 +14,8 @@ type QuizItem = SavedExpression & { quizPromptJa: string };
 export default function QuizPage() {
   const [expressions, setExpressions] = useState<SavedExpression[]>([]);
   const [dark, setDark] = useState(false);
-  const [lang, setLang] = useState<Language>(() => getSettings().language ?? "en");
+  const [lang, setLang] = useState<Language>(DEFAULT_SETTINGS.language);
+  const [settings, setSettings] = useState(DEFAULT_SETTINGS);
 
   const [phase, setPhase] = useState<QuizPhase>("select");
   const [mode, setMode] = useState<QuizMode>("today");
@@ -26,14 +27,21 @@ export default function QuizPage() {
   const tr = i18n[lang];
 
   useEffect(() => {
-    setExpressions(getSavedExpressions());
+    (async () => {
+      const [exprs, s] = await Promise.all([getSavedExpressions(), getSettings()]);
+      setExpressions(exprs);
+      setSettings(s);
+      setLang(s.language);
+    })();
     setDark(document.documentElement.classList.contains("dark"));
   }, []);
 
   const toggleLang = () => {
     const newLang: Language = lang === "en" ? "ja" : "en";
     setLang(newLang);
-    saveSettings({ ...getSettings(), language: newLang });
+    const newSettings = { ...settings, language: newLang };
+    setSettings(newSettings);
+    saveSettings(newSettings);
   };
 
   const todayStr = new Date().toISOString().slice(0, 10);
@@ -79,12 +87,12 @@ export default function QuizPage() {
     setPhase("quiz");
   };
 
-  const handleQuizUsed = (id: string) => {
-    const counted = markQuizSuccess(id, quizSessionUsed);
+  const handleQuizUsed = async (id: string) => {
+    const counted = await markQuizSuccess(id, quizSessionUsed);
     if (counted) {
       setQuizSessionUsed((prev) => new Set(prev).add(id));
       setQuizSessionCount((c) => c + 1);
-      setExpressions(getSavedExpressions());
+      setExpressions(await getSavedExpressions());
     }
     advance();
   };
