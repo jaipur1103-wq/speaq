@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { Moon, Sun } from "lucide-react";
-import { getSavedExpressions, markQuizSuccess, getSettings, saveSettings, DEFAULT_SETTINGS } from "@/lib/db";
+import { getSavedExpressions, markQuizSuccess, getSettings, saveSettings, DEFAULT_SETTINGS } from "@/lib/storage";
 import { i18n } from "@/lib/i18n";
 import type { Language, SavedExpression } from "@/types";
 import SpeaqLogo from "@/components/SpeaqLogo";

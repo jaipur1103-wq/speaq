@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { getScoreHistory, getSettings, saveSettings, getSavedExpressions, DEFAULT_SETTINGS } from "@/lib/db";
+import { getScoreHistory, getSettings, saveSettings, getSavedExpressions, DEFAULT_SETTINGS } from "@/lib/storage";
 import type { Language, ScoreRecord } from "@/types";
 import SpeaqLogo from "@/components/SpeaqLogo";
 import { ChevronDown, ChevronUp } from "lucide-react";

@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import type { Feedback, Message, NaturalExpression, Scenario } from "@/types";
-import { saveExpression, getSettings, saveScoreRecord } from "@/lib/db";
+import { saveExpression, getSettings, saveScoreRecord } from "@/lib/storage";
 import { i18n } from "@/lib/i18n";
 import type { Tr } from "@/lib/i18n";
 

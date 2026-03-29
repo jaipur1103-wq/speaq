@@ -10,7 +10,7 @@ import {
   DEFAULT_SETTINGS, getSettings, saveSettings, getSavedScenarios, saveGeneratedScenario,
   deleteSavedScenario, getCustomScenarios, deleteCustomScenario, getFavoriteIds,
   getStreak, getSavedExpressions,
-} from "@/lib/db";
+} from "@/lib/storage";
 import { i18n } from "@/lib/i18n";
 import type { AppSettings, Language, Scenario } from "@/types";
 

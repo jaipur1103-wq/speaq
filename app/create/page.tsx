@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { saveCustomScenario, getSettings, saveSettings, DEFAULT_SETTINGS } from "@/lib/db";
+import { saveCustomScenario, getSettings, saveSettings, DEFAULT_SETTINGS } from "@/lib/storage";
 import { i18n } from "@/lib/i18n";
 import type { Difficulty, Language, Scenario } from "@/types";
 
@@ -18,7 +18,9 @@ export default function CreatePage() {
   const [error, setError] = useState("");
 
   useEffect(() => {
-    getSettings().then((s) => { setSettings(s); setLang(s.language); });
+    const s = getSettings();
+    setSettings(s);
+    setLang(s.language);
   }, []);
 
   const toggleLang = () => {

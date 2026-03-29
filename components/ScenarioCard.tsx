@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Star, Trash2, ChevronRight } from "lucide-react";
 import type { Language, Scenario } from "@/types";
-import { toggleFavorite } from "@/lib/db";
+import { toggleFavorite } from "@/lib/storage";
 
 interface Props {
   scenario: Scenario;
