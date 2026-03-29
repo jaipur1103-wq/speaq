@@ -9,7 +9,7 @@ import SpeaqLogo from "@/components/SpeaqLogo";
 import {
   getSettings, saveSettings, getSavedScenarios, saveGeneratedScenario,
   deleteSavedScenario, getCustomScenarios, deleteCustomScenario, getFavoriteIds,
-  initDemoScenario, getStreak, getSavedExpressions,
+  getStreak, getSavedExpressions,
 } from "@/lib/storage";
 import { i18n } from "@/lib/i18n";
 import type { AppSettings, Language, Scenario } from "@/types";
@@ -37,7 +37,6 @@ export default function Home() {
   };
 
   useEffect(() => {
-    initDemoScenario();
     reload();
     setStreak(getStreak());
     setReviewCount(getSavedExpressions().filter((e) => !e.learned).length);

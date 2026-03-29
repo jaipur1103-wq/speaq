@@ -37,7 +37,7 @@ export function initDemoScenario(): void {
 export const DEFAULT_SETTINGS: AppSettings = {
   language: "ja",
   topic: "business",
-  difficulty: "intermediate",
+  difficulty: "beginner",
   industry: "general",
   personaStyle: "neutral",
   apiKey: "",
