@@ -65,6 +65,11 @@ export interface Feedback {
   insightMode?: boolean;
 }
 
+export interface PhraseExample {
+  scene: string;
+  sentence: string;
+}
+
 export interface SavedExpression {
   id: string;
   original: string;
@@ -79,6 +84,7 @@ export interface SavedExpression {
   quizCount: number;
   reason?: NaturalExpressionReason;
   chunkDetail?: string;
+  examples?: PhraseExample[];
 }
 
 export interface ScoreRecord {

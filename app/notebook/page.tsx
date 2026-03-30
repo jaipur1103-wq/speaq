@@ -2,11 +2,11 @@
 
 import { useEffect, useState } from "react";
 import { Moon, Sun } from "lucide-react";
-import { getSavedExpressions, deleteExpression, getSettings, saveSettings, DEFAULT_SETTINGS } from "@/lib/storage";
+import { getSavedExpressions, deleteExpression, updateExpressionExamples, getSettings, saveSettings, DEFAULT_SETTINGS } from "@/lib/storage";
 import { useRouter } from "next/navigation";
 import { i18n } from "@/lib/i18n";
 import type { Tr } from "@/lib/i18n";
-import type { Language, SavedExpression } from "@/types";
+import type { Language, SavedExpression, PhraseExample } from "@/types";
 import SpeaqLogo from "@/components/SpeaqLogo";
 
 type Filter = "all" | "tolearn" | "learned" | "collection";
@@ -147,7 +147,7 @@ export default function NotebookPage() {
 
       {/* Collection mode */}
       {filter === "collection" && (
-        <CollectionView groups={categoryGroups} tr={tr} onDelete={handleDelete} />
+        <CollectionView groups={categoryGroups} tr={tr} lang={lang} onDelete={handleDelete} onUpdateExamples={async (id, examples) => { updateExpressionExamples(id, examples); await reload(); }} />
       )}
 
       {/* Expression list */}
@@ -173,7 +173,12 @@ export default function NotebookPage() {
                 key={expr.id}
                 expr={expr}
                 tr={tr}
+                lang={lang}
                 onDelete={handleDelete}
+                onUpdateExamples={async (id, examples) => {
+                  updateExpressionExamples(id, examples);
+                  await reload();
+                }}
               />
             ))}
           </div>
@@ -186,11 +191,13 @@ export default function NotebookPage() {
 // ─── Collection View ──────────────────────────────────────────
 
 function CollectionView({
-  groups, tr, onDelete,
+  groups, tr, lang, onDelete, onUpdateExamples,
 }: {
   groups: Record<string, SavedExpression[]>;
   tr: Tr;
+  lang: Language;
   onDelete: (id: string) => void;
+  onUpdateExamples: (id: string, examples: PhraseExample[]) => Promise<void>;
 }) {
   const [expandedCats, setExpandedCats] = useState<Set<string>>(new Set());
 
@@ -253,7 +260,7 @@ function CollectionView({
               <div style={{ borderTop: "1px solid var(--border)", padding: "10px 12px 12px" }}>
                 <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                   {items.map((expr) => (
-                    <ExpressionCard key={expr.id} expr={expr} tr={tr} onDelete={onDelete} compact />
+                    <ExpressionCard key={expr.id} expr={expr} tr={tr} lang={lang} onDelete={onDelete} onUpdateExamples={onUpdateExamples} compact />
                   ))}
                 </div>
               </div>
@@ -277,16 +284,42 @@ const REASON_BADGE: Record<string, { label: string; bg: string; color: string }>
 };
 
 function ExpressionCard({
-  expr, tr, onDelete, compact = false,
+  expr, tr, lang, onDelete, onUpdateExamples, compact = false,
 }: {
   expr: SavedExpression;
   tr: Tr;
+  lang: Language;
   onDelete: (id: string) => void;
+  onUpdateExamples: (id: string, examples: PhraseExample[]) => Promise<void>;
   compact?: boolean;
 }) {
+  const [expanded, setExpanded] = useState(false);
+  const [loadingExamples, setLoadingExamples] = useState(false);
+
   const date = new Date(expr.savedAt).toLocaleDateString("ja-JP", { month: "short", day: "numeric" });
   const chunkDisplay = expr.chunk || expr.natural;
   const badge = expr.reason ? REASON_BADGE[expr.reason] : null;
+
+  const handleToggleExamples = async () => {
+    if (expanded) { setExpanded(false); return; }
+    setExpanded(true);
+    if (!expr.examples) {
+      setLoadingExamples(true);
+      try {
+        const res = await fetch("/api/phrase-examples", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ chunk: expr.chunk, chunkDetail: expr.chunkDetail, reason: expr.reason, lang }),
+        });
+        const data = await res.json();
+        if (data.examples) await onUpdateExamples(expr.id, data.examples);
+      } catch {
+        // silently fail
+      } finally {
+        setLoadingExamples(false);
+      }
+    }
+  };
 
   return (
     <div style={{
@@ -339,6 +372,40 @@ function ExpressionCard({
           padding: "8px 12px", background: compact ? "var(--surface)" : "var(--surface2)", borderRadius: 8,
         }}>
           &ldquo;{expr.example}&rdquo;
+        </div>
+      )}
+
+      {/* More examples toggle */}
+      <button
+        onClick={handleToggleExamples}
+        style={{
+          width: "100%", padding: "8px", marginBottom: expanded ? 10 : 0,
+          border: "1px solid var(--border)", borderRadius: 10,
+          background: "transparent", color: "var(--text-secondary)",
+          fontSize: 12, fontWeight: 600, cursor: "pointer",
+          display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
+        }}
+      >
+        {loadingExamples
+          ? (lang === "ja" ? "読み込み中..." : "Loading...")
+          : expanded
+            ? (lang === "ja" ? "▲ 例文を閉じる" : "▲ Hide examples")
+            : (lang === "ja" ? "▼ 例文をもっと見る" : "▼ See more examples")}
+      </button>
+
+      {/* Expanded examples */}
+      {expanded && (
+        <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 10 }}>
+          {(expr.examples ?? []).map((ex, i) => (
+            <div key={i} style={{ background: compact ? "var(--surface)" : "var(--surface2)", borderRadius: 10, padding: "10px 12px" }}>
+              <div style={{ fontSize: 11, fontWeight: 700, color: "var(--text-muted)", marginBottom: 4 }}>
+                📍 {ex.scene}
+              </div>
+              <div style={{ fontSize: 13, color: "var(--text)", lineHeight: 1.6, fontStyle: "italic" }}>
+                &ldquo;{ex.sentence}&rdquo;
+              </div>
+            </div>
+          ))}
         </div>
       )}
 

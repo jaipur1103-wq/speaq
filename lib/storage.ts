@@ -158,6 +158,12 @@ export function deleteExpression(id: string): void {
   localStorage.setItem(EXPRESSIONS_KEY, JSON.stringify(existing.filter((e) => e.id !== id)));
 }
 
+export function updateExpressionExamples(id: string, examples: import("@/types").PhraseExample[]): void {
+  const existing = getSavedExpressions();
+  const updated = existing.map((e) => e.id === id ? { ...e, examples } : e);
+  localStorage.setItem(EXPRESSIONS_KEY, JSON.stringify(updated));
+}
+
 // Score history
 export function getScoreHistory(): ScoreRecord[] {
   if (typeof window === "undefined") return [];
