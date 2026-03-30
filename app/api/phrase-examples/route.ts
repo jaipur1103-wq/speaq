@@ -26,16 +26,24 @@ Return ONLY valid JSON, no markdown, no backticks:
 Rules:
 - Use 3 different real-world scenes (e.g. business meeting, email, casual conversation)
 - Each sentence must naturally include the chunk expression
-- Sentences should be 1-2 sentences, realistic and useful
-- Scene labels must be in Japanese (short, 4-8 characters)
-- sentence must be in English
-- sentenceJa must be a natural Japanese translation of the sentence`;
+- sentence: 1 English sentence using the chunk
+- sentenceJa: Japanese translation of sentence — REQUIRED for every item, do not omit
+- Scene labels must be in Japanese (4-6 characters max)
+
+Example output:
+{
+  "examples": [
+    { "scene": "会議", "sentence": "This project has great potential.", "sentenceJa": "このプロジェクトは大きな可能性を秘めています。" },
+    { "scene": "メール", "sentence": "Your proposal has great potential.", "sentenceJa": "あなたの提案は大きな可能性を持っています。" },
+    { "scene": "雑談", "sentence": "She has great potential as a leader.", "sentenceJa": "彼女はリーダーとして大きな可能性があります。" }
+  ]
+}`;
 
     const completion = await groq.chat.completions.create({
       model: "llama-3.3-70b-versatile",
       messages: [{ role: "user", content: prompt }],
       temperature: 0.6,
-      max_tokens: 500,
+      max_tokens: 800,
     });
 
     const raw = completion.choices[0]?.message?.content ?? "";
