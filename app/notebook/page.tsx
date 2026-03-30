@@ -383,7 +383,7 @@ function ExpressionCard({
       <button
         onClick={handleToggleExamples}
         style={{
-          width: "100%", padding: "8px", marginBottom: expanded ? 10 : 0,
+          width: "100%", padding: "8px", marginBottom: expanded ? 10 : 12,
           border: "1px solid var(--border)", borderRadius: 10,
           background: "transparent", color: "var(--text-secondary)",
           fontSize: 12, fontWeight: 600, cursor: "pointer",
