@@ -41,7 +41,7 @@ function MiniPracticeContent() {
           body: JSON.stringify({ chunk: found.chunk, chunkDetail: found.chunkDetail, lang: settings.language }),
         });
         const data = await res.json();
-        if (data.situation) { setSituation(data.situation); setPhase("ready"); }
+        if (data.jaPrompt) { setSituation(data.jaPrompt); setPhase("ready"); }
         else setPhase("error");
       } catch { setPhase("error"); }
     })();
@@ -145,13 +145,13 @@ function MiniPracticeContent() {
           </div>
         )}
 
-        {/* Situation */}
+        {/* Japanese sentence to translate */}
         {phase !== "loading" && phase !== "error" && situation && (
           <div style={{ background: "var(--surface)", borderRadius: 18, padding: "18px 20px", boxShadow: "var(--shadow-sm)" }}>
             <div style={{ fontSize: 11, color: "var(--text-muted)", marginBottom: 8, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.06em" }}>
-              {isJa ? "シチュエーション" : "Situation"}
+              {isJa ? "次の文を英語で言ってみましょう" : "Translate into English"}
             </div>
-            <div style={{ fontSize: 15, color: "var(--text)", lineHeight: 1.7 }}>{situation}</div>
+            <div style={{ fontSize: 17, fontWeight: 600, color: "var(--text)", lineHeight: 1.7 }}>{situation}</div>
           </div>
         )}
 

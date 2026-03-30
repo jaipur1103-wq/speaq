@@ -7,30 +7,31 @@ export async function POST(req: NextRequest) {
   try {
     const { chunk, chunkDetail, lang } = await req.json();
 
-    const isJa = lang === "ja";
-
     const prompt = `You are designing a speaking practice exercise for a Japanese business English learner.
 
 Target chunk expression: "${chunk}"
 ${chunkDetail ? `Usage note: ${chunkDetail}` : ""}
 
-Create a realistic business situation description where using "${chunk}" would be the most natural and expected response.
+Create a natural Japanese sentence that, when translated into English, would most naturally use the chunk expression "${chunk}".
 
 Return ONLY valid JSON, no markdown, no backticks:
-{ "situation": "situation description here" }
+{ "jaPrompt": "Japanese sentence here" }
 
 Rules:
-- The situation must be written in ${isJa ? "Japanese" : "English"}
-- Describe ONLY the scene and context — do NOT include a question or prompt to use the phrase
-- The situation should make it obvious that using "${chunk}" would fit naturally
-- Keep it concise: 2-3 sentences max
-- Do NOT mention the target phrase in the situation description
+- The Japanese sentence must be written in Japanese
+- The sentence should be realistic in a business context
+- When translated to English, using "${chunk}" should be the most natural choice
+- Keep it concise: 1 sentence only
+- Do NOT include the English chunk or any English words in the Japanese sentence
 
 Example (for chunk: "have great potential"):
-{ "situation": "新しいプロジェクト提案について上司から意見を求められています。そのプロジェクトはまだ初期段階ですが、あなたは可能性を感じています。" }
+{ "jaPrompt": "このプロジェクトは大きな可能性を秘めていると思います。" }
 
 Example (for chunk: "run into issues"):
-{ "situation": "チームメンバーから進捗報告を受けています。開発中にいくつか問題が発生したことを報告しなければなりません。" }`;
+{ "jaPrompt": "開発中にいくつかの問題に直面しました。" }
+
+Example (for chunk: "It might be worth ~ing"):
+{ "jaPrompt": "予算を見直してみる価値があるかもしれません。" }`;
 
     const completion = await groq.chat.completions.create({
       model: "llama-3.3-70b-versatile",

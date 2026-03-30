@@ -8,7 +8,7 @@ export async function POST(req: NextRequest) {
     const { chunk, chunkDetail, reason, lang } = await req.json();
     const isJa = lang === "ja";
 
-    const prompt = `You are an English language coach. Generate 4 example sentences using the English chunk expression below.
+    const prompt = `You are an English language coach. Generate 3 example sentences using the English chunk expression below.
 
 Chunk: "${chunk}"
 ${chunkDetail ? `Usage note: ${chunkDetail}` : ""}
@@ -17,25 +17,25 @@ ${reason ? `Category: ${reason}` : ""}
 Return ONLY valid JSON, no markdown, no backticks:
 {
   "examples": [
-    { "scene": "scene label", "sentence": "example sentence using the chunk" },
-    { "scene": "scene label", "sentence": "example sentence using the chunk" },
-    { "scene": "scene label", "sentence": "example sentence using the chunk" },
-    { "scene": "scene label", "sentence": "example sentence using the chunk" }
+    { "scene": "scene label", "sentence": "example sentence using the chunk", "sentenceJa": "Japanese translation of the sentence" },
+    { "scene": "scene label", "sentence": "example sentence using the chunk", "sentenceJa": "Japanese translation of the sentence" },
+    { "scene": "scene label", "sentence": "example sentence using the chunk", "sentenceJa": "Japanese translation of the sentence" }
   ]
 }
 
 Rules:
-- Use 4 different real-world scenes (e.g. business meeting, email, casual conversation, presentation)
+- Use 3 different real-world scenes (e.g. business meeting, email, casual conversation)
 - Each sentence must naturally include the chunk expression
 - Sentences should be 1-2 sentences, realistic and useful
-- Scene labels must be in ${isJa ? "Japanese" : "English"} (short, 4-8 characters)
-- Sentences must be in English`;
+- Scene labels must be in Japanese (short, 4-8 characters)
+- sentence must be in English
+- sentenceJa must be a natural Japanese translation of the sentence`;
 
     const completion = await groq.chat.completions.create({
       model: "llama-3.3-70b-versatile",
       messages: [{ role: "user", content: prompt }],
       temperature: 0.6,
-      max_tokens: 400,
+      max_tokens: 500,
     });
 
     const raw = completion.choices[0]?.message?.content ?? "";

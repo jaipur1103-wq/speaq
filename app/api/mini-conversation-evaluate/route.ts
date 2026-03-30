@@ -11,32 +11,33 @@ export async function POST(req: NextRequest) {
     // Strip ~ placeholders to get the core words to look for
     const coreWords = chunk.replace(/~/g, "").replace(/\s+/g, " ").trim().toLowerCase();
 
-    const prompt = `You are checking whether a learner used a specific English expression in their response.
+    const prompt = `You are evaluating whether a learner correctly translated a Japanese sentence into English using a target chunk expression.
 
 Target chunk: "${chunk}"
 (Note: "~" in the chunk means any word can fill that slot)
 Core words to look for: "${coreWords}"
 
-Learner's response: "${userResponse}"
+Japanese sentence shown to learner: "${question}"
+Learner's English response: "${userResponse}"
 
-STEP 1 — Detection: Do the core words of "${coreWords}" appear in the learner's response (allowing for different word order or minor inflection like -s, -ed, -ing)?
+STEP 1 — Detection: Do the core words of "${coreWords}" appear in the learner's response (allowing for minor inflection like -s, -ed, -ing)?
 
 STEP 2 — Grammar check: If the words are present, is the grammar of that phrase correct?
 
 Decision rules:
 - used = true  → core words are present AND grammar of the phrase is correct
-- used = false → core words are absent (they used completely different words), OR they attempted the phrase but with a clear grammar error
+- used = false → core words are absent, OR attempted but with a clear grammar error
 
 Return ONLY valid JSON, no markdown, no backticks:
 {
   "used": true or false,
-  "reason": "only when used is false: was it (A) absent — they used different words, or (B) attempted but wrong grammar/vocab? Be specific, 1-2 sentences. ${isJa ? "Write in Japanese." : "Write in English."}",
-  "modelAnswer": "a natural 1-2 sentence example answer using the chunk. English only."
+  "reason": "only when used is false: was it (A) absent — used different words instead, or (B) attempted but wrong grammar? Be specific, 1-2 sentences. ${isJa ? "Write in Japanese." : "Write in English."}",
+  "modelAnswer": "a natural English translation of the Japanese sentence that uses the chunk. 1 sentence."
 }
 
 Examples:
-- chunk: "have great potential", response: "This project has great potential" → used: true
-- chunk: "have great potential", response: "This project has a great potential" → used: false (grammar error: 'potential' is uncountable, no 'a')
+- chunk: "have great potential", jaPrompt: "このプロジェクトは大きな可能性を秘めています", response: "This project has great potential" → used: true
+- chunk: "have great potential", response: "This project has a great potential" → used: false (grammar error: 'potential' is uncountable)
 - chunk: "have great potential", response: "This project is very promising" → used: false (absent: used different words)
 - chunk: "run into ~ issues", response: "We ran into some technical issues" → used: true`;
 

@@ -400,14 +400,7 @@ function ExpressionCard({
       {expanded && (
         <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 10 }}>
           {(expr.examples ?? []).map((ex, i) => (
-            <div key={i} style={{ background: compact ? "var(--surface)" : "var(--surface2)", borderRadius: 10, padding: "10px 12px" }}>
-              <div style={{ fontSize: 11, fontWeight: 700, color: "var(--text-muted)", marginBottom: 4 }}>
-                📍 {ex.scene}
-              </div>
-              <div style={{ fontSize: 13, color: "var(--text)", lineHeight: 1.6, fontStyle: "italic" }}>
-                &ldquo;{ex.sentence}&rdquo;
-              </div>
-            </div>
+            <ExampleItem key={i} ex={ex} compact={compact} />
           ))}
         </div>
       )}
@@ -442,6 +435,35 @@ function ExpressionCard({
           {tr.deleteBtn}
         </button>
       </div>
+    </div>
+  );
+}
+
+function ExampleItem({ ex, compact }: { ex: PhraseExample; compact: boolean }) {
+  const [jaRevealed, setJaRevealed] = useState(false);
+  return (
+    <div style={{ background: compact ? "var(--surface)" : "var(--surface2)", borderRadius: 10, padding: "10px 12px" }}>
+      <div style={{ fontSize: 11, fontWeight: 700, color: "var(--text-muted)", marginBottom: 4 }}>
+        📍 {ex.scene}
+      </div>
+      <div style={{ fontSize: 13, color: "var(--text)", lineHeight: 1.6, fontStyle: "italic", marginBottom: ex.sentenceJa ? 6 : 0 }}>
+        &ldquo;{ex.sentence}&rdquo;
+      </div>
+      {ex.sentenceJa && (
+        <>
+          <button
+            onClick={() => setJaRevealed((v) => !v)}
+            style={{ fontSize: 11, color: "var(--accent)", background: "none", border: "none", cursor: "pointer", padding: 0, fontWeight: 600 }}
+          >
+            {jaRevealed ? "▲ 和訳を閉じる" : "▼ 和訳を見る"}
+          </button>
+          {jaRevealed && (
+            <div style={{ fontSize: 12, color: "var(--text-secondary)", lineHeight: 1.6, marginTop: 4 }}>
+              {ex.sentenceJa}
+            </div>
+          )}
+        </>
+      )}
     </div>
   );
 }

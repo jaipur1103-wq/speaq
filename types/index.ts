@@ -68,6 +68,7 @@ export interface Feedback {
 export interface PhraseExample {
   scene: string;
   sentence: string;
+  sentenceJa?: string;
 }
 
 export interface SavedExpression {
