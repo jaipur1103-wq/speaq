@@ -1,6 +1,6 @@
 # Speaq — API 設計
 
-最終更新: 2026-03-28
+最終更新: 2026-03-30
 
 ---
 
@@ -15,6 +15,10 @@
 | `POST /api/translate` | テキスト翻訳（フォールバックのみ） | Groq | `{ translations: string[] }` |
 | `POST /api/punctuate` | 音声入力後の句読点補正 | Groq | `{ corrected: string }` |
 | `POST /api/transcribe` | 音声書き起こし | Groq Whisper | `{ text: string }` |
+| `POST /api/hint` | 会話ヒント生成（3段階） | Groq | `{ keywords, starter, full }` |
+| `POST /api/phrase-examples` | フレーズ例文生成（3件・和訳付き） | Groq | `{ examples: PhraseExample[] }` |
+| `POST /api/mini-conversation-question` | ミニ会話用・英訳練習文生成（日本語1文） | Groq | `{ jaPrompt: string }` |
+| `POST /api/mini-conversation-evaluate` | ミニ会話の発話評価 | Groq | `{ used, reason?, modelAnswer }` |
 
 ---
 
@@ -97,6 +101,66 @@
 | シナリオ titleJa / briefJa / openerJa | 生成時に別呼び出しで事前生成・localStorage保存 |
 | 相手役AIの返答 | counterpart-reply API が replyJa を同時返却・msg.textJa に保存 |
 | 古いチャットバブル | /api/translate にフォールバック（最終手段のみ） |
+
+---
+
+## /api/phrase-examples 詳細
+
+### リクエスト
+```typescript
+{ chunk: string; chunkDetail?: string; reason?: string; lang: "ja" | "en" }
+```
+
+### レスポンス
+```typescript
+{ examples: { scene: string; sentence: string; sentenceJa: string }[] }
+```
+
+### 実装メモ
+- 結果は localStorage の `SavedExpression.examples` にキャッシュ。2回目以降はAPI不要
+- `sentenceJa` がないキャッシュは自動的に再取得する（`examples.every(e => !e.sentenceJa)` で判定）
+
+---
+
+## /api/mini-conversation-question 詳細
+
+### リクエスト
+```typescript
+{ chunk: string; chunkDetail?: string; lang: "ja" | "en" }
+```
+
+### レスポンス
+```typescript
+{ jaPrompt: string }  // 英訳練習用の日本語1文
+```
+
+### 実装メモ
+- ユーザーがノートブックの「話してみる」を押すたびに呼び出し（キャッシュなし）
+- chunk を自然に使える日本語1文を生成する
+- 接続詞なし・15文字以内・シンプルな1文が原則
+
+---
+
+## /api/mini-conversation-evaluate 詳細
+
+### リクエスト
+```typescript
+{ chunk: string; question: string; userResponse: string; lang: "ja" | "en" }
+```
+
+### レスポンス
+```typescript
+{
+  used: boolean;        // chunk を正しく使えたか
+  reason?: string;      // used=false のとき：不使用 or 文法誤りの説明（JA設定時は日本語）
+  modelAnswer: string;  // 模範回答（英語）
+}
+```
+
+### 判定ルール
+- `used = true`：chunk のコアワードが含まれ、かつ文法が正しい
+- `used = false`：コアワードが含まれない（別の表現を使った）or 文法エラーあり
+- chunk の `~` は任意の語として扱う（例：`run into ~ issues` → run into + any word + issues）
 
 ---
 
