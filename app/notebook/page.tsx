@@ -147,7 +147,7 @@ export default function NotebookPage() {
 
       {/* Collection mode */}
       {filter === "collection" && (
-        <CollectionView groups={categoryGroups} tr={tr} lang={lang} onDelete={handleDelete} onUpdateExamples={async (id, examples) => { updateExpressionExamples(id, examples); await reload(); }} />
+        <CollectionView groups={categoryGroups} tr={tr} lang={lang} onDelete={handleDelete} onUpdateExamples={async (id, examples) => { updateExpressionExamples(id, examples); await reload(); }} onMiniPractice={(id) => router.push(`/mini-practice?id=${id}`)} />
       )}
 
       {/* Expression list */}
@@ -179,6 +179,7 @@ export default function NotebookPage() {
                   updateExpressionExamples(id, examples);
                   await reload();
                 }}
+                onMiniPractice={(id) => router.push(`/mini-practice?id=${id}`)}
               />
             ))}
           </div>
@@ -191,13 +192,14 @@ export default function NotebookPage() {
 // ─── Collection View ──────────────────────────────────────────
 
 function CollectionView({
-  groups, tr, lang, onDelete, onUpdateExamples,
+  groups, tr, lang, onDelete, onUpdateExamples, onMiniPractice,
 }: {
   groups: Record<string, SavedExpression[]>;
   tr: Tr;
   lang: Language;
   onDelete: (id: string) => void;
   onUpdateExamples: (id: string, examples: PhraseExample[]) => Promise<void>;
+  onMiniPractice: (id: string) => void;
 }) {
   const [expandedCats, setExpandedCats] = useState<Set<string>>(new Set());
 
@@ -260,7 +262,7 @@ function CollectionView({
               <div style={{ borderTop: "1px solid var(--border)", padding: "10px 12px 12px" }}>
                 <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                   {items.map((expr) => (
-                    <ExpressionCard key={expr.id} expr={expr} tr={tr} lang={lang} onDelete={onDelete} onUpdateExamples={onUpdateExamples} compact />
+                    <ExpressionCard key={expr.id} expr={expr} tr={tr} lang={lang} onDelete={onDelete} onUpdateExamples={onUpdateExamples} onMiniPractice={onMiniPractice} compact />
                   ))}
                 </div>
               </div>
@@ -284,13 +286,14 @@ const REASON_BADGE: Record<string, { label: string; bg: string; color: string }>
 };
 
 function ExpressionCard({
-  expr, tr, lang, onDelete, onUpdateExamples, compact = false,
+  expr, tr, lang, onDelete, onUpdateExamples, onMiniPractice, compact = false,
 }: {
   expr: SavedExpression;
   tr: Tr;
   lang: Language;
   onDelete: (id: string) => void;
   onUpdateExamples: (id: string, examples: PhraseExample[]) => Promise<void>;
+  onMiniPractice: (id: string) => void;
   compact?: boolean;
 }) {
   const [expanded, setExpanded] = useState(false);
@@ -416,9 +419,20 @@ function ExpressionCard({
           </span>
         )}
         <button
-          onClick={() => onDelete(expr.id)}
+          onClick={() => onMiniPractice(expr.id)}
           style={{
             marginLeft: "auto",
+            padding: "5px 14px", borderRadius: 20,
+            border: "none",
+            background: "var(--accent)", color: "#fff",
+            fontSize: 12, fontWeight: 700, cursor: "pointer",
+          }}
+        >
+          🎤 {lang === "ja" ? "話してみる" : "Speak it"}
+        </button>
+        <button
+          onClick={() => onDelete(expr.id)}
+          style={{
             padding: "5px 12px", borderRadius: 20,
             border: "1px solid var(--border)",
             background: "transparent", color: "var(--text-muted)",
