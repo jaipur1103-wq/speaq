@@ -19,19 +19,22 @@ Return ONLY valid JSON, no markdown, no backticks:
 
 Rules:
 - The Japanese sentence must be written in Japanese
-- The sentence should be realistic in a business context
-- When translated to English, using "${chunk}" should be the most natural choice
-- Keep it concise: 1 sentence only
-- Do NOT include the English chunk or any English words in the Japanese sentence
+- 1 short sentence only — no conjunctions (〜が、〜ので、〜けど etc.)
+- The sentence must directly map to "${chunk}" when translated — no extra content needed
+- Do NOT include the English chunk or any English words
+- 15 characters or fewer preferred
 
 Example (for chunk: "have great potential"):
-{ "jaPrompt": "このプロジェクトは大きな可能性を秘めていると思います。" }
+{ "jaPrompt": "このプロジェクトは大きな可能性を秘めています。" }
 
 Example (for chunk: "run into issues"):
 { "jaPrompt": "開発中にいくつかの問題に直面しました。" }
 
 Example (for chunk: "It might be worth ~ing"):
-{ "jaPrompt": "予算を見直してみる価値があるかもしれません。" }`;
+{ "jaPrompt": "予算を見直してみる価値があるかもしれません。" }
+
+Example (for chunk: "move forward with ~"):
+{ "jaPrompt": "この計画を進めましょう。" }`;
 
     const completion = await groq.chat.completions.create({
       model: "llama-3.3-70b-versatile",

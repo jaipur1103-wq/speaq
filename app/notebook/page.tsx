@@ -306,7 +306,8 @@ function ExpressionCard({
   const handleToggleExamples = async () => {
     if (expanded) { setExpanded(false); return; }
     setExpanded(true);
-    if (!expr.examples) {
+    const needsFetch = !expr.examples || expr.examples.every((e) => !e.sentenceJa);
+    if (needsFetch) {
       setLoadingExamples(true);
       try {
         const res = await fetch("/api/phrase-examples", {
