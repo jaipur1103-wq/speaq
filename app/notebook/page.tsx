@@ -212,6 +212,19 @@ function CollectionView({
     });
   };
 
+  const CATEGORY_LABEL: Record<string, { ja: string; en: string; icon: string }> = {
+    business:  { ja: "ビジネス", en: "Business",   icon: "💼" },
+    travel:    { ja: "旅行",     en: "Travel",      icon: "✈️" },
+    daily:     { ja: "日常",     en: "Daily Life",  icon: "🏠" },
+    social:    { ja: "交流",     en: "Social",      icon: "🤝" },
+    study:     { ja: "学習",     en: "Study",       icon: "📚" },
+  };
+  const catLabel = (cat: string) => {
+    const c = CATEGORY_LABEL[cat];
+    if (!c) return { icon: "📁", label: cat };
+    return { icon: c.icon, label: lang === "ja" ? c.ja : c.en };
+  };
+
   const cats = Object.keys(groups).sort();
 
   if (cats.length === 0) {
@@ -249,7 +262,7 @@ function CollectionView({
             >
               <div>
                 <div style={{ fontSize: 14, fontWeight: 700, color: "var(--text)", marginBottom: 2 }}>
-                  📁 {cat}
+                  {catLabel(cat).icon} {catLabel(cat).label}
                 </div>
                 <div style={{ fontSize: 12, color: learnedInCat === items.length ? "var(--green)" : "var(--text-muted)", fontWeight: 600 }}>
                   {tr.learnedBadge(learnedInCat, items.length)}
