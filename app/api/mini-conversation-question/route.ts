@@ -5,23 +5,32 @@ const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
 export async function POST(req: NextRequest) {
   try {
-    const { chunk, chunkDetail } = await req.json();
+    const { chunk, chunkDetail, lang } = await req.json();
 
-    const prompt = `You are playing the role of a business colleague in a short English conversation practice.
+    const isJa = lang === "ja";
 
-The learner needs to practice using this English expression: "${chunk}"
+    const prompt = `You are designing a speaking practice exercise for a Japanese business English learner.
+
+Target chunk expression: "${chunk}"
 ${chunkDetail ? `Usage note: ${chunkDetail}` : ""}
 
-Generate a single natural question or statement (1-2 sentences) that would naturally prompt the learner to use this expression in their response. The situation should be a realistic business context.
+Create a realistic business situation description where using "${chunk}" would be the most natural and expected response.
 
 Return ONLY valid JSON, no markdown, no backticks:
-{ "question": "your question or statement here" }
+{ "situation": "situation description here" }
 
 Rules:
-- Make it feel like a real conversation opener, not a test
-- The question should naturally lead to using the chunk expression
-- Keep it short and conversational (1-2 sentences)
-- English only`;
+- The situation must be written in ${isJa ? "Japanese" : "English"}
+- Describe ONLY the scene and context — do NOT include a question or prompt to use the phrase
+- The situation should make it obvious that using "${chunk}" would fit naturally
+- Keep it concise: 2-3 sentences max
+- Do NOT mention the target phrase in the situation description
+
+Example (for chunk: "have great potential"):
+{ "situation": "新しいプロジェクト提案について上司から意見を求められています。そのプロジェクトはまだ初期段階ですが、あなたは可能性を感じています。" }
+
+Example (for chunk: "run into issues"):
+{ "situation": "チームメンバーから進捗報告を受けています。開発中にいくつか問題が発生したことを報告しなければなりません。" }`;
 
     const completion = await groq.chat.completions.create({
       model: "llama-3.3-70b-versatile",

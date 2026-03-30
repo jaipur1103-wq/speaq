@@ -14,12 +14,13 @@ function MiniPracticeContent() {
   const id = searchParams.get("id");
 
   const [expr, setExpr] = useState<SavedExpression | null>(null);
-  const [question, setQuestion] = useState("");
+  const [situation, setSituation] = useState("");
   const [phase, setPhase] = useState<Phase>("loading");
   const [inputText, setInputText] = useState("");
   const [recordingSeconds, setRecordingSeconds] = useState(0);
   const [result, setResult] = useState<{ used: boolean; reason?: string; modelAnswer: string } | null>(null);
   const [lang, setLang] = useState<"en" | "ja">("ja");
+  const [phraseRevealed, setPhraseRevealed] = useState(false);
 
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
@@ -37,10 +38,10 @@ function MiniPracticeContent() {
         const res = await fetch("/api/mini-conversation-question", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ chunk: found.chunk, chunkDetail: found.chunkDetail }),
+          body: JSON.stringify({ chunk: found.chunk, chunkDetail: found.chunkDetail, lang: settings.language }),
         });
         const data = await res.json();
-        if (data.question) { setQuestion(data.question); setPhase("ready"); }
+        if (data.situation) { setSituation(data.situation); setPhase("ready"); }
         else setPhase("error");
       } catch { setPhase("error"); }
     })();
@@ -104,7 +105,7 @@ function MiniPracticeContent() {
       const res = await fetch("/api/mini-conversation-evaluate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ chunk: expr.chunk, question, userResponse: text, lang }),
+        body: JSON.stringify({ chunk: expr.chunk, question: situation, userResponse: text, lang }),
       });
       const data = await res.json();
       setResult(data);
@@ -129,18 +130,6 @@ function MiniPracticeContent() {
       </div>
 
       <div style={{ flex: 1, padding: "24px 16px 40px", display: "flex", flexDirection: "column", gap: 20 }}>
-        {/* Chunk badge */}
-        {expr && (
-          <div style={{ background: "var(--surface)", borderRadius: 14, padding: "14px 18px", boxShadow: "var(--shadow-sm)" }}>
-            <div style={{ fontSize: 11, color: "var(--text-muted)", marginBottom: 4, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.06em" }}>
-              {isJa ? "今日のフレーズ" : "Target phrase"}
-            </div>
-            <div style={{ fontSize: 16, fontWeight: 700, color: "var(--accent)" }}>🔑 {expr.chunk}</div>
-            {expr.chunkDetail && (
-              <div style={{ fontSize: 12, color: "var(--text-secondary)", marginTop: 4, lineHeight: 1.5 }}>{expr.chunkDetail}</div>
-            )}
-          </div>
-        )}
 
         {/* Loading state */}
         {phase === "loading" && (
@@ -156,13 +145,39 @@ function MiniPracticeContent() {
           </div>
         )}
 
-        {/* AI question */}
-        {phase !== "loading" && phase !== "error" && question && (
+        {/* Situation */}
+        {phase !== "loading" && phase !== "error" && situation && (
           <div style={{ background: "var(--surface)", borderRadius: 18, padding: "18px 20px", boxShadow: "var(--shadow-sm)" }}>
             <div style={{ fontSize: 11, color: "var(--text-muted)", marginBottom: 8, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.06em" }}>
-              {isJa ? "相手の発言" : "Counterpart"}
+              {isJa ? "シチュエーション" : "Situation"}
             </div>
-            <div style={{ fontSize: 15, color: "var(--text)", lineHeight: 1.6 }}>{question}</div>
+            <div style={{ fontSize: 15, color: "var(--text)", lineHeight: 1.7 }}>{situation}</div>
+          </div>
+        )}
+
+        {/* Phrase hint (collapsed by default) */}
+        {expr && phase !== "loading" && phase !== "error" && (
+          <div style={{ background: "var(--surface)", borderRadius: 14, overflow: "hidden", boxShadow: "var(--shadow-sm)" }}>
+            <button
+              onClick={() => setPhraseRevealed((v) => !v)}
+              style={{
+                width: "100%", padding: "12px 18px",
+                background: "transparent", border: "none", cursor: "pointer",
+                display: "flex", alignItems: "center", justifyContent: "space-between",
+                fontSize: 13, color: "var(--text-secondary)", fontWeight: 600,
+              }}
+            >
+              <span>🔑 {isJa ? "フレーズを確認する" : "Reveal target phrase"}</span>
+              <span style={{ fontSize: 16, color: "var(--text-muted)", transform: phraseRevealed ? "rotate(90deg)" : "none", transition: "transform 0.2s" }}>›</span>
+            </button>
+            {phraseRevealed && (
+              <div style={{ borderTop: "1px solid var(--border)", padding: "12px 18px 14px" }}>
+                <div style={{ fontSize: 16, fontWeight: 700, color: "var(--accent)", marginBottom: 4 }}>{expr.chunk}</div>
+                {expr.chunkDetail && (
+                  <div style={{ fontSize: 12, color: "var(--text-secondary)", lineHeight: 1.5 }}>{expr.chunkDetail}</div>
+                )}
+              </div>
+            )}
           </div>
         )}
 
@@ -229,7 +244,7 @@ function MiniPracticeContent() {
                     {isJa ? "フレーズが使えました！" : "Great — you used the phrase!"}
                   </div>
                   <div style={{ fontSize: 13, color: "var(--text-muted)", marginTop: 2 }}>
-                    {isJa ? `「${expr?.chunk}」を自然に使えています。` : `「${expr?.chunk}」was used naturally.`}
+                    {isJa ? `「${expr?.chunk}」を自然に使えています。` : `"${expr?.chunk}" was used naturally.`}
                   </div>
                 </div>
               </div>
@@ -265,7 +280,7 @@ function MiniPracticeContent() {
         {phase === "done" && (
           <div style={{ display: "flex", gap: 10 }}>
             <button
-              onClick={() => { setPhase("ready"); setInputText(""); setResult(null); }}
+              onClick={() => { setPhase("ready"); setInputText(""); setResult(null); setPhraseRevealed(false); }}
               style={{ flex: 1, padding: "12px", borderRadius: 14, background: "var(--surface2)", border: "1px solid var(--border)", color: "var(--text-secondary)", fontWeight: 600, fontSize: 14, cursor: "pointer" }}
             >
               {isJa ? "もう一度" : "Try again"}
