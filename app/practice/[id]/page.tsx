@@ -57,6 +57,7 @@ export default function PracticePage() {
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
   const chatEndRef = useRef<HTMLDivElement>(null);
+  const feedbackTopRef = useRef<HTMLDivElement>(null);
   const lastSessionKey = useRef<string | null>(null);
   const replyTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const replyAbortRef = useRef<AbortController | null>(null);
@@ -100,7 +101,11 @@ export default function PracticePage() {
   }, []);
 
   useEffect(() => {
-    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    if (finalFeedback) {
+      feedbackTopRef.current?.scrollIntoView({ behavior: "smooth" });
+    } else {
+      chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    }
   }, [chatItems, loadingReply, loadingFinalFeedback, finalFeedback]);
 
   // Auto-save score as soon as feedback is available
@@ -379,7 +384,10 @@ export default function PracticePage() {
           </div>
         )}
         {finalFeedback && (
-          <FeedbackPanel feedback={finalFeedback} scenarioTitle={scenario.title} turns={pendingTurns} savedIds={savedIds} tr={tr} onSaveExpression={handleSaveExpression} />
+          <>
+            <div ref={feedbackTopRef} />
+            <FeedbackPanel feedback={finalFeedback} scenarioTitle={scenario.title} turns={pendingTurns} savedIds={savedIds} tr={tr} onSaveExpression={handleSaveExpression} />
+          </>
         )}
         <div ref={chatEndRef} />
       </div>
