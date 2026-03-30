@@ -57,11 +57,22 @@ export default function NotebookPage() {
   const toLearnCount = expressions.filter((e) => !e.learned).length;
   const learnedCount = expressions.filter((e) => e.learned).length;
 
-  // Collection: group by category
+  // Map LLM-generated category to topic bucket
+  const toTopicKey = (cat: string): string => {
+    const lower = (cat || "").toLowerCase().replace(/[-\s]+/g, "");
+    if (["negotiation","sales","1on1","crossteam","presentation","clientmeeting","performancereview","crisismanagement","partnership","hiring"].includes(lower)) return "business";
+    if (["travel","restaurant","shopping","hotel"].includes(lower)) return "travel";
+    if (["dailylife","daily"].includes(lower)) return "daily";
+    if (["social"].includes(lower)) return "social";
+    if (["study"].includes(lower)) return "study";
+    return "business"; // fallback
+  };
+
+  // Collection: group by topic
   const categoryGroups = expressions.reduce<Record<string, SavedExpression[]>>((acc, e) => {
-    const cat = e.category || "Other";
-    if (!acc[cat]) acc[cat] = [];
-    acc[cat].push(e);
+    const topic = toTopicKey(e.category);
+    if (!acc[topic]) acc[topic] = [];
+    acc[topic].push(e);
     return acc;
   }, {});
 
