@@ -1,35 +1,98 @@
 # Speaq — インフラ構成
 
+最終更新: 2026-03-30
+
 ## 技術スタック
 
 | レイヤー | 技術 |
 |---|---|
-| フロントエンド | Next.js + TypeScript（App Router） |
+| フロントエンド | Next.js 16.2.0 + TypeScript（App Router） |
 | スタイリング | インライン CSS |
-| 会話 AI | Groq（llama-3.3-70b-versatile） |
+| 会話AI・フィードバック・シナリオ生成 | Groq（llama-3.3-70b-versatile） |
 | 音声認識 | Groq Whisper（whisper-large-v3-turbo） |
-| 翻訳 | Groq（フォールバック）/ Gemini（翻訳のみ OK） |
+| 翻訳（フォールバックのみ） | Groq（/api/translate） |
 | ホスティング | Vercel |
+| バージョン管理 | GitHub |
+
+※ Gemini API は過去に試みたが無料枠制限で断念。現在は全用途Groqに統一。
+
+---
 
 ## 環境変数（.env.local）
 
 ```
 GROQ_API_KEY=
-GEMINI_API_KEY=
 ```
 
-## デプロイ
+---
+
+## デプロイ手順
 
 ```bash
-npm run build
 vercel --prod
-git add -A && git commit -m "Deploy" && git push origin master
+git add [変更ファイル] && git commit -m "メッセージ" && git push origin master
 ```
 
-## GitHub
+---
 
-https://github.com/jaipur1103-wq/speaq
+## GitHub / 本番URL
 
-## 本番 URL
+- GitHub: https://github.com/jaipur1103-wq/speaq
+- 本番URL: https://english-practice-blue.vercel.app
 
-https://english-practice-blue.vercel.app
+---
+
+## Groq API 上限（無料枠）
+
+### llama-3.3-70b-versatile（テキスト生成）
+
+| 制限 | 値 |
+|---|---|
+| リクエスト数/日 | 1,000回 |
+| トークン数/分 | 6,000 |
+| トークン数/日 | 500,000 |
+
+### Whisper（whisper-large-v3-turbo）
+
+| 制限 | 値 |
+|---|---|
+| リクエスト数/分 | 20回 |
+| 音声時間/時間 | 7,200秒（= 2時間分） |
+
+---
+
+## 1セッションあたりの消費量（5ターン想定）
+
+| 用途 | 消費トークン（概算） |
+|---|---|
+| シナリオ生成 | ~1,400 |
+| 相手役返答（5ターン） | ~4,000 |
+| フィードバック（2並列） | ~8,800 |
+| **合計** | **~14,200** |
+
+→ **1日の上限目安：約35セッション（トークン上限が先に達する）**
+
+### 学習機能（ノートブック）
+
+| 用途 | 消費トークン（概算） |
+|---|---|
+| 例文生成（初回のみ・以降キャッシュ） | ~1,200 |
+| 話してみる 1回（質問生成 + 評価） | ~1,100 |
+
+### Whisper消費
+
+- 1録音 ≒ 平均15〜20秒
+- 5ターン ≒ 約100秒/セッション
+- 上限7,200秒/時間 → **約72セッション/時間**（LLMより余裕あり）
+
+---
+
+## スケールアップの目安
+
+| ユーザー数 | 1日のセッション数 | 判断 |
+|---|---|---|
+| 〜3人 | 〜35セッション | 無料枠で問題なし |
+| 5〜10人 | 35〜100セッション | 上限に当たり始める |
+| 10人以上 | 100セッション以上 | Groq有料プランへ移行を検討 |
+
+Groq有料プラン：$0.59 / 100万トークン（llama-3.3-70b-versatile）
