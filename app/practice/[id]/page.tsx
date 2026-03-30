@@ -445,7 +445,7 @@ export default function PracticePage() {
           ) : hasInput && !isRecording ? (
             /* Has input: preview + send/retake */
             <div style={{ width: "100%" }}>
-              <div style={{ background: "var(--surface2)", borderRadius: 12, padding: "8px 14px", marginBottom: 8, fontSize: 13, color: "var(--text)", lineHeight: 1.5, minHeight: 36, maxHeight: 52, overflow: "hidden" }}>
+              <div style={{ background: "var(--surface2)", borderRadius: 12, padding: "8px 14px", marginBottom: 8, fontSize: 13, color: "var(--text)", lineHeight: 1.5, minHeight: 36, maxHeight: 120, overflowY: "auto" }}>
                 {inputText.trim()}
               </div>
               <div style={{ display: "flex", gap: 8 }}>
