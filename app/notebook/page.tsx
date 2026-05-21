@@ -8,6 +8,8 @@ import { i18n } from "@/lib/i18n";
 import type { Tr } from "@/lib/i18n";
 import type { Language, SavedExpression, PhraseExample } from "@/types";
 import SpeaqLogo from "@/components/SpeaqLogo";
+import JoplinExportModal from "@/components/JoplinExportModal";
+import { buildExpressionsMarkdown } from "@/lib/joplin-export";
 
 type Filter = "all" | "tolearn" | "learned" | "collection";
 
@@ -18,6 +20,7 @@ export default function NotebookPage() {
   const [dark, setDark] = useState(false);
   const [lang, setLang] = useState<Language>(DEFAULT_SETTINGS.language);
   const [settings, setSettings] = useState(DEFAULT_SETTINGS);
+  const [showJoplinModal, setShowJoplinModal] = useState(false);
 
   const tr = i18n[lang];
 
